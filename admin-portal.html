@@ -44,15 +44,15 @@
     <div class="nav-section-label">審 核 中 心</div>
     <button class="nav-link" data-page="review-designs">
       <i class="fa-regular fa-pen-to-square"></i><span>刻圖審核</span>
-      <span class="badge">8</span>
+      <span class="badge" id="badgeDesigns">0</span>
     </button>
     <button class="nav-link" data-page="review-photos">
       <i class="fa-regular fa-image"></i><span>照片審核</span>
-      <span class="badge">15</span>
+      <span class="badge" id="badgePhotos">0</span>
     </button>
     <button class="nav-link" data-page="review-stories">
       <i class="fa-regular fa-comment"></i><span>故事審核</span>
-      <span class="badge">3</span>
+      <span class="badge" id="badgeStories">0</span>
     </button>
   </div>
 
@@ -130,23 +130,23 @@
       <div class="kpi-grid">
         <div class="kpi-card alert">
           <div class="kpi-label"><i class="fa-solid fa-circle-exclamation"></i>待 審 核 項 目</div>
-          <div class="kpi-value">26</div>
-          <div class="kpi-trend flat">8 設計 · 15 照片 · 3 故事</div>
+          <div class="kpi-value" id="kpiReviewTotal">—</div>
+          <div class="kpi-trend flat" id="kpiReviewBreakdown">— 設計 · — 照片 · — 故事</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label"><i class="fa-solid fa-pen-ruler"></i>本 月 新 刻 圖 上 架</div>
-          <div class="kpi-value">12</div>
-          <div class="kpi-trend purple">↑ Creator 9 · Collab 3</div>
+          <div class="kpi-value" id="kpiNewDesigns">—</div>
+          <div class="kpi-trend purple" id="kpiNewDesignsBreakdown">—</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label"><i class="fa-regular fa-image"></i>本 月 上 傳 照 片</div>
-          <div class="kpi-value">387</div>
-          <div class="kpi-trend up">↑ 比上月 +24%</div>
+          <div class="kpi-value" id="kpiNewPhotos">—</div>
+          <div class="kpi-trend up" id="kpiNewPhotosTrend">—</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label"><i class="fa-solid fa-pencil"></i>本 月 雷 刻 預 約</div>
-          <div class="kpi-value">96</div>
-          <div class="kpi-trend up">↑ 比上月 +12%</div>
+          <div class="kpi-value" id="kpiNewOrders">—</div>
+          <div class="kpi-trend up" id="kpiNewOrdersTrend">—</div>
         </div>
       </div>
 
@@ -255,15 +255,15 @@
       <div class="page-head">
         <div>
           <h1 class="page-title">刻圖審核</h1>
-          <div class="page-sub">8 件待審核 · 通過後自動上架創作者市集</div>
+          <div class="page-sub" id="reviewDesignsSub">— 件待審核 · 通過後自動上架創作者市集</div>
         </div>
       </div>
 
-      <div class="review-tabs">
-        <button class="rtab on">全部 <span class="count">8</span></button>
-        <button class="rtab">Creator <span class="count">5</span></button>
-        <button class="rtab">Collab <span class="count">2</span></button>
-        <button class="rtab">Member <span class="count">1</span></button>
+      <div class="review-tabs" id="designReviewTabs">
+        <button class="rtab on" data-filter="all">全部 <span class="count">0</span></button>
+        <button class="rtab" data-filter="creator">Creator <span class="count">0</span></button>
+        <button class="rtab" data-filter="collab">Collab <span class="count">0</span></button>
+        <button class="rtab" data-filter="member">Member <span class="count">0</span></button>
       </div>
 
       <div class="filter-row">
