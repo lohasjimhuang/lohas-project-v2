@@ -298,7 +298,7 @@
               ${status === 'pending' ? '待審核' : status === 'approved' ? '已公開' : '未通過'}
             </span>
             <div class="photo-cover-dim"></div>
-            <div class="photo-cover-text">詳 情</div>
+            <div class="photo-cover-text${status === 'rejected' ? ' reupload-btn' : ''}">${status === 'rejected' ? '重 新 上 傳' : '詳 情'}</div>
           </div>
           <div class="photo-info">
             <div class="photo-name">${escapeHtml(p.title || '未命名')}</div>
@@ -314,7 +314,15 @@
 
     // 綁定 hover modal
     list.querySelectorAll('.photo-cover').forEach(cover => {
-      cover.addEventListener('click', () => openPhotoModal(cover));
+      cover.addEventListener('click', () => {
+        // 駁回卡: 點擊 → 跳到 gallery 開上傳 modal (重新上傳)
+        if (cover.dataset.status === 'rejected') {
+          window.location.href = 'gallery.html#open-upload';
+          return;
+        }
+        // 其他狀態: 開詳情 modal
+        openPhotoModal(cover);
+      });
     });
   }
 
@@ -1003,6 +1011,37 @@
     document.addEventListener('click', () => {
       root.querySelectorAll('.story-menu').forEach(m => m.classList.remove('on'));
     });
+
+    // 駁回 banner「我知道了」按鈕 → 隱藏 banner
+    document.getElementById('photoRejectedAck')?.addEventListener('click', () => {
+      const banner = document.getElementById('photoRejectedBanner');
+      if (banner) banner.style.display = 'none';
+    });
+    document.getElementById('storyRejectedAck')?.addEventListener('click', () => {
+      const banner = document.getElementById('storyRejectedBanner');
+      if (banner) banner.style.display = 'none';
+    });
+
+    // 上傳照片 / 上傳故事 → 跳到 gallery.html 帶 hash 觸發上傳 modal
+    // 用 event delegation 因為 .add-photo-card 是動態渲染的
+    root.addEventListener('click', (e) => {
+      const photoBtn = e.target.closest('.add-photo-card');
+      if (photoBtn) {
+        window.location.href = 'gallery.html#open-upload';
+        return;
+      }
+      const storyBtn = e.target.closest('.add-story-card');
+      if (storyBtn) {
+        window.location.href = 'gallery.html#open-upload';
+        return;
+      }
+      // 重新上傳按鈕 (在駁回照片卡上)
+      const reuploadBtn = e.target.closest('.reupload-btn');
+      if (reuploadBtn) {
+        window.location.href = 'gallery.html#open-upload';
+        return;
+      }
+    });
   }
 
   function goTo(page) {
@@ -1022,6 +1061,17 @@
     if (page === 'my-designs') loadMyDesigns();
     if (page === 'analytics') loadAnalytics();
     if (page === 'earnings') loadEarnings();
+
+    // 進入照片頁 → 隱藏 sidebar 紅標 (已看過)
+    if (page === 'photos') {
+      const badge = document.getElementById('photoRejectBadge');
+      if (badge) badge.style.display = 'none';
+    }
+    // 進入故事頁 → 隱藏 sidebar 紅標
+    if (page === 'stories') {
+      const badge = document.getElementById('storyRejectBadge');
+      if (badge) badge.style.display = 'none';
+    }
 
     root.querySelector('.main').scrollTop = 0;
   }
