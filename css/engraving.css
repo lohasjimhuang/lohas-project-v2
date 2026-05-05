@@ -201,7 +201,7 @@
     display: inline-block; 
     text-decoration: none; 
     background: none; 
-    border: 1.5px solid var(--lohas-brand);  /* 加粗 2px 棕邊, 跟字同色 */
+    border: 1.2px solid var(--lohas-brand);
     color: var(--lohas-brand);
     padding: 8px 22px; 
     font-size: 12px; 
