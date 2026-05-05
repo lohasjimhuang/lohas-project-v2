@@ -1459,10 +1459,10 @@ main{
    3 卡: LINE 諮詢 / 創作者市集 / 找門市試戴
    ============================================= */
 .rescue-section{
-  background:#fff;
+  background:var(--bg-warm);
   padding:64px 32px;
-  border-top:1px solid var(--lohas-bd);
-  margin-top:40px;
+  margin:40px calc(50% - 50vw) 0;
+  width:100vw;
 }
 
 .rescue-head{
