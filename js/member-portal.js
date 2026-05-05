@@ -1073,6 +1073,19 @@
         }
       }
     });
+
+    // 手機板漢堡選單
+    const mobileBtn = document.getElementById('mpMobileMenuBtn');
+    const sidebar = root.querySelector('.sidebar');
+    if (mobileBtn && sidebar) {
+      mobileBtn.addEventListener('click', () => sidebar.classList.toggle('is-open'));
+      sidebar.addEventListener('click', (e) => {
+        if (e.target === sidebar) sidebar.classList.remove('is-open');
+      });
+      sidebar.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => sidebar.classList.remove('is-open'));
+      });
+    }
   }
 
   function goTo(page) {

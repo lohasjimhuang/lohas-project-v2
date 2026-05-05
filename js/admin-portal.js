@@ -782,6 +782,15 @@
       }
 
       const designs = data || [];
+
+      // 更新「共 N 件」資訊
+      const infoEl = root.querySelector('#reviewDesignsFilterInfo');
+      if (infoEl) {
+        infoEl.innerHTML = designs.length > 0
+          ? `顯示 <b>1-${designs.length}</b> 共 ${designs.length} 件`
+          : '共 0 件';
+      }
+
       if (designs.length === 0) {
         grid.innerHTML = '<p class="empty-text" style="grid-column:1/-1;text-align:center;padding:60px;color:var(--lohas-mute)">目前沒有待審核設計</p>';
         return;
@@ -1129,6 +1138,10 @@
       }
 
       const items = data || [];
+
+      // 更新「共 N 篇」
+      const infoEl = root.querySelector('#newsFilterInfo');
+      if (infoEl) infoEl.innerHTML = `共 <b>${items.length}</b> 篇`;
       const filterInfo = root.querySelector('.content-page[data-page="cm-news"] .filter-info b');
       if (filterInfo) filterInfo.textContent = items.length;
 
@@ -1292,8 +1305,29 @@
     // 填入今天日期
     fillDashboardDate();
 
+    // 漢堡選單
+    bindMobileMenu();
+
     // 預設開 dashboard
     loadDashboard(); refreshReviewCounts?.();
+  }
+
+  function bindMobileMenu() {
+    const btn = document.getElementById('mobileMenuBtn');
+    const sidebar = root.querySelector('.sidebar');
+    if (!btn || !sidebar) return;
+    btn.addEventListener('click', () => {
+      sidebar.classList.toggle('is-open');
+    });
+    // 點 sidebar 外部關閉
+    sidebar.addEventListener('click', (e) => {
+      // 點到 sidebar 自己 (不是內容) 關閉
+      if (e.target === sidebar) sidebar.classList.remove('is-open');
+    });
+    // 點 nav-link 關閉
+    sidebar.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => sidebar.classList.remove('is-open'));
+    });
   }
 
   function fillDashboardDate() {
