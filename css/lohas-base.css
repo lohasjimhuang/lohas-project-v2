@@ -696,3 +696,21 @@ body.no-scroll {
         max-width: 280px;
     }
 }
+
+
+/* =============================================
+   Hero Banner 共用按鈕基礎樣式
+   --------------------------------------------
+   index / engraving / gallery 三頁的 hero 都用 .hero-btns 容器
+   各頁的 .btn-outline 顏色 (白邊白字 / 黑邊黑字) 由各自的 CSS 定義
+   ============================================= */
+.hero-btns .btn {
+    display: inline-block;
+    padding: 12px 35px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 400;
+    transition: all 0.3s ease;
+    margin: 0;
+    font-size: 1rem;
+}
