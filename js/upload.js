@@ -558,6 +558,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   bindUploadEvents();
 
+  // 登入後從 login.html 帶回來的: hash = #upload-area 或 #open-upload → 自動開 modal
+  function maybeAutoOpenUpload() {
+    const hash = window.location.hash;
+    if (hash === "#upload-area" || hash === "#open-upload") {
+      const member = JSON.parse(localStorage.getItem("lohasMember") || "null");
+      if (member && member.erpid) {
+        openModal();
+        // 清掉 hash 避免重新整理又開一次
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+    }
+  }
+  maybeAutoOpenUpload();
+
   window.LohasUpload = {
     openModal,
     closeModal,
