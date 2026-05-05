@@ -154,11 +154,11 @@
     Utils.setText('#breadcrumbCurrent', pageTitles[page] || '');
 
     // 進入頁面時觸發載入
-    if (page === 'dashboard') loadDashboard();
+    if (page === 'dashboard') { loadDashboard(); refreshReviewCounts(); }
     if (page === 'users') loadUsers();
-    if (page === 'review-designs') loadDesignReview();
-    if (page === 'review-photos') loadPhotoReview();
-    if (page === 'review-stories') loadStoryReview();
+    if (page === 'review-designs') { loadDesignReview(); refreshReviewCounts(); }
+    if (page === 'review-photos') { loadPhotoReview(); refreshReviewCounts(); }
+    if (page === 'review-stories') { loadStoryReview(); refreshReviewCounts(); }
     if (page === 'cm-news') loadNews();
 
     root.querySelector('.main').scrollTop = 0;
@@ -195,12 +195,9 @@
       const sCount = stories.count || 0;
       const total = dCount + pCount + sCount;
 
-      // 套到 KPI
-      const kpi = root.querySelector('.kpi-card.alert');
-      if (kpi) {
-        kpi.querySelector('.kpi-value').textContent = total;
-        kpi.querySelector('.kpi-trend').textContent = `${dCount} 設計 · ${pCount} 照片 · ${sCount} 故事`;
-      }
+      // 套到 KPI (用 ID 選擇器更穩)
+      Utils.setText('#kpiReviewTotal', total);
+      Utils.setText('#kpiReviewBreakdown', `${dCount} 設計 · ${pCount} 照片 · ${sCount} 故事`);
 
       // 側邊欄 badge 也更新
       updateBadge('review-designs', dCount);
@@ -211,55 +208,92 @@
       console.error('[儀表板 KPI 載入失敗]', err);
     }
 
-    // 本月新刻圖上架
+    // 本月新刻圖上架 (vs 上月)
     try {
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
+      const { thisMonth, lastMonth, lastMonthEnd } = monthRanges();
 
-      const { data: monthDesigns } = await sb
-        .from('engraving_designs')
-        .select('type')
-        .eq('status', 'approved')
-        .gte('listed_at', monthStart.toISOString());
+      const [thisM, lastM] = await Promise.all([
+        sb.from('engraving_designs').select('type').eq('status', 'approved').gte('listed_at', thisMonth.toISOString()),
+        sb.from('engraving_designs').select('id', { count: 'exact', head: true }).eq('status', 'approved').gte('listed_at', lastMonth.toISOString()).lt('listed_at', lastMonthEnd.toISOString())
+      ]);
 
-      const arr = monthDesigns || [];
+      const arr = thisM.data || [];
       const creatorCount = arr.filter(d => d.type === 'creator').length;
       const collabCount = arr.filter(d => d.type === 'collab').length;
+      const memberCount = arr.filter(d => d.type === 'member' || !d.type).length;
       const totalDesigns = arr.length;
+      const lastCount = lastM.count || 0;
 
-      const kpiCards = root.querySelectorAll('.content-page[data-page="dashboard"] .kpi-card');
-      const kpi2 = kpiCards[1];
-      if (kpi2) {
-        kpi2.querySelector('.kpi-value').textContent = totalDesigns;
-        kpi2.querySelector('.kpi-trend').textContent = `↑ Creator ${creatorCount} · Collab ${collabCount}`;
-      }
+      Utils.setText('#kpiNewDesigns', totalDesigns);
+      Utils.setText('#kpiNewDesignsBreakdown', formatTrend(totalDesigns, lastCount, `Creator ${creatorCount} · Collab ${collabCount} · Member ${memberCount}`));
     } catch (err) {
       console.error('[本月新刻圖統計失敗]', err);
     }
 
-    // 本月上傳照片
+    // 本月上傳照片 (gallery_posts created_at 在本月)
     try {
-      const monthStart = new Date();
-      monthStart.setDate(1);
-      monthStart.setHours(0, 0, 0, 0);
+      const { thisMonth, lastMonth, lastMonthEnd } = monthRanges();
 
-      const { count: photoCount } = await sb
-        .from('gallery_posts')
-        .select('id', { count: 'exact', head: true })
-        .gte('created_at', monthStart.toISOString());
+      const [thisM, lastM] = await Promise.all([
+        sb.from('gallery_posts').select('id', { count: 'exact', head: true }).gte('created_at', thisMonth.toISOString()),
+        sb.from('gallery_posts').select('id', { count: 'exact', head: true }).gte('created_at', lastMonth.toISOString()).lt('created_at', lastMonthEnd.toISOString())
+      ]);
 
-      const kpiCards = root.querySelectorAll('.content-page[data-page="dashboard"] .kpi-card');
-      const kpi3 = kpiCards[2];
-      if (kpi3) {
-        kpi3.querySelector('.kpi-value').textContent = photoCount || 0;
-      }
+      const thisCount = thisM.count || 0;
+      const lastCount = lastM.count || 0;
+
+      Utils.setText('#kpiNewPhotos', thisCount);
+      Utils.setText('#kpiNewPhotosTrend', formatTrend(thisCount, lastCount));
     } catch (err) {
       console.error('[本月上傳照片統計失敗]', err);
     }
 
+    // 本月雷刻預約 (engraving_orders created_at 在本月)
+    try {
+      const { thisMonth, lastMonth, lastMonthEnd } = monthRanges();
+
+      const [thisM, lastM] = await Promise.all([
+        sb.from('engraving_orders').select('id', { count: 'exact', head: true }).gte('created_at', thisMonth.toISOString()),
+        sb.from('engraving_orders').select('id', { count: 'exact', head: true }).gte('created_at', lastMonth.toISOString()).lt('created_at', lastMonthEnd.toISOString())
+      ]);
+
+      const thisCount = thisM.count || 0;
+      const lastCount = lastM.count || 0;
+
+      Utils.setText('#kpiNewOrders', thisCount);
+      Utils.setText('#kpiNewOrdersTrend', formatTrend(thisCount, lastCount));
+    } catch (err) {
+      console.error('[本月雷刻統計失敗]', err);
+    }
+
     // 載入 Dashboard 待審核小列表 (最早送審的前 4 筆)
     loadDashboardReviewList();
+  }
+
+  // 本月 / 上月 / 上月底 時間區間
+  function monthRanges() {
+    const now = new Date();
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd = thisMonth; // 本月開頭 = 上月結束
+    return { thisMonth, lastMonth, lastMonthEnd };
+  }
+
+  // 格式化趨勢字串: 與上月比較
+  function formatTrend(thisN, lastN, suffix) {
+    let trend;
+    if (lastN === 0 && thisN === 0) {
+      trend = '— 與上月持平';
+    } else if (lastN === 0) {
+      trend = `↑ 上月 0 → 本月 ${thisN}`;
+    } else if (thisN === 0) {
+      trend = `↓ 上月 ${lastN} → 本月 0`;
+    } else {
+      const pct = Math.round(((thisN - lastN) / lastN) * 100);
+      const sign = pct >= 0 ? '↑' : '↓';
+      trend = `${sign} 比上月 ${pct >= 0 ? '+' : ''}${pct}%`;
+    }
+    return suffix ? `${trend} · ${suffix}` : trend;
   }
 
   function updateBadge(page, count) {
@@ -272,6 +306,66 @@
       badge.style.display = '';
     } else {
       badge.style.display = 'none';
+    }
+  }
+
+  // 精準刷新所有審核相關計數 (sidebar badges + page-sub + review-tabs)
+  async function refreshReviewCounts() {
+    const sb = getSb();
+    if (!sb) return;
+
+    try {
+      const [designs, photos, stories] = await Promise.all([
+        sb.from('engraving_designs').select('id, type', { count: 'exact' }).eq('status', 'pending'),
+        sb.from('gallery_posts').select('id', { count: 'exact', head: true }).eq('status', 'pending').eq('type', 'photo'),
+        sb.from('gallery_posts').select('id', { count: 'exact', head: true }).eq('status', 'pending').eq('type', 'story')
+      ]);
+
+      const dCount = designs.count || 0;
+      const pCount = photos.count || 0;
+      const sCount = stories.count || 0;
+
+      // sidebar 三個 badge
+      updateBadge('review-designs', dCount);
+      updateBadge('review-photos', pCount);
+      updateBadge('review-stories', sCount);
+
+      // page-sub 文字
+      const designsSub = root.querySelector('#reviewDesignsSub');
+      if (designsSub) designsSub.textContent = `${dCount} 件待審核 · 通過後自動上架創作者市集`;
+
+      const photosSub = root.querySelector('#reviewPhotosSub');
+      if (photosSub) photosSub.textContent = `${pCount} 件待審核 · 通過後將出現在靈感牆`;
+
+      const storiesSub = root.querySelector('#reviewStoriesSub');
+      if (storiesSub) storiesSub.textContent = `${sCount} 件待審核 · 故事 ≥ 50 字會自動歸類`;
+
+      // 刻圖審核 review-tabs (按 type 分類)
+      const designsByType = (designs.data || []).reduce((acc, d) => {
+        const t = d.type || 'member';
+        acc[t] = (acc[t] || 0) + 1;
+        return acc;
+      }, {});
+
+      const tabsEl = root.querySelector('#designReviewTabs');
+      if (tabsEl) {
+        const allCount = dCount;
+        const creatorCount = designsByType.creator || 0;
+        const collabCount = designsByType.collab || 0;
+        const memberCount = designsByType.member || 0;
+
+        const setCount = (filter, n) => {
+          const tab = tabsEl.querySelector(`.rtab[data-filter="${filter}"] .count`);
+          if (tab) tab.textContent = n;
+        };
+        setCount('all', allCount);
+        setCount('creator', creatorCount);
+        setCount('collab', collabCount);
+        setCount('member', memberCount);
+      }
+
+    } catch (err) {
+      console.error('[計數刷新失敗]', err);
     }
   }
 
@@ -756,7 +850,7 @@
 
     alert('已通過 (Creator 自動升級已由 trigger 處理)');
     loadDesignReview();
-    loadDashboard();
+    loadDashboard(); refreshReviewCounts?.();
   }
 
 
@@ -896,7 +990,7 @@
 
     if (typeFilter === 'story') loadStoryReview();
     else loadPhotoReview();
-    loadDashboard?.();
+    loadDashboard?.(); refreshReviewCounts?.();
   }
 
   async function rejectGalleryPost(id, typeFilter, info) {
@@ -914,6 +1008,7 @@
 
     if (typeFilter === 'story') loadStoryReview();
     else loadPhotoReview();
+    loadDashboard?.(); refreshReviewCounts?.();
   }
 
   async function revokeGalleryPost(id, typeFilter) {
@@ -929,6 +1024,7 @@
 
     if (typeFilter === 'story') loadStoryReview();
     else loadPhotoReview();
+    loadDashboard?.(); refreshReviewCounts?.();
   }
 
   function maskName(name) {
@@ -956,7 +1052,7 @@
 
     if (error) return alert('通過失敗: ' + error.message);
     alert('已通過');
-    loadDashboard();
+    loadDashboard(); refreshReviewCounts?.();
   }
 
 
@@ -1015,7 +1111,7 @@
 
     // 重新載入當前頁
     if (currentRejectTarget?.type === 'design') loadDesignReview();
-    loadDashboard();
+    loadDashboard(); refreshReviewCounts?.();
   }
 
 
@@ -1205,7 +1301,7 @@
     bindLogout();
 
     // 預設開 dashboard
-    loadDashboard();
+    loadDashboard(); refreshReviewCounts?.();
   }
 
   document.addEventListener('DOMContentLoaded', init);
