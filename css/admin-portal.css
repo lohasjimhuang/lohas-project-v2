@@ -68,6 +68,11 @@
   padding:0 22px 22px;
   border-bottom:1px solid var(--lohas-line);
   margin-bottom:18px;
+  min-height:106px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  box-sizing:border-box;
 }
 .ad .logo{
   font-size:14px; font-weight:700;
