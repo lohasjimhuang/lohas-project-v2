@@ -764,15 +764,177 @@
      7. 照片 / 故事審核
      ============================================================= */
 
-  async function loadPhotoReview() {
-    // TODO 簡化處理 - 之後可比照 loadDesignReview() 模式做
-    const page = root.querySelector('.content-page[data-page="review-photos"]');
-    if (page) page.querySelector('.empty-page-title').textContent = '照片審核 (架構同刻圖審核,可比照 loadDesignReview() 實作)';
+  async function loadPhotoReview(statusFilter) {
+    return loadGalleryReview('photo', statusFilter);
   }
 
-  async function loadStoryReview() {
-    const page = root.querySelector('.content-page[data-page="review-stories"]');
-    if (page) page.querySelector('.empty-page-title').textContent = '故事審核 (待實作)';
+  async function loadStoryReview(statusFilter) {
+    return loadGalleryReview('story', statusFilter);
+  }
+
+  async function loadGalleryReview(typeFilter, statusFilter) {
+    const isStory = typeFilter === 'story';
+    const pageKey = isStory ? 'review-stories' : 'review-photos';
+    const tableLabel = isStory ? '故事' : '照片';
+    const page = root.querySelector(`.content-page[data-page="${pageKey}"]`);
+    if (!page) return;
+
+    const grid = page.querySelector('.review-grid');
+    const subEl = page.querySelector('.page-sub');
+    const statusSelect = page.querySelector('select');
+    const refreshBtn = page.querySelector(`#${isStory ? 'reviewStoriesRefresh' : 'reviewPhotosRefresh'}`);
+
+    // 第一次載入時綁事件 (用 dataset 防重綁)
+    if (!page.dataset.bound) {
+      page.dataset.bound = '1';
+      statusSelect?.addEventListener('change', () => loadGalleryReview(typeFilter, statusSelect.value));
+      refreshBtn?.addEventListener('click', () => loadGalleryReview(typeFilter, statusSelect?.value));
+    }
+
+    const status = statusFilter || statusSelect?.value || 'pending';
+
+    grid.innerHTML = '<p class="empty-text" style="grid-column:1/-1;text-align:center;padding:60px;color:var(--lohas-mute)">載入中...</p>';
+
+    const sb = getSb();
+    if (!sb) {
+      grid.innerHTML = '<p class="empty-text" style="grid-column:1/-1">Supabase 未連線</p>';
+      return;
+    }
+
+    try {
+      const { data, error } = await sb
+        .from('gallery_posts')
+        .select('id, title, topic, carrier, story, type, customer_name, member_id, image_urls, main_image_url, created_at, status')
+        .eq('type', typeFilter)
+        .eq('status', status)
+        .order('created_at', { ascending: status === 'pending' });
+
+      if (error) {
+        grid.innerHTML = `<p class="empty-text" style="grid-column:1/-1">載入失敗: ${escapeHtml(error.message)}</p>`;
+        return;
+      }
+
+      const posts = data || [];
+      const statusLabel = status === 'pending' ? '待審核' : status === 'approved' ? '已通過' : '已駁回';
+      if (subEl) subEl.textContent = `${posts.length} 件${statusLabel} · ${tableLabel}`;
+
+      if (posts.length === 0) {
+        const emptyMsg = status === 'pending'
+          ? `目前沒有待審核${tableLabel}`
+          : `沒有${statusLabel}的${tableLabel}`;
+        grid.innerHTML = `<p class="empty-text" style="grid-column:1/-1;text-align:center;padding:60px;color:var(--lohas-mute)">${emptyMsg}</p>`;
+        return;
+      }
+
+      grid.innerHTML = posts.map(p => {
+        const imgUrl = p.main_image_url || (p.image_urls && p.image_urls[0]) || '';
+        const imgStyle = imgUrl
+          ? `style="background-image:url('${escapeHtml(imgUrl)}');background-size:cover;background-position:center"`
+          : '';
+        const customerLabel = maskName(p.customer_name || '顧客');
+        const meta = [p.topic, p.carrier].filter(Boolean).join(' · ');
+        const isPending = p.status === 'pending';
+
+        // 操作按鈕 (依狀態不同)
+        let actionsHtml = '';
+        if (status === 'pending') {
+          actionsHtml = `
+            <button class="approve" data-act="approve" data-id="${p.id}"><i class="fa-solid fa-check"></i>通 過</button>
+            <button class="reject" data-act="reject" data-id="${p.id}" data-title="${escapeHtml(p.title || '')}" data-by="${escapeHtml(customerLabel)}"><i class="fa-solid fa-xmark"></i>駁 回</button>`;
+        } else if (status === 'approved') {
+          actionsHtml = `<button class="reject" data-act="revoke" data-id="${p.id}"><i class="fa-solid fa-undo"></i>取消通過</button>`;
+        } else {
+          actionsHtml = `<button class="approve" data-act="approve" data-id="${p.id}"><i class="fa-solid fa-check"></i>重新通過</button>`;
+        }
+
+        return `
+          <div class="rcard" data-id="${p.id}">
+            <div class="rcard-img" ${imgStyle}>
+              <span class="rcard-pill">${isStory ? '<i class="fa-solid fa-book-open"></i>故事' : '<i class="fa-solid fa-camera"></i>照片'}</span>
+              ${imgUrl ? '' : escapeHtml(p.title || '無圖')}
+            </div>
+            <div class="rcard-info">
+              <div class="rcard-title">${escapeHtml(p.title || '未命名')}</div>
+              <div class="rcard-by">by <b>${escapeHtml(customerLabel)}</b> <span class="role-pill member">Member</span></div>
+              ${p.story ? `<div class="rcard-quote">${escapeHtml(p.story)}</div>` : ''}
+              <div class="rcard-meta">
+                <i class="fa-regular fa-clock"></i>送審 ${formatTime(p.created_at)}
+                ${meta ? ` · <i class="fa-regular fa-folder"></i> ${escapeHtml(meta)}` : ''}
+              </div>
+              <div class="rcard-actions">${actionsHtml}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // 綁按鈕
+      grid.querySelectorAll('[data-act="approve"]').forEach(b => {
+        b.addEventListener('click', () => approveGalleryPost(b.dataset.id, typeFilter));
+      });
+      grid.querySelectorAll('[data-act="reject"]').forEach(b => {
+        b.addEventListener('click', () => rejectGalleryPost(b.dataset.id, typeFilter, { title: b.dataset.title, by: b.dataset.by }));
+      });
+      grid.querySelectorAll('[data-act="revoke"]').forEach(b => {
+        b.addEventListener('click', () => revokeGalleryPost(b.dataset.id, typeFilter));
+      });
+
+    } catch (err) {
+      console.error(`[${tableLabel}審核載入失敗]`, err);
+      grid.innerHTML = `<p class="empty-text" style="grid-column:1/-1">載入失敗: ${escapeHtml(err.message || err)}</p>`;
+    }
+  }
+
+  async function approveGalleryPost(id, typeFilter) {
+    if (!confirm('確定通過? 通過後將立即顯示在靈感牆')) return;
+    const sb = getSb();
+    if (!sb) return;
+
+    const { error } = await sb.from('gallery_posts')
+      .update({ status: 'approved' })
+      .eq('id', id);
+
+    if (error) return alert('通過失敗: ' + error.message);
+
+    if (typeFilter === 'story') loadStoryReview();
+    else loadPhotoReview();
+    loadDashboard?.();
+  }
+
+  async function rejectGalleryPost(id, typeFilter, info) {
+    const reason = prompt(`駁回理由 (會通知作者 ${info.by}):\n\n常見原因:\n- 圖片品質不佳\n- 內容不符合主題\n- 含有敏感字眼`);
+    if (reason === null) return;
+
+    const sb = getSb();
+    if (!sb) return;
+
+    const { error } = await sb.from('gallery_posts')
+      .update({ status: 'rejected', reject_reason: reason || null })
+      .eq('id', id);
+
+    if (error) return alert('駁回失敗: ' + error.message);
+
+    if (typeFilter === 'story') loadStoryReview();
+    else loadPhotoReview();
+  }
+
+  async function revokeGalleryPost(id, typeFilter) {
+    if (!confirm('取消通過? 此貼文將從靈感牆消失,變回待審核')) return;
+    const sb = getSb();
+    if (!sb) return;
+
+    const { error } = await sb.from('gallery_posts')
+      .update({ status: 'pending' })
+      .eq('id', id);
+
+    if (error) return alert('取消失敗: ' + error.message);
+
+    if (typeFilter === 'story') loadStoryReview();
+    else loadPhotoReview();
+  }
+
+  function maskName(name) {
+    if (!name || name.length <= 1) return name;
+    if (name.length === 2) return name[0] + '*';
+    return name[0] + '*' + name.slice(-1);
   }
 
   async function quickApprove(type, id) {
