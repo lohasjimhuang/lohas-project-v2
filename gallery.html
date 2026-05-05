@@ -66,6 +66,10 @@
           <div class="jins-filter-top">
             
             <div class="result-meta">共 412 筆分享</div>
+            <button type="button" class="toggle-story-btn" id="toggleStoryBtn" aria-pressed="false">
+              <i class="fa-solid fa-book-open"></i>
+              <span>只看有故事的</span>
+            </button>
           </div>
 
           <div class="filter-toolbar">
@@ -191,6 +195,37 @@
             </div>
           </div>
         </div>
+
+        <section class="rescue-section">
+          <div class="rescue-head">
+            <div class="rescue-eb">S T I L L&nbsp;&nbsp;T H I N K I N G</div>
+            <h3>還沒找到對的感覺?</h3>
+            <p class="rescue-sub">這裡有三條不同的路，讓你慢慢逛。</p>
+          </div>
+
+          <div class="rescue-grid">
+            <a href="https://line.me/R/ti/p/@lohas" target="_blank" rel="noopener" class="rescue-card">
+              <div class="rescue-num">— 01</div>
+              <h4>跟設計師聊聊</h4>
+              <p>用 LINE 把你想要的感覺、紀念對象、或一段話傳給我們，設計師會幫你發想內容跟刻在哪裡。</p>
+              <span class="rescue-cta">加 LINE 諮詢 <i class="fa-solid fa-arrow-right"></i></span>
+            </a>
+
+            <a href="market.html" class="rescue-card">
+              <div class="rescue-num">— 02</div>
+              <h4>逛創作者市集</h4>
+              <p>看樂活合作創作者上架的設計作品，有插畫、字體、IP 聯名——選一個喜歡的直接套用到你的眼鏡上。</p>
+              <span class="rescue-cta">前往創作者市集 <i class="fa-solid fa-arrow-right"></i></span>
+            </a>
+
+            <a href="/allstore/1-門市據點" class="rescue-card">
+              <div class="rescue-num">— 03</div>
+              <h4>找門市試戴</h4>
+              <p>還在想刻什麼?先到門市試戴一副順眼的眼鏡，設計師當場跟你聊風格，再決定要怎麼刻。</p>
+              <span class="rescue-cta">尋找最近門市 <i class="fa-solid fa-arrow-right"></i></span>
+            </a>
+          </div>
+        </section>
       </section>
     </div>
   </main>
@@ -321,8 +356,8 @@
           </div>
 
           <div class="form-row">
-            <label for="shareText">刻圖故事分享</label>
-            <textarea id="shareText" maxlength="100" placeholder="寫下這份刻圖背後的小故事（最多 100 字）..."></textarea>
+            <label for="shareText">刻圖故事分享 <span class="label-hint">寫 50 字以上會被收進靈感故事牆 ✨</span></label>
+            <textarea id="shareText" maxlength="100" placeholder="跟我們說說這個刻圖的故事——為什麼是這個字 / 圖案？刻給誰？心情是什麼？"></textarea>
           </div>
 
           <div class="char-counter"><span id="currentChar">0</span>/100</div>
