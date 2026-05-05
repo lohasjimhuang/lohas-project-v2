@@ -46,6 +46,11 @@
   <link rel="stylesheet" href="css/lohas-components.css">
   <link rel="stylesheet" href="css/member-portal.css">
 
+  <!-- 上傳 modal 所需資源 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+  <link rel="stylesheet" href="css/gallery.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
 </head>
 <body>
 
@@ -354,6 +359,118 @@
 
 </div>
 
+  <div id="uploadModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content upload-modal" role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle">
+      <div class="modal-header">
+        <h2 id="uploadModalTitle">分享你的照片 <span class="subtitle">最多 3 張 · 可拖曳排序</span></h2>
+        <button id="closeUpload" class="close-btn" type="button" aria-label="關閉上傳視窗">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="fileInput" class="hidden-file-input" type="file" accept="image/*" />
+
+        <div class="upload-grid">
+          <div class="upload-box main-upload" data-slot="0" tabindex="0" role="button" aria-label="上傳首圖">
+            <span class="badge-main">首圖</span>
+            <div class="upload-placeholder">
+              <i class="fa-regular fa-image"></i>
+              <p>上傳首圖</p>
+              <span class="upload-hint">點擊或拖曳圖片到這裡</span>
+            </div>
+          </div>
+
+          <div class="sub-upload-container">
+            <div class="upload-box sub-upload" data-slot="1" tabindex="0" role="button" aria-label="上傳圖片二">
+              <div class="upload-placeholder">
+                <i class="fa-regular fa-image"></i>
+                <p>上傳圖片</p>
+                <span class="upload-hint">副圖二（選填）</span>
+              </div>
+            </div>
+
+            <div class="upload-box sub-upload" data-slot="2" tabindex="0" role="button" aria-label="上傳圖片三">
+              <div class="upload-placeholder">
+                <i class="fa-regular fa-image"></i>
+                <p>上傳圖片</p>
+                <span class="upload-hint">副圖三（選填）</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-row">
+            <label for="workTitle">刻圖照片名稱</label>
+<input id="workTitle" type="text" maxlength="24" placeholder="例如：我跟媽咪的合照">
+
+<p class="field-error" id="workTitleError"></p>
+          </div>
+
+          <div class="two-col">
+            <div class="form-row">
+              <label for="workCategory">靈感主題</label>
+              <select id="workCategory">
+                <option value="愛情紀念">愛情紀念</option>
+                <option value="家人親情">家人親情</option>
+                <option value="寵物回憶">寵物回憶</option>
+                <option value="心靈寄託">心靈寄託</option>
+                <option value="個人簽名">個人簽名</option>
+                <option value="生日節慶">生日節慶</option>
+                <option value="企業團體">企業團體</option>
+                <option value="開運祝福">開運祝福</option>
+                <option value="客製圖案">客製圖案</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="carrierCategory">刻圖位置</label>
+              <select id="carrierCategory">
+                <option value="鏡片">鏡片</option>
+                <option value="鏡腳">鏡腳</option>
+                <option value="眼鏡布">眼鏡布</option>
+                <option value="眼鏡盒">眼鏡盒</option>
+                <option value="鼻墊">鼻墊</option>
+                <option value="其他周邊配件">其他周邊配件</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="shareText">刻圖故事分享 <span class="label-hint">寫 50 字以上會被收進靈感故事牆 ✨</span></label>
+            <textarea id="shareText" maxlength="100" placeholder="跟我們說說這個刻圖的故事——為什麼是這個字 / 圖案？刻給誰？心情是什麼？"></textarea>
+          </div>
+
+          <div class="char-counter"><span id="currentChar">0</span>/100</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-preview" id="previewBtn">預覽照片</button>
+        <button type="button" class="btn-submit" id="submitBtn">送出分享</button>
+      </div>
+    </div>
+  </div>
+<div id="cropModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-content" style="max-width:720px;">
+    <div class="modal-header">
+      <h2>調整圖片裁切</h2>
+      <button id="closeCrop" class="close-btn" type="button">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div style="width:100%; max-height:520px;">
+        <img id="cropImage" style="max-width:100%; display:block;">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+  <button type="button" class="btn-submit" id="applyCrop">套用裁切</button>
+  <button type="button" class="btn-preview" id="cancelCrop">取消</button>
+</div>
+  </div>
+</div>
+  <div id="toast" class="toast">已完成</div>
+
 <!-- ====== 依賴 (按順序載入) ====== -->
 <!-- Supabase JS SDK (給 supabase.js 用的全域 window.supabase) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -364,6 +481,7 @@
 
 <!-- 會員平台主邏輯 -->
 <script src="js/member-portal.js"></script>
+<script src="js/upload.js"></script>
 
 </body>
 </html>
