@@ -18,9 +18,17 @@
    ============================================= */
 
 /* ============ Buttons ============ */
+/*
+   注意命名規則:
+   - .btn-pill-* 是 components 提供的「全膠囊大按鈕」(48px 高 / 圓角 999px / 大字距)
+     用於市集 hero、CTA、創作者方案等視覺重點按鈕
+   - 各頁面 hero 內的 .btn-outline (例如 .hero-btns .btn-outline) 是頁面自己定義的
+     不要跟 components 的 .btn-pill-outline 混淆
+   - 全站通用的 .btn-primary 在 lohas-base.css (10px padding / 50px 圓角)
+*/
 
-/* .btn-outline 白底棕邊棕字 */
-.btn-outline{
+/* .btn-pill-outline 白底棕邊棕字 (大尺寸全膠囊) */
+.btn-pill-outline{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   height:48px;padding:0 28px;
   background:#fff;
@@ -33,15 +41,15 @@
   transition:all .2s;
   text-decoration:none;
 }
-.btn-outline:hover{
+.btn-pill-outline:hover{
   background:var(--lohas-brand);
   color:#fff;
   transform:translateY(-1px);
   box-shadow:0 4px 12px rgba(80,66,45,.2);
 }
 
-/* .btn-ghost 透明邊框 */
-.btn-ghost{
+/* .btn-pill-ghost 透明邊框 (大尺寸全膠囊) */
+.btn-pill-ghost{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
   height:48px;padding:0 28px;
   background:transparent;
@@ -54,13 +62,13 @@
   transition:all .2s;
   text-decoration:none;
 }
-.btn-ghost:hover{
+.btn-pill-ghost:hover{
   border-color:var(--lohas-brand);
   color:var(--lohas-brand);
 }
 
 /* 小尺寸 (適用 nav 內等較緊湊位置) */
-.btn-sm{
+.btn-pill-sm{
   height:38px;padding:0 22px;
   font-size:13px;letter-spacing:0.5px;
 }

@@ -81,19 +81,21 @@
 .hero-btns .btn {
     display: inline-block;
     padding: 12px 35px;
-    border-radius: 50px; /* 圓角按鈕 */
+    border-radius: 50px;
     text-decoration: none;
     font-weight: 400;
     transition: all 0.3s ease;
     margin: 0;
+    font-size: 1rem;
 }
 
-.btn-outline {
+.hero-btns .btn-outline {
     border: 1px solid #fff;
     color: #fff;
+    background: transparent;
 }
 
-.btn-outline:hover {
+.hero-btns .btn-outline:hover {
     background: #fff;
     color: #333;
 }
