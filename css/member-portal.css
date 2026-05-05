@@ -36,7 +36,7 @@
   --status-rejected-bg:#FBEEEE;
 
   font-family:"Noto Sans TC","PingFang TC",sans-serif;
-  background:#fff;
+  background:var(--lohas-soft);
   color:var(--lohas-text);
   border-radius:16px;
   overflow:hidden;
@@ -187,7 +187,7 @@
    ============================================================= */
 
 .mp .main{
-  background:#fff;
+  background:var(--lohas-soft);
   overflow-y:auto;
   max-height:780px;
   padding:0;
