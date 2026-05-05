@@ -409,15 +409,19 @@ document.addEventListener("DOMContentLoaded", () => {
           item.style.opacity = "";
         });
 
-        const file = event.dataTransfer.files[0];
-
-        if (file) {
-          readImageFile(file, slot);
+        // 內部拖曳 (盒子之間互換) 優先處理 - 不再走裁切流程
+        if (state.draggedSlot !== null) {
+          if (state.draggedSlot !== slot) {
+            swapImages(state.draggedSlot, slot);
+          }
+          state.draggedSlot = null;
           return;
         }
 
-        if (state.draggedSlot !== null && state.draggedSlot !== slot) {
-          swapImages(state.draggedSlot, slot);
+        // 外部拖入新檔案才開啟裁切
+        const file = event.dataTransfer.files[0];
+        if (file) {
+          readImageFile(file, slot);
         }
       });
 
