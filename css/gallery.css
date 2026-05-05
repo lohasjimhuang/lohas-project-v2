@@ -1644,3 +1644,98 @@ main{
   color:#fff;
 }
 .toggle-story-btn i{font-size:11px}
+
+
+/* =============================================
+   邀請區 v16 版 (棕底白字, 取代舊 .plan1-cta)
+   ============================================= */
+.plan1-cta-v16{
+  max-width:none;
+  margin:0;
+  padding:64px 32px;
+  background:var(--lohas-brand);
+  color:#fff;
+  border-radius:0;
+  display:block;
+  text-align:center;
+}
+.plan1-cta-v16 .cta-eb{
+  font-size:11px;
+  letter-spacing:5px;
+  color:var(--lohas-light);
+  margin-bottom:14px;
+  font-weight:500;
+}
+.plan1-cta-v16 .cta-title{
+  font-size:24px;
+  font-weight:600;
+  margin:0 0 14px;
+  letter-spacing:1.5px;
+  color:#fff;
+}
+.plan1-cta-v16 .cta-sub{
+  font-size:14px;
+  color:var(--lohas-light);
+  margin:0 0 28px;
+  line-height:1.9;
+  letter-spacing:0.5px;
+}
+.plan1-cta-v16 .cta-btns{
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.btn-upload-v16{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:13px 32px;
+  font-size:13px;
+  letter-spacing:2px;
+  border-radius:999px;
+  background:#fff;
+  color:var(--lohas-brand);
+  border:0;
+  cursor:pointer;
+  font-family:inherit;
+  font-weight:600;
+  transition:.2s;
+}
+.btn-upload-v16:hover{
+  background:var(--lohas-light);
+  color:#fff;
+}
+.btn-upload-v16 i{font-size:13px}
+
+@media (max-width:768px){
+  .plan1-cta-v16{padding:48px 20px}
+  .plan1-cta-v16 .cta-title{font-size:20px}
+  .plan1-cta-v16 .cta-sub{font-size:13px}
+}
+
+
+/* =============================================
+   故事卡 v16 版 layout
+   --------------------------------------------
+   override 既有 .plan1-card.is-story
+   ============================================= */
+.plan1-card.is-story .img-box{
+  aspect-ratio:1 / 1 !important;
+}
+.plan1-card.is-story:nth-child(3n+1) .img-box,
+.plan1-card.is-story:nth-child(4n+2) .img-box,
+.plan1-card.is-story:nth-child(5n+3) .img-box{
+  aspect-ratio:1 / 1 !important;
+}
+
+.plan1-card.is-story .card-quote{
+  font-family:"Noto Serif TC","Source Han Serif TC","PingFang TC",serif;
+  font-size:14px;
+  line-height:1.75;
+  color:var(--lohas-brand);
+  margin:12px 0 6px;
+  letter-spacing:0.5px;
+  font-weight:500;
+  padding:0 4px;
+}
