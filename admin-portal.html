@@ -491,8 +491,59 @@
     </div>
 
     <!-- ============= 其他頁 placeholder ============= -->
-    <div class="content-page" data-page="review-photos"><div class="page-head"><h1 class="page-title">照片審核</h1></div><div class="empty-page"><i class="fa-regular fa-image"></i><div class="empty-page-title">照片審核介面 · 同刻圖審核結構</div></div></div>
-    <div class="content-page" data-page="review-stories"><div class="page-head"><h1 class="page-title">故事審核</h1></div><div class="empty-page"><i class="fa-regular fa-comment"></i><div class="empty-page-title">故事審核介面</div></div></div>
+    <div class="content-page" data-page="review-photos">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">照片審核</h1>
+          <div class="page-sub" id="reviewPhotosSub">— 件待審核 · 通過後將出現在靈感牆</div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label>狀態</label>
+        <select id="reviewPhotosStatus">
+          <option value="pending">待審核</option>
+          <option value="approved">已通過</option>
+          <option value="rejected">已駁回</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="rtab" id="reviewPhotosRefresh"><i class="fa-solid fa-rotate"></i> 重新整理</button>
+      </div>
+
+      <div class="review-grid" id="reviewPhotosGrid">
+        <div class="empty-page" style="grid-column:1/-1">
+          <i class="fa-regular fa-image"></i>
+          <div class="empty-page-title">載入中...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-page" data-page="review-stories">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">故事審核</h1>
+          <div class="page-sub" id="reviewStoriesSub">— 件待審核 · 故事 ≥ 50 字會自動歸類</div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label>狀態</label>
+        <select id="reviewStoriesStatus">
+          <option value="pending">待審核</option>
+          <option value="approved">已通過</option>
+          <option value="rejected">已駁回</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="rtab" id="reviewStoriesRefresh"><i class="fa-solid fa-rotate"></i> 重新整理</button>
+      </div>
+
+      <div class="review-grid" id="reviewStoriesGrid">
+        <div class="empty-page" style="grid-column:1/-1">
+          <i class="fa-regular fa-comment"></i>
+          <div class="empty-page-title">載入中...</div>
+        </div>
+      </div>
+    </div>
     <div class="content-page" data-page="cm-banner"><div class="page-head"><h1 class="page-title">首頁與分頁 Banner</h1></div><div class="empty-page"><i class="fa-regular fa-images"></i><div class="empty-page-title">Banner 管理介面</div></div></div>
     <div class="content-page" data-page="creators"><div class="page-head"><h1 class="page-title">創作者管理</h1></div><div class="empty-page"><i class="fa-solid fa-star"></i><div class="empty-page-title">創作者管理介面</div></div></div>
     <div class="content-page" data-page="ip"><div class="page-head"><h1 class="page-title">IP 合作</h1></div><div class="empty-page"><i class="fa-solid fa-copyright"></i><div class="empty-page-title">IP 授權與聯名管理</div></div></div>
