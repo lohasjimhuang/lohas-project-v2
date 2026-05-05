@@ -298,7 +298,7 @@
               ${status === 'pending' ? '待審核' : status === 'approved' ? '已公開' : '未通過'}
             </span>
             <div class="photo-cover-dim"></div>
-            <div class="photo-cover-text${status === 'rejected' ? ' reupload-btn' : ''}">${status === 'rejected' ? '重 新 上 傳' : '詳 情'}</div>
+            <div class="photo-cover-text">詳 情</div>
           </div>
           <div class="photo-info">
             <div class="photo-name">${escapeHtml(p.title || '未命名')}</div>
@@ -314,15 +314,7 @@
 
     // 綁定 hover modal
     list.querySelectorAll('.photo-cover').forEach(cover => {
-      cover.addEventListener('click', () => {
-        // 駁回卡: 點擊 → 跳到 gallery 開上傳 modal (重新上傳)
-        if (cover.dataset.status === 'rejected') {
-          window.location.href = 'gallery.html#open-upload';
-          return;
-        }
-        // 其他狀態: 開詳情 modal
-        openPhotoModal(cover);
-      });
+      cover.addEventListener('click', () => openPhotoModal(cover));
     });
   }
 
@@ -508,20 +500,51 @@
     const sb = getSupabase();
     if (!sb) return;
 
-    // 先抓所有故事
-    const { data: stories, error } = await sb
-      .from('member_stories')
-      .select('id, title, content, status, reject_reason, created_at')
-      .eq('member_id', State.member.erpid)
-      .order('created_at', { ascending: false });
+    // 同時抓兩個來源:
+    // 1) member_stories - 純文字故事
+    // 2) gallery_posts type=story - 上傳照片時寫了 50+ 字故事的, 自動分流為 story
+    const [memRes, postsRes] = await Promise.all([
+      sb.from('member_stories')
+        .select('id, title, content, status, reject_reason, created_at')
+        .eq('member_id', State.member.erpid)
+        .order('created_at', { ascending: false }),
+      sb.from('gallery_posts')
+        .select('id, title, story, status, reject_reason, created_at, image_urls, main_image_url')
+        .eq('member_id', State.member.erpid)
+        .eq('type', 'story')
+        .order('created_at', { ascending: false })
+    ]);
 
-    if (error) {
-      console.error('[讀取故事失敗]', error);
-      list.innerHTML = '<p class="empty-text">讀取失敗</p>';
-      return;
-    }
+    if (memRes.error) console.error('[讀取 member_stories 失敗]', memRes.error);
+    if (postsRes.error) console.error('[讀取 gallery_posts 故事失敗]', postsRes.error);
 
-    const items = stories || [];
+    // 統一格式: source 欄位區分來自哪邊 (供刪除時用對的 table)
+    const memStories = (memRes.data || []).map(s => ({
+      id: s.id,
+      title: s.title,
+      content: s.content,
+      status: s.status,
+      reject_reason: s.reject_reason,
+      created_at: s.created_at,
+      image_url: null,
+      source: 'member_stories'
+    }));
+    const postStories = (postsRes.data || []).map(p => ({
+      id: p.id,
+      title: p.title,
+      content: p.story,
+      status: p.status,
+      reject_reason: p.reject_reason,
+      created_at: p.created_at,
+      image_url: p.main_image_url || (p.image_urls && p.image_urls[0]) || null,
+      source: 'gallery_posts'
+    }));
+
+    // 合併 + 按時間排序
+    const items = [...memStories, ...postStories].sort((a, b) =>
+      new Date(b.created_at) - new Date(a.created_at)
+    );
+
     if (countEl) countEl.textContent = items.length ? items.length + ' 篇' : '';
 
     if (items.length === 0) {
@@ -530,41 +553,45 @@
           <i class="fa-regular fa-comment"></i>
           <div class="empty-title">還沒寫過故事</div>
           <div>分享你的眼鏡故事,讓設計被看見</div>
-          <button class="empty-cta"><i class="fa-solid fa-plus"></i>寫一篇新故事</button>
+          <button class="empty-cta add-story-card"><i class="fa-solid fa-plus"></i>寫一篇新故事</button>
         </div>`;
       return;
     }
 
-    // 抓每篇故事的收藏次數(可選 - 簡單方法是各打一次 count)
+    // 抓每篇故事的收藏次數 (只有 member_stories 來源才查 story_favorites)
     const favCounts = {};
     for (const s of items) {
-      const { count } = await sb
-        .from('story_favorites')
-        .select('story_id', { count: 'exact', head: true })
-        .eq('story_id', s.id);
-      favCounts[s.id] = count || 0;
+      if (s.source === 'member_stories') {
+        const { count } = await sb
+          .from('story_favorites')
+          .select('story_id', { count: 'exact', head: true })
+          .eq('story_id', s.id);
+        favCounts[s.id] = count || 0;
+      } else {
+        favCounts[s.id] = 0;
+      }
     }
 
     list.innerHTML = items.map(s => `
-      <div class="story-card" data-id="${s.id}">
+      <div class="story-card" data-id="${s.id}" data-source="${s.source}">
         <div class="story-h">
-          <h3 class="story-title">${escapeHtml(s.title)}</h3>
+          <h3 class="story-title">${escapeHtml(s.title || '未命名')}</h3>
           <div class="story-menu-wrap">
             <button class="story-menu-btn" data-story="${s.id}"><i class="fa-solid fa-ellipsis"></i></button>
             <div class="story-menu" data-menu="${s.id}">
-              <button data-action="edit" data-id="${s.id}"><i class="fa-regular fa-pen-to-square"></i>編輯</button>
-              <button class="danger" data-action="delete" data-id="${s.id}"><i class="fa-regular fa-trash-can"></i>刪除故事</button>
+              ${s.source === 'member_stories' ? `<button data-action="edit" data-id="${s.id}"><i class="fa-regular fa-pen-to-square"></i>編輯</button>` : ''}
+              <button class="danger" data-action="delete" data-id="${s.id}" data-source="${s.source}"><i class="fa-regular fa-trash-can"></i>刪除故事</button>
             </div>
           </div>
         </div>
-        <p class="story-content">${escapeHtml(s.content)}</p>
+        <p class="story-content">${escapeHtml(s.content || '')}</p>
         <div class="story-meta">
-          <span>發佈於 ${formatDate(s.created_at)} · ${s.status === 'approved' ? '已公開' : s.status === 'rejected' ? '未通過' : '審核中'}</span>
+          <span>發佈於 ${formatDate(s.created_at)} · ${s.status === 'approved' ? '已公開' : s.status === 'rejected' ? '未通過' : '審核中'}${s.source === 'gallery_posts' ? ' · 含照片' : ''}</span>
           <span class="story-fav"><i class="fa-solid fa-bookmark"></i>被加入收藏 <b>${favCounts[s.id]}</b> 次</span>
         </div>
       </div>
     `).join('') + `
-      <button class="story-add"><i class="fa-solid fa-plus"></i><span>寫 一 篇 新 故 事</span></button>`;
+      <button class="story-add add-story-card"><i class="fa-solid fa-plus"></i><span>寫 一 篇 新 故 事</span></button>`;
 
     // 綁選單按鈕
     list.querySelectorAll('.story-menu-btn').forEach(b => {
@@ -930,7 +957,7 @@
 
     let html = '';
     if (status === 'rejected') {
-      html += '<button class="btn warn"><i class="fa-solid fa-rotate"></i> 重新上傳</button>';
+      html += '<button class="btn warn" data-action="reupload"><i class="fa-solid fa-rotate"></i> 重新上傳</button>';
     }
     html += `<button class="btn danger" data-action="delete-photo" data-id="${id}"><i class="fa-regular fa-trash-can"></i> 刪除照片</button>`;
     html += '<button class="btn secondary" id="modalCloseBtn">關閉</button>';
@@ -939,6 +966,16 @@
     document.getElementById('modalCloseBtn').addEventListener('click', closeModal);
     const delBtn = modalActions.querySelector('[data-action="delete-photo"]');
     if (delBtn) delBtn.addEventListener('click', () => deletePhoto(delBtn.dataset.id));
+    const reBtn = modalActions.querySelector('[data-action="reupload"]');
+    if (reBtn) reBtn.addEventListener('click', () => {
+      closeModal();
+      // 開上傳 modal (在會員平台彈出, 不跳頁)
+      if (window.LohasUpload && window.LohasUpload.openModal) {
+        window.LohasUpload.openModal();
+      } else {
+        window.alert('上傳模組未載入');
+      }
+    });
 
     modalBg.classList.add('on');
   }
@@ -1022,24 +1059,18 @@
       if (banner) banner.style.display = 'none';
     });
 
-    // 上傳照片 / 上傳故事 → 跳到 gallery.html 帶 hash 觸發上傳 modal
-    // 用 event delegation 因為 .add-photo-card 是動態渲染的
+    // 上傳照片 / 上傳故事 → 彈出上傳 modal (不離開會員平台)
     root.addEventListener('click', (e) => {
       const photoBtn = e.target.closest('.add-photo-card');
-      if (photoBtn) {
-        window.location.href = 'gallery.html#open-upload';
-        return;
-      }
       const storyBtn = e.target.closest('.add-story-card');
-      if (storyBtn) {
-        window.location.href = 'gallery.html#open-upload';
-        return;
-      }
-      // 重新上傳按鈕 (在駁回照片卡上)
       const reuploadBtn = e.target.closest('.reupload-btn');
-      if (reuploadBtn) {
-        window.location.href = 'gallery.html#open-upload';
-        return;
+      if (photoBtn || storyBtn || reuploadBtn) {
+        e.preventDefault();
+        if (window.LohasUpload && window.LohasUpload.openModal) {
+          window.LohasUpload.openModal();
+        } else {
+          window.alert('上傳模組尚未載入,請重整頁面');
+        }
       }
     });
   }
@@ -1109,7 +1140,14 @@
     loadMyDesigns,
     loadAnalytics,
     loadEarnings,
-    goTo
+    goTo,
+    // upload.js 上傳成功後呼叫
+    reloadAfterUpload(newPost) {
+      const onPage = root.querySelector('.content-page.on')?.dataset.page;
+      if (onPage === 'photos') loadPhotos();
+      else if (onPage === 'stories') loadStories();
+    }
   };
+  window.LohasMember = window.LohasMemberPortal;
 
 })(window);

@@ -994,21 +994,8 @@
   }
 
   async function rejectGalleryPost(id, typeFilter, info) {
-    const reason = prompt(`駁回理由 (會通知作者 ${info.by}):\n\n常見原因:\n- 圖片品質不佳\n- 內容不符合主題\n- 含有敏感字眼`);
-    if (reason === null) return;
-
-    const sb = getSb();
-    if (!sb) return;
-
-    const { error } = await sb.from('gallery_posts')
-      .update({ status: 'rejected', reject_reason: reason || null })
-      .eq('id', id);
-
-    if (error) return alert('駁回失敗: ' + error.message);
-
-    if (typeFilter === 'story') loadStoryReview();
-    else loadPhotoReview();
-    loadDashboard?.(); refreshReviewCounts?.();
+    // 改用公版 #rejectModal (跟 design 駁回一致)
+    openRejectModal(typeFilter, id, { name: info.title, by: info.by });
   }
 
   async function revokeGalleryPost(id, typeFilter) {
@@ -1111,6 +1098,8 @@
 
     // 重新載入當前頁
     if (currentRejectTarget?.type === 'design') loadDesignReview();
+    if (currentRejectTarget?.type === 'photo') loadPhotoReview();
+    if (currentRejectTarget?.type === 'story') loadStoryReview();
     loadDashboard(); refreshReviewCounts?.();
   }
 
@@ -1300,8 +1289,19 @@
     bindUserFilters();
     bindLogout();
 
+    // 填入今天日期
+    fillDashboardDate();
+
     // 預設開 dashboard
     loadDashboard(); refreshReviewCounts?.();
+  }
+
+  function fillDashboardDate() {
+    const el = document.getElementById('dashboardDate');
+    if (!el) return;
+    const now = new Date();
+    const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+    el.textContent = `${now.getFullYear()} 年 ${now.getMonth() + 1} 月 ${now.getDate()} 日 · ${weekdays[now.getDay()]}`;
   }
 
   document.addEventListener('DOMContentLoaded', init);

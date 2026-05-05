@@ -532,6 +532,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // window.LohasGallery?.applyFilters?.();
         // window.LohasGallery?.loadMyFavoriteStates?.();
 
+        // 如果在會員平台 (有 LohasMember), 重新載入該頁清單
+        if (window.LohasMember?.reloadAfterUpload) {
+          window.LohasMember.reloadAfterUpload(newPost);
+        }
+
         closeModal();
         clearForm();
 
