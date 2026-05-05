@@ -1019,6 +1019,19 @@ main{
   font-size:12px;
   margin-top:-6px;
 }
+.char-counter.is-story{
+  color:var(--lohas-brand);
+  font-weight:500;
+}
+
+.label-hint{
+  display:inline-block;
+  margin-left:6px;
+  font-size:11px;
+  color:var(--text-muted);
+  font-weight:400;
+  letter-spacing:0;
+}
 
 .field-error{
   display:none;
@@ -1061,29 +1074,33 @@ main{
 
 .detail-gallery{
   display:grid;
-  grid-template-columns:1.4fr 1fr;
+  grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);
   gap:14px;
   margin-bottom:22px;
 }
 
 .detail-main-image,
 .detail-sub-image{
-  border-radius:16px;
+  border-radius:18px;
   overflow:hidden;
   background:#f7f6f5;
 }
 
 .detail-main-image{
-  aspect-ratio:1 / 1.1;
+  aspect-ratio:auto;
+  min-height:378px;
 }
 
 .detail-sub-list{
   display:grid;
+  grid-template-columns:1fr;
+  grid-template-rows:1fr 1fr;
   gap:14px;
 }
 
 .detail-sub-image{
-  aspect-ratio:1 / 1;
+  aspect-ratio:auto;
+  min-height:0;
 }
 
 .detail-gallery img{
@@ -1433,3 +1450,197 @@ main{
     opacity:1;
   }
 }
+
+
+/* =============================================
+   救援區 (Rescue Section) · 還沒找到對的感覺?
+   --------------------------------------------
+   位置: gallery.html · .plan1-cta 之後
+   3 卡: LINE 諮詢 / 創作者市集 / 找門市試戴
+   ============================================= */
+.rescue-section{
+  background:#fff;
+  padding:64px 32px;
+  border-top:1px solid var(--lohas-bd);
+  margin-top:40px;
+}
+
+.rescue-head{
+  text-align:center;
+  margin-bottom:36px;
+  max-width:680px;
+  margin-left:auto;
+  margin-right:auto;
+}
+.rescue-eb{
+  font-size:11px;
+  letter-spacing:5px;
+  color:var(--text-muted);
+  margin-bottom:12px;
+  font-weight:500;
+}
+.rescue-section h3{
+  font-size:24px;
+  font-weight:600;
+  margin:0 0 12px;
+  color:var(--lohas-brand);
+  letter-spacing:1px;
+}
+.rescue-sub{
+  font-size:13px;
+  color:var(--text-sub);
+  margin:0;
+  letter-spacing:0.5px;
+}
+
+.rescue-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+  max-width:1100px;
+  margin:0 auto;
+}
+
+.rescue-card{
+  background:#fff;
+  border:1px solid var(--lohas-bd);
+  border-radius:16px;
+  padding:32px 28px;
+  display:flex;
+  flex-direction:column;
+  transition:.25s ease;
+  text-decoration:none;
+  color:inherit;
+}
+.rescue-card:hover{
+  border-color:var(--lohas-light);
+  transform:translateY(-3px);
+}
+
+.rescue-num{
+  font-size:11px;
+  letter-spacing:3px;
+  color:var(--text-muted);
+  margin-bottom:14px;
+  font-weight:500;
+}
+.rescue-card h4{
+  font-size:17px;
+  font-weight:600;
+  margin:0 0 10px;
+  color:var(--lohas-brand);
+  letter-spacing:0.5px;
+}
+.rescue-card p{
+  font-size:13px;
+  color:var(--text-sub);
+  margin:0 0 18px;
+  line-height:1.8;
+  flex:1;
+}
+.rescue-cta{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-size:12px;
+  color:var(--lohas-brand);
+  letter-spacing:1px;
+  font-weight:600;
+  padding:8px 16px;
+  border:1px solid var(--lohas-light);
+  border-radius:999px;
+  background:#fff;
+  align-self:flex-start;
+  transition:.2s;
+}
+.rescue-card:hover .rescue-cta{
+  border-color:var(--lohas-brand);
+  background:var(--lohas-brand);
+  color:#fff;
+}
+.rescue-cta i{font-size:10px}
+
+@media (max-width:768px){
+  .rescue-section{padding:48px 20px}
+  .rescue-grid{grid-template-columns:1fr; gap:14px}
+  .rescue-card{padding:24px 22px}
+  .rescue-section h3{font-size:20px}
+}
+
+
+/* =============================================
+   雙軸 (story / photo) 卡片樣式
+   --------------------------------------------
+   故事卡: 50+ 字 -> .plan1-card.is-story
+           圖左上加 .icon-badge 書本圖示
+           圖下方加 .card-quote 引言
+   照片卡: 預設 .plan1-card -> 加 .icon-badge 相機圖示
+   ============================================= */
+
+.plan1-card .icon-badge{
+  position:absolute;
+  top:10px;
+  left:10px;
+  z-index:4;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#fff;
+  color:var(--lohas-brand);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+}
+
+.plan1-card .card-quote{
+  font-family:"Noto Serif TC","Source Han Serif TC","PingFang TC",serif;
+  font-size:14px;
+  line-height:1.7;
+  color:var(--lohas-brand);
+  margin:12px 0 8px;
+  letter-spacing:0.5px;
+  font-weight:500;
+}
+
+.plan1-card.is-story{
+  position:relative;
+}
+
+.plan1-card.is-story .img-box{
+  border:1px solid var(--lohas-light);
+}
+
+
+/* =============================================
+   只看有故事的 (Toggle Story Filter)
+   --------------------------------------------
+   位置: gallery.html · .jins-filter-top
+   切換: aria-pressed="true" 變實心棕底白字
+   ============================================= */
+.toggle-story-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 18px;
+  border:1px solid var(--lohas-light);
+  border-radius:999px;
+  font-size:12px;
+  color:var(--text-sub);
+  letter-spacing:0.5px;
+  background:#fff;
+  font-family:inherit;
+  font-weight:500;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.toggle-story-btn:hover{
+  border-color:var(--lohas-brand);
+  color:var(--lohas-brand);
+}
+.toggle-story-btn[aria-pressed="true"]{
+  background:var(--lohas-brand);
+  border-color:var(--lohas-brand);
+  color:#fff;
+}
+.toggle-story-btn i{font-size:11px}
