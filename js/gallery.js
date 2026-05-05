@@ -28,7 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterState = {
     topic: "全部作品",
     carrier: "全部位置",
-    keyword: ""
+    keyword: "",
+    storyOnly: false
   };
 
   function showToast(message) {
@@ -131,17 +132,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const displayName = maskName(post.customer_name || "顧客");
 
+    // 自動分流: 故事文字 >= 50 字 = story 卡 (有引言 + 書本 icon)
+    // 也尊重 post.type 欄位 (新版資料), 沒有就 fallback 到字數判斷
+    const storyText = post.story || "";
+    const cardType = post.type || (storyText.length >= 50 ? "story" : "photo");
+    const isStory = cardType === "story";
+
+    // story 卡的引言 = 故事的第一句 (取到第一個句號 / 換行 / 30 字)
+    let storyQuote = "";
+    if (isStory) {
+      const firstLine = storyText.split(/[。\n\r]/)[0].trim();
+      storyQuote = firstLine.length > 30
+        ? firstLine.slice(0, 30) + "..."
+        : firstLine;
+    }
+
     const card = document.createElement("a");
     card.href = "#";
-    card.className = "plan1-card";
+    card.className = isStory ? "plan1-card is-story" : "plan1-card";
     card.dataset.topic = post.topic || "";
     card.dataset.carrier = post.carrier || "";
     card.dataset.name = displayName;
-    card.dataset.story = post.story || "這是一份來自顧客的真實刻圖照片分享。";
+    card.dataset.story = storyText || "這是一份來自顧客的真實刻圖照片分享。";
     card.dataset.images = (post.image_urls || [imageUrl]).join(",");
+    card.dataset.type = cardType;
+
+    const iconClass = isStory ? "fa-solid fa-book-open" : "fa-solid fa-camera";
+    const quoteHTML = isStory
+      ? `<p class="card-quote">「${storyQuote}」</p>`
+      : "";
 
     card.innerHTML = `
       <div class="img-box">
+        <span class="icon-badge"><i class="${iconClass}"></i></span>
         <img src="${imageUrl}" alt="${post.title || "刻圖照片"}" />
 
         <button class="favorite-btn" type="button" data-post-id="${post.id}" aria-label="收藏照片">
@@ -151,6 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       <div class="info">
         <div>
+          ${quoteHTML}
           <div class="topic-pill">${post.topic || "靈感主題"}</div>
           <div class="title">${post.title || "未命名作品"}</div>
           <div class="desc">${displayName}</div>
@@ -171,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { data, error } = await supabaseClient
       .from(SUPABASE_TABLE)
-      .select("id,title,topic,carrier,story,customer_name,member_id,image_urls,main_image_url,created_at")
+      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at")
       .eq("is_public", true)
       .order("created_at", { ascending: false });
 
@@ -220,7 +244,8 @@ document.addEventListener("DOMContentLoaded", () => {
         carrier === normalizedCarrier;
 
       const matchKeyword = !keyword || tags.includes(keyword);
-      const shouldShow = matchTopic && matchCarrier && matchKeyword;
+      const matchStoryOnly = !filterState.storyOnly || card.dataset.type === "story";
+      const shouldShow = matchTopic && matchCarrier && matchKeyword && matchStoryOnly;
 
       card.style.display = shouldShow ? "block" : "none";
       if (shouldShow) visibleCount += 1;
@@ -423,6 +448,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       applyFilters();
     });
+  });
+
+  // 「只看有故事的」toggle
+  const toggleStoryBtn = document.getElementById("toggleStoryBtn");
+  toggleStoryBtn?.addEventListener("click", () => {
+    filterState.storyOnly = !filterState.storyOnly;
+    toggleStoryBtn.setAttribute("aria-pressed", String(filterState.storyOnly));
+    applyFilters();
   });
 
   [desktopSearchInput, mobileSearchInput].forEach(input => {

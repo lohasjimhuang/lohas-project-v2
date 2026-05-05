@@ -297,11 +297,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const imageUrls = await uploadImagesToSupabase();
 
+    // 自動分流: 故事文字 >= 50 字 = story 卡, 否則 = photo 卡
+    const storyText = shareText.value.trim();
+    const cardType = storyText.length >= 50 ? "story" : "photo";
+
     const postPayload = {
       title: getTitle(),
       topic: workCategory.value,
       carrier: carrierCategory.value,
-      story: shareText.value.trim(),
+      story: storyText,
+      type: cardType,
       customer_name: member.name || "顧客",
       member_id: member.erpid,
       image_urls: imageUrls,
@@ -312,7 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const { data, error } = await supabaseClient
       .from(SUPABASE_TABLE)
       .insert(postPayload)
-      .select("id,title,topic,carrier,story,customer_name,member_id,image_urls,main_image_url,created_at,is_public")
+      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at,is_public")
       .single();
 
     if (error) throw error;
@@ -447,7 +452,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     shareText?.addEventListener("input", () => {
-      currentChar.textContent = shareText.value.length;
+      const len = shareText.value.length;
+      currentChar.textContent = len;
+
+      // 達 50 字 → 視覺提示這篇會被收進故事牆
+      const counter = document.querySelector(".char-counter");
+      if (counter) {
+        counter.classList.toggle("is-story", len >= 50);
+      }
     });
 
     workTitle?.addEventListener("input", () => {
