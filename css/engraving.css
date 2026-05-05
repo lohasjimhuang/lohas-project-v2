@@ -200,16 +200,16 @@
 .btn-more-simple {
     display: inline-block; 
     text-decoration: none; 
-    background: none; 
-    border: 1.2px solid var(--lohas-brand);
-    color: var(--lohas-brand);
-    padding: 8px 22px; 
-    font-size: 12px; 
-    border-radius: 50px;
+    background: #fff; 
+    border: 1px solid #ebe5dd;          /* 比照「全部照片」filter 的淡米色細邊 */
+    color: #4c4030;                      /* 比照 filter 的深棕字 */
+    padding: 10px 22px; 
+    font-size: 13px; 
+    border-radius: 999px;                /* 完全圓角膠囊 */
     cursor: pointer; 
     transition: 0.3s;
     width: fit-content;
-    font-weight: 600;                        /* 加粗字重 */
+    font-weight: 400;
 }
 .btn-more-simple:hover { 
     background: var(--lohas-brand); 
