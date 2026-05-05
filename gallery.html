@@ -1,0 +1,366 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>刻圖靈感分享牆 - Lohas 樂活眼鏡</title>
+
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
+  <link rel="stylesheet" href="css/lohas-tokens.css">
+  <link rel="stylesheet" href="css/lohas-base.css">
+  <link rel="stylesheet" href="css/lohas-components.css">
+  <link rel="stylesheet" href="css/gallery.css">
+
+</head>
+
+<body>
+  <div id="site-header"></div>
+
+  <main>
+    <div class="plan1-layout">
+      <section class="plan1-content">
+       <section class="plan1-banner">
+  <div class="banner-text">
+    <p class="hero-subtitle">每一副眼鏡，都有自己的故事</p>
+    <h1 class="hero-title">刻圖照片分享</h1>
+
+    <div class="hero-btns">
+      <button type="button" class="btn btn-primary js-open-upload">我要分享照片</button>
+      <a href="#galleryGrid" class="btn btn-outline">探索刻圖靈感</a>
+    </div>
+  </div>
+
+  <div class="hero-bg">
+    <img src="images/hero-banner-gallery.jpg" alt="刻圖靈感分享牆">
+  </div>
+</section>
+
+        
+        <div class="mobile-top-filter">
+          
+          <div class="mobile-search-row">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="search" class="filter-search-input" id="mobileSearchInput" placeholder="搜尋照片關鍵字" />
+            </div>
+          </div>
+          <div class="mobile-row">
+            <select class="filter-select" id="mobileTopicFilter" aria-label="想刻什麼？">
+              <option>想刻什麼？</option><option>愛情 / 情侶</option><option>紀念日 / 日期</option><option>名字 / 暱稱</option><option>座右銘 / 文字</option><option>圖案 / 插畫</option><option>寵物 / 動物</option><option>家庭 / 親子</option>
+            </select>
+            <select class="filter-select" id="mobileCarrierFilter" aria-label="刻在哪裡？">
+              <option>刻在哪裡？</option><option>鏡片</option><option>鏡框</option><option>眼鏡布</option><option>眼鏡盒</option><option>鼻墊</option><option>其他周邊配件</option>
+            </select>
+            <button type="button" class="mobile-filter-open" id="mobileFilterBtn">篩選</button>
+          </div>
+        </div>
+        <div class="jins-filter-area">
+          
+          <div class="jins-filter-top">
+            
+            <div class="result-meta">共 412 筆分享</div>
+          </div>
+
+          <div class="filter-toolbar">
+            <div class="filter-groups">
+              <div class="filter-group">
+                <span class="filter-label">靈感主題</span>
+                <select class="filter-select" id="desktopTopicFilter" aria-label="靈感主題">
+                  <option>全部照片</option>
+                  <option>愛情 / 情侶</option>
+                  <option>紀念日 / 日期</option>
+                  <option>名字 / 暱稱</option>
+                  <option>座右銘 / 文字</option>
+                  <option>圖案 / 插畫</option>
+                  <option>寵物 / 動物</option>
+                  <option>家庭 / 親子</option>
+                </select>
+              </div>
+
+              <div class="filter-group">
+                <span class="filter-label">刻圖位置</span>
+                <select class="filter-select" id="desktopCarrierFilter" aria-label="刻圖位置">
+                  <option>全部位置</option>
+                  <option>鏡片</option>
+                  <option>鏡框</option>
+                  <option>眼鏡布</option>
+                  <option>眼鏡盒</option>
+                  <option>鼻墊</option>
+                  <option>其他周邊配件</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="search-area">
+              
+              <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="search" class="filter-search-input" id="desktopSearchInput" placeholder="搜尋照片關鍵字" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="plan1-grid" id="galleryGrid">
+          <a href="#" class="plan1-card" data-topic="名字 / 暱稱" data-carrier="鏡片" data-name="林＊姐" data-story="把自己的名字刻在鏡片角落，每天戴上都像是一個小小的專屬印記。" data-images="images/lens-01.jpg,images/frame-01.jpg,images/cloth-01.jpg" data-tags="全部 名字刻印 鏡片刻圖 極簡風">
+            <div class="img-box"><img src="images/lens-01.jpg" alt="名字刻圖" /></div>
+            <div class="info">
+              <div><div class="topic-pill">名字 / 暱稱</div><div class="title">名字刻圖</div><div class="desc">林＊姐</div></div>
+              
+            </div>
+          </a>
+
+          <a href="#" class="plan1-card" data-topic="紀念日 / 日期" data-carrier="鏡片" data-name="王＊生" data-story="想把重要的紀念日留下來，讓那一天不只是日期，而是每天都能看見的回憶。" data-images="images/lens-01.jpg,images/box-01.jpg,images/frame-01.jpg" data-tags="全部 生日禮物 鏡片刻圖 極簡風">
+            <div class="img-box"><img src="images/lens-01.jpg" alt="紀念日" /></div>
+            <div class="info">
+              <div><div class="topic-pill">紀念日 / 日期</div><div class="title">紀念日</div><div class="desc">王＊生</div></div>
+              
+            </div>
+          </a>
+
+          <a href="#" class="plan1-card" data-topic="座右銘 / 文字" data-carrier="鏡框" data-name="陳＊姐" data-story="一句提醒自己的話，刻在每天都會使用的眼鏡上，像是給自己的溫柔打氣。" data-images="images/frame-01.jpg,images/lens-01.jpg,images/box-01.jpg" data-tags="全部 極簡風">
+            <div class="img-box"><img src="images/frame-01.jpg" alt="文字刻圖" /></div>
+            <div class="info">
+              <div><div class="topic-pill">座右銘 / 文字</div><div class="title">文字刻圖</div><div class="desc">陳＊姐</div></div>
+              
+            </div>
+          </a>
+
+          <a href="#" class="plan1-card" data-topic="愛情 / 情侶" data-carrier="鏡片" data-name="吳＊生" data-story="把兩個人才懂的符號刻在眼鏡上，不明顯，卻是彼此最懂的小秘密。" data-images="images/lens-01.jpg,images/cloth-01.jpg,images/frame-01.jpg" data-tags="全部 情侶刻圖 鏡片刻圖">
+            <div class="img-box"><img src="images/lens-01.jpg" alt="情侶刻圖" /></div>
+            <div class="info">
+              <div><div class="topic-pill">愛情 / 情侶</div><div class="title">情侶刻圖</div><div class="desc">吳＊生</div></div>
+              
+            </div>
+          </a>
+
+          <a href="#" class="plan1-card" data-topic="座右銘 / 文字" data-carrier="眼鏡盒" data-name="林＊姐" data-story="刻在眼鏡盒上的一句話，像是每次收起眼鏡時，也把今天好好收藏起來。" data-images="images/box-01.jpg,images/lens-01.jpg,images/cloth-01.jpg" data-tags="全部 極簡風">
+            <div class="img-box"><img src="images/box-01.jpg" alt="座右銘" /></div>
+            <div class="info">
+              <div><div class="topic-pill">座右銘 / 文字</div><div class="title">座右銘</div><div class="desc">林＊姐</div></div>
+              
+            </div>
+          </a>
+
+          <a href="#" class="plan1-card" data-topic="寵物 / 動物" data-carrier="鏡片" data-name="王＊姐" data-story="把毛孩的名字刻在身邊，像是牠一直陪著自己，看見每天的風景。" data-images="images/lens-01.jpg,images/frame-01.jpg,images/box-01.jpg" data-tags="全部 寵物紀念 鏡片刻圖">
+            <div class="img-box"><img src="images/lens-01.jpg" alt="寵物名字" /></div>
+            <div class="info">
+              <div><div class="topic-pill">寵物 / 動物</div><div class="title">寵物名字</div><div class="desc">王＊姐</div></div>
+              
+            </div>
+          </a>
+
+          <a href="#" class="plan1-card" data-topic="圖案 / 插畫" data-carrier="眼鏡布" data-name="陳＊姐" data-story="選了一個很簡單的小圖案，放在眼鏡布上，讓日常用品也有自己的風格。" data-images="images/cloth-01.jpg,images/lens-01.jpg,images/frame-01.jpg" data-tags="全部 情侶刻圖 手寫感">
+            <div class="img-box"><img src="images/cloth-01.jpg" alt="我們的故事" /></div>
+            <div class="info">
+              <div><div class="topic-pill">圖案 / 插畫</div><div class="title">我們的故事</div><div class="desc">陳＊姐</div></div>
+              
+            </div>
+          </a>
+
+          <a href="#" class="plan1-card" data-topic="家庭 / 親子" data-carrier="鏡片" data-name="李＊生" data-story="想把家人的祝福帶在身邊，簡單幾個字，卻是每天都會想起的安心感。" data-images="images/lens-01.jpg,images/box-01.jpg,images/cloth-01.jpg" data-tags="全部 鏡片刻圖">
+            <div class="img-box"><img src="images/lens-01.jpg" alt="家人平安" /></div>
+            <div class="info">
+              <div><div class="topic-pill">家庭 / 親子</div><div class="title">家人平安</div><div class="desc">李＊生</div></div>
+              
+            </div>
+          </a>
+        </div>
+
+       <div id="upload-area" class="plan1-cta">
+          <div class="cta-left">
+            <div class="icon-circle"><i class="fas fa-camera"></i></div>
+            <div class="cta-text">
+              <h3>你的刻圖，也值得被看見。</h3>
+              <p>分享你的刻圖照片，給更多人靈感。</p>
+            </div>
+          </div>
+
+          <div class="cta-right">
+            <button type="button" class="btn-upload js-open-upload">我要分享照片</button>
+            <div class="deco-imgs">
+              <img src="images/lens-01.jpg" alt="photo1" />
+              <img src="images/frame-01.jpg" alt="photo2" />
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+    <div class="filter-drawer-overlay" id="filterDrawer" aria-hidden="true">
+    <div class="filter-drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="drawer-header">
+        <h3 id="drawerTitle">篩選照片</h3>
+        <button type="button" class="drawer-close" id="drawerClose" aria-label="關閉篩選">&times;</button>
+      </div>
+
+      <div class="drawer-section">
+        <p class="drawer-section-title">靈感主題</p>
+        <div class="drawer-chip-grid">
+          <button type="button" class="chip active">全部照片</button>
+          <button type="button" class="chip">愛情 / 情侶</button>
+          <button type="button" class="chip">紀念日 / 日期</button>
+          <button type="button" class="chip">名字 / 暱稱</button>
+          <button type="button" class="chip">座右銘 / 文字</button>
+          <button type="button" class="chip">圖案 / 插畫</button>
+          <button type="button" class="chip">寵物 / 動物</button>
+          <button type="button" class="chip">家庭 / 親子</button>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <p class="drawer-section-title">刻圖位置</p>
+        <div class="drawer-chip-grid">
+          <button type="button" class="chip active">全部位置</button>
+          <button type="button" class="chip">鏡片</button>
+          <button type="button" class="chip">鏡框</button>
+          <button type="button" class="chip">眼鏡布</button>
+          <button type="button" class="chip">眼鏡盒</button>
+          <button type="button" class="chip">鼻墊</button>
+          <button type="button" class="chip">其他周邊配件</button>
+        </div>
+      </div>
+
+      <div class="drawer-actions">
+        <button type="button" class="drawer-reset" id="drawerReset">重設</button>
+        <button type="button" class="drawer-apply" id="drawerApply">套用篩選</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="detailModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="detailModalTitle">
+      <div class="modal-header">
+        <h2 id="detailModalTitle">刻圖照片分享</h2>
+        <button id="closeDetail" class="close-btn" type="button" aria-label="關閉照片詳情">&times;</button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+    </div>
+  </div>
+
+  <div id="uploadModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content upload-modal" role="dialog" aria-modal="true" aria-labelledby="uploadModalTitle">
+      <div class="modal-header">
+        <h2 id="uploadModalTitle">分享你的照片 <span class="subtitle">可拖曳調整首圖順序</span></h2>
+        <button id="closeUpload" class="close-btn" type="button" aria-label="關閉上傳視窗">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <input id="fileInput" class="hidden-file-input" type="file" accept="image/*" />
+
+        <div class="upload-grid">
+          <div class="upload-box main-upload" data-slot="0" tabindex="0" role="button" aria-label="上傳首圖">
+            <span class="badge-main">首圖</span>
+            <div class="upload-placeholder">
+              <i class="fa-regular fa-image"></i>
+              <p>新增圖片</p>
+              <span class="upload-hint">點擊選擇，或拖曳圖片到這裡</span>
+            </div>
+          </div>
+
+          <div class="sub-upload-container">
+            <div class="upload-box sub-upload" data-slot="1" tabindex="0" role="button" aria-label="上傳圖片二">
+              <div class="upload-placeholder">
+                <i class="fa-regular fa-image"></i>
+                <p>新增圖片</p>
+                <span class="upload-hint">副圖</span>
+              </div>
+            </div>
+
+            <div class="upload-box sub-upload" data-slot="2" tabindex="0" role="button" aria-label="上傳圖片三">
+              <div class="upload-placeholder">
+                <i class="fa-regular fa-image"></i>
+                <p>新增圖片</p>
+                <span class="upload-hint">副圖</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-row">
+            <label for="workTitle">刻圖照片名稱</label>
+<input id="workTitle" type="text" maxlength="24" placeholder="例如：把回憶刻在日常裡">
+
+<p class="field-error" id="workTitleError"></p>
+          </div>
+
+          <div class="two-col">
+            <div class="form-row">
+              <label for="workCategory">靈感主題</label>
+              <select id="workCategory">
+                <option value="名字 / 暱稱">名字 / 暱稱</option>
+                <option value="愛情 / 情侶">愛情 / 情侶</option>
+                <option value="紀念日 / 日期">紀念日 / 日期</option>
+                <option value="座右銘 / 文字">座右銘 / 文字</option>
+                <option value="圖案 / 插畫">圖案 / 插畫</option>
+                <option value="寵物 / 動物">寵物 / 動物</option>
+                <option value="家庭 / 親子">家庭 / 親子</option>
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label for="carrierCategory">刻圖位置</label>
+              <select id="carrierCategory">
+                <option value="鏡片">鏡片</option>
+                <option value="鏡框">鏡框</option>
+                <option value="眼鏡布">眼鏡布</option>
+                <option value="眼鏡盒">眼鏡盒</option>
+                <option value="鼻墊">鼻墊</option>
+                <option value="其他週邊配件">其他週邊配件</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="shareText">刻圖故事分享</label>
+            <textarea id="shareText" maxlength="100" placeholder="寫下這份刻圖背後的小故事（最多 100 字）..."></textarea>
+          </div>
+
+          <div class="char-counter"><span id="currentChar">0</span>/100</div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-preview" id="previewBtn">預覽照片</button>
+        <button type="button" class="btn-submit" id="submitBtn">送出分享</button>
+      </div>
+    </div>
+  </div>
+<div id="cropModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal-content" style="max-width:720px;">
+    <div class="modal-header">
+      <h2>調整圖片裁切</h2>
+      <button id="closeCrop" class="close-btn" type="button">&times;</button>
+    </div>
+
+    <div class="modal-body">
+      <div style="width:100%; max-height:520px;">
+        <img id="cropImage" style="max-width:100%; display:block;">
+      </div>
+    </div>
+
+    <div class="modal-footer">
+  <button type="button" class="btn-submit" id="applyCrop">套用裁切</button>
+  <button type="button" class="btn-preview" id="cancelCrop">取消</button>
+</div>
+  </div>
+</div>
+  <div id="toast" class="toast">已完成</div>
+  <div id="site-footer"></div>
+
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/layout.js"></script>
+<script src="js/supabase.js"></script>
+<script src="js/gallery.js"></script>
+<script src="js/upload.js"></script>
+</body>
+</html>

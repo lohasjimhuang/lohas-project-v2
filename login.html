@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LOHAS 樂活眼鏡 - 會員登入</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
+  <link rel="stylesheet" href="css/lohas-tokens.css">
+  <link rel="stylesheet" href="css/lohas-base.css">
+  <link rel="stylesheet" href="css/lohas-components.css">
+  <link rel="stylesheet" href="css/login.css">
+
+</head>
+
+<body>
+  <div id="site-header"></div>
+
+  <main id="login-section" class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-sm">
+      <div class="text-center mb-8">
+        <p class="text-[#50422D] text-2xl tracking-[0.12em] font-medium">
+          會員登入
+        </p>
+      </div>
+
+      <div class="space-y-5">
+        <input type="text" id="account" class="input-lohas" placeholder="APP 帳號" autocomplete="username">
+        <input type="password" id="password" class="input-lohas" placeholder="密碼" autocomplete="current-password">
+
+        <div id="error-msg" class="text-red-500 text-sm hidden text-center"></div>
+
+        <button id="login-btn" class="btn-lohas" type="button">
+          登入
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/layout.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

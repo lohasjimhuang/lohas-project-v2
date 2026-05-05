@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>樂活管理後台</title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <!-- Supabase JS SDK (給 supabase.js 用的全域 window.supabase) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #F9F8F6;
+      min-height: 100vh;
+    }
+  </style>
+  <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
+  <link rel="stylesheet" href="css/lohas-tokens.css">
+  <link rel="stylesheet" href="css/lohas-components.css">
+  <link rel="stylesheet" href="css/admin-portal.css">
+
+</head>
+<body>
+
+<div class="ad" id="ad">
+
+<!-- ====== Sidebar ====== -->
+<aside class="sidebar">
+  <div class="sidebar-head">
+    <div class="logo">L O H A S</div>
+    <div class="role-tag"><i class="fa-solid fa-shield-halved"></i>管理後台</div>
+  </div>
+
+  <div class="nav-section">
+    <button class="nav-link on" data-page="dashboard">
+      <i class="fa-solid fa-gauge-high"></i><span>儀表板</span>
+    </button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">審 核 中 心</div>
+    <button class="nav-link" data-page="review-designs">
+      <i class="fa-regular fa-pen-to-square"></i><span>刻圖審核</span>
+      <span class="badge">8</span>
+    </button>
+    <button class="nav-link" data-page="review-photos">
+      <i class="fa-regular fa-image"></i><span>照片審核</span>
+      <span class="badge">15</span>
+    </button>
+    <button class="nav-link" data-page="review-stories">
+      <i class="fa-regular fa-comment"></i><span>故事審核</span>
+      <span class="badge">3</span>
+    </button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">內 容 管 理</div>
+    <button class="nav-link" data-page="cm-banner">
+      <i class="fa-regular fa-images"></i><span>首頁與分頁 Banner</span>
+    </button>
+    <button class="nav-link" data-page="cm-news">
+      <i class="fa-regular fa-newspaper"></i><span>最新消息</span>
+    </button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-section-label">會 員 與 創 作 者</div>
+    <button class="nav-link" data-page="users">
+      <i class="fa-regular fa-user"></i><span>會員列表</span>
+    </button>
+    <button class="nav-link" data-page="creators">
+      <i class="fa-solid fa-star"></i><span>創作者管理</span>
+    </button>
+    <button class="nav-link" data-page="ip">
+      <i class="fa-solid fa-copyright"></i><span>IP 合作</span>
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="admin-user">
+      <div class="admin-avatar">企</div>
+      <div class="admin-info">
+        <div class="admin-name">企劃部 · 林</div>
+        <div class="admin-role">超級管理員</div>
+      </div>
+      <button class="logout-btn" id="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+    </div>
+  </div>
+</aside>
+
+<!-- ====== Main ====== -->
+<main class="main">
+
+  <div class="topbar">
+    <div class="breadcrumb">樂活管理後台 &nbsp;›&nbsp; <b id="breadcrumbCurrent">儀表板</b></div>
+    <div class="topbar-right">
+      <div class="topbar-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input placeholder="搜尋會員、設計、故事..."/>
+      </div>
+      <button class="icon-btn-lg" id="btnOpenFront" title="在新分頁打開會員平台"><i class="fa-solid fa-up-right-from-square"></i></button>
+    </div>
+  </div>
+
+  <!-- 規則 banner -->
+  <div class="rule-banner" id="ruleBanner">
+    <i class="fa-solid fa-circle-info"></i>
+    <span><b>後台規則：</b>所有上傳內容預設待審核 · 通過後自動公開於前台 · 創作者首次刻圖通過後系統自動升級權限</span>
+  </div>
+
+  <div class="content">
+
+    <!-- ============= 儀表板 ============= -->
+    <div class="content-page on" data-page="dashboard">
+
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">儀表板</h1>
+          <div class="page-sub">2026 年 5 月 3 日 · 一般日</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn"><i class="fa-regular fa-calendar"></i>本月</button>
+          <button class="btn primary"><i class="fa-solid fa-arrow-down-to-line"></i>匯出報表</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card alert">
+          <div class="kpi-label"><i class="fa-solid fa-circle-exclamation"></i>待 審 核 項 目</div>
+          <div class="kpi-value">26</div>
+          <div class="kpi-trend flat">8 設計 · 15 照片 · 3 故事</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><i class="fa-solid fa-pen-ruler"></i>本 月 新 刻 圖 上 架</div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-trend purple">↑ Creator 9 · Collab 3</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><i class="fa-regular fa-image"></i>本 月 上 傳 照 片</div>
+          <div class="kpi-value">387</div>
+          <div class="kpi-trend up">↑ 比上月 +24%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><i class="fa-solid fa-pencil"></i>本 月 雷 刻 預 約</div>
+          <div class="kpi-value">96</div>
+          <div class="kpi-trend up">↑ 比上月 +12%</div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-panel">
+          <div class="dash-panel-head">
+            <h3 class="dash-panel-h">優先處理 · 待審核</h3>
+            <a class="dash-panel-link" data-jump="review-designs">前往審核中心 →</a>
+          </div>
+          <div class="review-list">
+            <div class="review-item">
+              <div class="review-thumb">設 計</div>
+              <div class="review-body">
+                <div class="review-title">想你想到睡不著 <span class="role-pill creator"><i class="fa-solid fa-star"></i>Creator</span></div>
+                <div class="review-meta">by <b>EMO Bonnie</b> · 2 小時前</div>
+              </div>
+              <div class="review-actions">
+                <button class="approve"><i class="fa-solid fa-check"></i></button>
+                <button class="reject openReject"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-thumb g2">照 片</div>
+              <div class="review-body">
+                <div class="review-title">秋日午後 <span class="role-pill member">Member</span></div>
+                <div class="review-meta">by <b>陳*生</b> · 4 小時前</div>
+              </div>
+              <div class="review-actions">
+                <button class="approve"><i class="fa-solid fa-check"></i></button>
+                <button class="reject openReject"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-thumb g3">故 事</div>
+              <div class="review-body">
+                <div class="review-title">當奶奶看見眼鏡 <span class="role-pill creator"><i class="fa-solid fa-star"></i>Creator</span></div>
+                <div class="review-meta">by <b>EMO Bonnie</b> · 6 小時前</div>
+              </div>
+              <div class="review-actions">
+                <button class="approve"><i class="fa-solid fa-check"></i></button>
+                <button class="reject openReject"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </div>
+            <div class="review-item">
+              <div class="review-thumb">設 計</div>
+              <div class="review-body">
+                <div class="review-title">DINU 狗狗 <span class="role-pill ip"><i class="fa-solid fa-crown"></i>Collab</span></div>
+                <div class="review-meta">by <b>DTTO FRIENDS</b> · 8 小時前</div>
+              </div>
+              <div class="review-actions">
+                <button class="approve"><i class="fa-solid fa-check"></i></button>
+                <button class="reject openReject"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-panel">
+          <div class="dash-panel-head">
+            <h3 class="dash-panel-h">最近活動</h3>
+            <a class="dash-panel-link">查看全部 →</a>
+          </div>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-icon upload"><i class="fa-solid fa-upload"></i></div>
+              <div class="activity-body">
+                <div class="activity-text"><b>EMO Bonnie</b> 上傳了新刻圖設計</div>
+                <div class="activity-time">2 分鐘前</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon approve"><i class="fa-solid fa-check"></i></div>
+              <div class="activity-body">
+                <div class="activity-text"><b>王*姐</b> 的照片通過審核</div>
+                <div class="activity-time">15 分鐘前</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon signup"><i class="fa-solid fa-user-plus"></i></div>
+              <div class="activity-body">
+                <div class="activity-text"><b>3 位新會員</b> 完成註冊</div>
+                <div class="activity-time">1 小時前</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon reject"><i class="fa-solid fa-xmark"></i></div>
+              <div class="activity-body">
+                <div class="activity-text"><b>小*白</b> 的照片被駁回 · 肖像權</div>
+                <div class="activity-time">3 小時前</div>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-icon upload"><i class="fa-solid fa-star"></i></div>
+              <div class="activity-body">
+                <div class="activity-text"><b>陳*生</b> 自動升級為 Creator</div>
+                <div class="activity-time">昨天 16:24</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============= 刻圖審核 ============= -->
+    <div class="content-page" data-page="review-designs">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">刻圖審核</h1>
+          <div class="page-sub">8 件待審核 · 通過後自動上架創作者市集</div>
+        </div>
+      </div>
+
+      <div class="review-tabs">
+        <button class="rtab on">全部 <span class="count">8</span></button>
+        <button class="rtab">Creator <span class="count">5</span></button>
+        <button class="rtab">Collab <span class="count">2</span></button>
+        <button class="rtab">Member <span class="count">1</span></button>
+      </div>
+
+      <div class="filter-row">
+        <label>排序</label>
+        <select><option>送審時間 · 最舊優先</option><option>送審時間 · 最新優先</option></select>
+        <label>狀態</label>
+        <select><option>待審核</option><option>已通過</option><option>已駁回</option></select>
+        <div class="spacer"></div>
+        <div class="filter-info">顯示 <b>1-8</b> 共 8 件</div>
+      </div>
+
+      <div class="review-grid">
+        <div class="rcard">
+          <div class="rcard-img"><span class="rcard-pill"><i class="fa-solid fa-star" style="color:#9D7E3F"></i>Creator</span>想 你 想 到 睡 不 著</div>
+          <div class="rcard-info">
+            <div class="rcard-title">想你想到睡不著</div>
+            <div class="rcard-by">by <b>EMO Bonnie</b> <span class="role-pill creator"><i class="fa-solid fa-star"></i>Creator</span></div>
+            <div class="rcard-quote">睡不著的不是身體,是想念。把這句話刻在眼鏡上,提醒自己晚上要早點睡。</div>
+            <div class="rcard-meta"><i class="fa-regular fa-clock"></i>送審 2 小時前</div>
+            <div class="rcard-actions">
+              <button class="approve"><i class="fa-solid fa-check"></i>通 過</button>
+              <button class="reject openReject"><i class="fa-solid fa-xmark"></i>駁 回</button>
+              <button class="more"><i class="fa-solid fa-ellipsis"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="rcard">
+          <div class="rcard-img g2"><span class="rcard-pill"><i class="fa-solid fa-crown" style="color:#9D7E3F"></i>Collab</span>D I N U 狗 狗</div>
+          <div class="rcard-info">
+            <div class="rcard-title">DINU 狗狗</div>
+            <div class="rcard-by">by <b>DTTO FRIENDS</b> <span class="role-pill ip"><i class="fa-solid fa-crown"></i>Collab</span></div>
+            <div class="rcard-quote">DTTO 經典角色 DINU,六款表情同款上線。</div>
+            <div class="rcard-meta"><i class="fa-regular fa-clock"></i>送審 8 小時前</div>
+            <div class="rcard-actions">
+              <button class="approve"><i class="fa-solid fa-check"></i>通 過</button>
+              <button class="reject openReject"><i class="fa-solid fa-xmark"></i>駁 回</button>
+              <button class="more"><i class="fa-solid fa-ellipsis"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="rcard">
+          <div class="rcard-img g3"><span class="rcard-pill">Member</span>初 戀 簽 名</div>
+          <div class="rcard-info">
+            <div class="rcard-title">初戀簽名</div>
+            <div class="rcard-by">by <b>林*婕</b> <span class="role-pill member">Member</span></div>
+            <div class="rcard-quote">把初戀寫的那張卡片掃描下來,變成眼鏡上唯一的紀念。</div>
+            <div class="rcard-meta"><i class="fa-regular fa-clock"></i>送審 1 天前</div>
+            <div class="rcard-actions">
+              <button class="approve"><i class="fa-solid fa-check"></i>通 過</button>
+              <button class="reject openReject"><i class="fa-solid fa-xmark"></i>駁 回</button>
+              <button class="more"><i class="fa-solid fa-ellipsis"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============= 最新消息 ============= -->
+    <div class="content-page" data-page="cm-news">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">最新消息</h1>
+          <div class="page-sub">公告、活動、優惠等資訊發布管理</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn primary" id="btnCreateNews"><i class="fa-solid fa-plus"></i>新增消息</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label>分類</label>
+        <select><option>全部</option><option>系統公告</option><option>活動優惠</option><option>創作者公告</option></select>
+        <label>狀態</label>
+        <select><option>全部</option><option>已發布</option><option>草稿</option><option>已排程</option></select>
+        <div class="spacer"></div>
+        <div class="filter-info">共 <b>3</b> 篇</div>
+      </div>
+
+      <table class="news-table">
+        <thead>
+          <tr>
+            <th>標題</th>
+            <th>分類</th>
+            <th>狀態</th>
+            <th>發布時間</th>
+            <th style="text-align:right">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>新功能上線 · 創作者市集正式公開</td>
+            <td>系統公告</td>
+            <td><span class="news-status published"><i class="fa-solid fa-circle-check"></i>已發布</span></td>
+            <td>2026.04.10</td>
+            <td><div class="news-actions"><button><i class="fa-regular fa-pen-to-square"></i></button><button><i class="fa-regular fa-eye"></i></button><button><i class="fa-regular fa-trash-can"></i></button></div></td>
+          </tr>
+          <tr>
+            <td>夏季全配限定優惠</td>
+            <td>活動優惠</td>
+            <td><span class="news-status draft">草稿</span></td>
+            <td>—</td>
+            <td><div class="news-actions"><button><i class="fa-regular fa-pen-to-square"></i></button><button><i class="fa-regular fa-eye"></i></button><button><i class="fa-regular fa-trash-can"></i></button></div></td>
+          </tr>
+          <tr>
+            <td>父親節企劃 · 預約刻字</td>
+            <td>活動優惠</td>
+            <td><span class="news-status scheduled"><i class="fa-regular fa-clock"></i>已排程 6/15</span></td>
+            <td>—</td>
+            <td><div class="news-actions"><button><i class="fa-regular fa-pen-to-square"></i></button><button><i class="fa-regular fa-eye"></i></button><button><i class="fa-regular fa-trash-can"></i></button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ============= 會員列表 (v14) ============= -->
+    <div class="content-page" data-page="users">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">會員列表</h1>
+          <div class="page-sub">所有註冊會員,可篩選身份、停權帳號、手動升級為 Creator</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn"><i class="fa-solid fa-arrow-down-to-line"></i>匯出 CSV</button>
+        </div>
+      </div>
+
+      <!-- 會員列表規則 banner (放這頁專用) -->
+      <div class="rule-banner" style="margin:-24px -28px 18px;border-radius:0;padding-left:28px;padding-right:28px">
+        <i class="fa-solid fa-circle-info"></i>
+        <span><b>自動升級規則:</b>會員首次通過刻圖審核後,系統自動升級為「Creator」,設計每被使用一次,Creator 獲得 <span class="price">$500</span> 分潤</span>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">總 會 員 數</div>
+          <div class="kpi-value">2,486</div>
+          <div class="kpi-trend up">↑ 本月 +142</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">CREATOR 總 數</div>
+          <div class="kpi-value">15</div>
+          <div class="kpi-trend purple">↑ 本月新增 2</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">本 月 自 動 升 級</div>
+          <div class="kpi-value">2</div>
+          <div class="kpi-trend flat">王*姐、陳*生</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">停 權 帳 號</div>
+          <div class="kpi-value">7</div>
+          <div class="kpi-trend flat">本月 +1</div>
+        </div>
+      </div>
+
+      <div class="role-legend">
+        <div class="role-legend-title"><i class="fa-solid fa-circle-info"></i>身 份 說 明</div>
+        <div class="role-legend-grid">
+          <div class="role-legend-item">
+            <span class="row-role-pill member">Member</span>
+            <div class="legend-text">
+              <div class="legend-cn">會員</div>
+              <div class="legend-desc">一般註冊會員</div>
+            </div>
+          </div>
+          <div class="role-legend-item">
+            <span class="row-role-pill creator"><i class="fa-solid fa-star"></i>Creator</span>
+            <div class="legend-text">
+              <div class="legend-cn">創作者</div>
+              <div class="legend-desc">可上架設計、享分潤</div>
+            </div>
+          </div>
+          <div class="role-legend-item">
+            <span class="row-role-pill ip"><i class="fa-solid fa-crown"></i>Collab</span>
+            <div class="legend-text">
+              <div class="legend-cn">獨家聯名</div>
+              <div class="legend-desc">合作 IP 帳號</div>
+            </div>
+          </div>
+          <div class="role-legend-item">
+            <span class="row-role-pill admin"><i class="fa-solid fa-shield-halved"></i>Admin</span>
+            <div class="legend-text">
+              <div class="legend-cn">管理員</div>
+              <div class="legend-desc">後台管理權限</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input id="userSearchInput" placeholder="搜尋姓名、電話、信箱、會員編號..."/>
+        </div>
+        <select id="filterRole">
+          <option value="">所有身份</option>
+          <option value="member">Member</option>
+          <option value="creator">Creator</option>
+          <option value="ip">Collab</option>
+          <option value="admin">Admin</option>
+        </select>
+        <select id="filterStatus">
+          <option value="">所有狀態</option>
+          <option value="active">正常</option>
+          <option value="suspended">已停權</option>
+        </select>
+      </div>
+
+      <div class="users-table-wrap">
+        <table class="users-table" id="usersTable">
+          <thead>
+            <tr>
+              <th style="width:36%">會員</th>
+              <th>身份</th>
+              <th>狀態</th>
+              <th>累積上傳</th>
+              <th style="text-align:right;width:24%">操作</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody">
+            <!-- 由 JS 動態填入 -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============= 其他頁 placeholder ============= -->
+    <div class="content-page" data-page="review-photos"><div class="page-head"><h1 class="page-title">照片審核</h1></div><div class="empty-page"><i class="fa-regular fa-image"></i><div class="empty-page-title">照片審核介面 · 同刻圖審核結構</div></div></div>
+    <div class="content-page" data-page="review-stories"><div class="page-head"><h1 class="page-title">故事審核</h1></div><div class="empty-page"><i class="fa-regular fa-comment"></i><div class="empty-page-title">故事審核介面</div></div></div>
+    <div class="content-page" data-page="cm-banner"><div class="page-head"><h1 class="page-title">首頁與分頁 Banner</h1></div><div class="empty-page"><i class="fa-regular fa-images"></i><div class="empty-page-title">Banner 管理介面</div></div></div>
+    <div class="content-page" data-page="creators"><div class="page-head"><h1 class="page-title">創作者管理</h1></div><div class="empty-page"><i class="fa-solid fa-star"></i><div class="empty-page-title">創作者管理介面</div></div></div>
+    <div class="content-page" data-page="ip"><div class="page-head"><h1 class="page-title">IP 合作</h1></div><div class="empty-page"><i class="fa-solid fa-copyright"></i><div class="empty-page-title">IP 授權與聯名管理</div></div></div>
+
+  </div>
+</main>
+
+<!-- ====== 駁回 modal ====== -->
+<div class="modal-ovl" id="rejectModal">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-head">
+      <h3 class="modal-h">駁回審核</h3>
+      <p class="modal-sub">請選擇或輸入駁回原因,作者會收到通知並看到原因說明</p>
+      <button class="modal-close" id="closeRejectX"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-target">
+        <div class="thumb"></div>
+        <div>
+          <div class="info-t">想你想到睡不著</div>
+          <div class="info-m">by EMO Bonnie · 創作者作品</div>
+        </div>
+      </div>
+
+      <label class="field-label">常用駁回原因</label>
+      <div class="reason-presets">
+        <button class="preset" data-text="圖片解析度不足 300 dpi,線條轉印後容易模糊。請重新上傳更高解析度版本。">解析度不足</button>
+        <button class="preset" data-text="圖案內容含有可辨識的版權元素,無法通過審核。請使用原創圖案重新提交。">疑似侵權</button>
+        <button class="preset" data-text="設計師的話文字內容不符合樂活內容規範,請修改後重新提交。">文字違規</button>
+        <button class="preset" data-text="圖片尺寸或比例不符合雷刻規格(建議 1:1 正方形)。請依規範重新上傳。">尺寸不符</button>
+        <button class="preset" data-text="圖片中有可辨識的他人面孔,基於肖像權考量無法公開。請重新上傳模糊處理或無他人入鏡的版本。">肖像權問題</button>
+      </div>
+
+      <label class="field-label">駁回原因說明 <span class="req">(必填)</span></label>
+      <textarea class="reason-area" id="reasonText" placeholder="請說明駁回原因,作者會看到這段內容..."></textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" id="cancelReject">取消</button>
+      <button class="btn danger-solid" id="confirmReject"><i class="fa-solid fa-xmark"></i>確認駁回</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ====== 依賴 (按順序載入) ====== -->
+<script src="js/utils.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/supabase.js"></script>
+
+<!-- 後台主邏輯 -->
+<script src="js/admin-portal.js"></script>
+
+</body>
+</html>
