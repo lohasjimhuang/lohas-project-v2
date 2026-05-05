@@ -232,14 +232,12 @@
     background .25s ease,
     color .25s ease,
     border-color .25s ease,
-    transform .25s ease,
-    box-shadow .25s ease;
+    transform .25s ease;
 }
 
 .filter-btn:hover {
   transform: translateY(-1px);
   border-color: rgba(80, 66, 45, .3);
-  box-shadow: 0 10px 20px rgba(80, 66, 45, 0.06);
 }
 
 .filter-btn.active {
@@ -271,7 +269,6 @@
   box-shadow: 0 12px 28px rgba(80, 66, 45, 0.05);
   transition:
     transform .25s ease,
-    box-shadow .25s ease,
     border-color .25s ease;
 }
 
@@ -360,15 +357,13 @@
   transition:
     background .25s ease,
     color .25s ease,
-    transform .25s ease,
-    box-shadow .25s ease;
+    transform .25s ease;
 }
 
 .load-more-btn:hover {
   background: var(--news-brand);
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(80, 66, 45, 0.15);
 }
 
 .load-more-btn.is-hidden {

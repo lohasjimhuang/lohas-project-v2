@@ -9,7 +9,6 @@
 
 :root{
   --lohas-brown:var(--lohas-brand);
-  --lohas-hover:var(--lohas-hover);
   --lohas-light-brown:var(--lohas-light);
   --lohas-bg:#F7F6F5;
   --lohas-soft:var(--bg-warm);
@@ -577,14 +576,12 @@ main{
   align-items:center;
   justify-content:center;
   cursor:pointer;
-  box-shadow:0 6px 16px rgba(0,0,0,.08);
   transition:.2s ease;
 }
 
 .favorite-btn.is-active{
   background:#e53935;
   color:#fff;
-  box-shadow:0 8px 18px rgba(229,57,53,.24);
 }
 
 .favorite-btn.is-active i{
@@ -929,7 +926,6 @@ main{
   background:rgba(255,255,255,.92);
   color:#6a5944;
   cursor:pointer;
-  box-shadow:0 4px 12px rgba(0,0,0,.12);
   transition:.2s ease;
 }
 
@@ -1654,7 +1650,6 @@ main{
     cursor: pointer;
     z-index: 100; /* 確保在最上層 */
     border: 2px solid #ffffff; /* 白色外圈增加辨識度 */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .delete-btn:hover {

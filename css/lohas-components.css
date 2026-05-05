@@ -45,7 +45,7 @@
   background:var(--lohas-brand);
   color:#fff;
   transform:translateY(-1px);
-  box-shadow:0 4px 12px rgba(80,66,45,.2);
+  /* box-shadow removed (no shadow on buttons) */
 }
 
 /* .btn-pill-ghost 透明邊框 (大尺寸全膠囊) */
@@ -207,7 +207,7 @@
 .lohas-modal-btn-pri:hover{
   background:var(--lohas-hover);
   transform:translateY(-1px);
-  box-shadow:0 4px 12px rgba(80,66,45,.2);
+  /* box-shadow removed (no shadow on buttons) */
 }
 .lohas-modal-btn-pri.added{
   background:#fff;
@@ -230,7 +230,7 @@
   background:var(--lohas-brand);
   color:#fff;
   transform:translateY(-1px);
-  box-shadow:0 4px 12px rgba(80,66,45,.2);
+  /* box-shadow removed (no shadow on buttons) */
 }
 
 /* ============ Toast 提示訊息 ============ */
