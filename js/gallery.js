@@ -195,8 +195,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { data, error } = await supabaseClient
       .from(SUPABASE_TABLE)
-      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at")
+      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at,status")
       .eq("is_public", true)
+      .eq("status", "approved")
       .order("created_at", { ascending: false });
 
     if (error) {

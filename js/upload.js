@@ -311,13 +311,14 @@ document.addEventListener("DOMContentLoaded", () => {
       member_id: member.erpid,
       image_urls: imageUrls,
       main_image_url: imageUrls[0],
-      is_public: true
+      is_public: true,
+      status: "pending"
     };
 
     const { data, error } = await supabaseClient
       .from(SUPABASE_TABLE)
       .insert(postPayload)
-      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at,is_public")
+      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at,is_public,status")
       .single();
 
     if (error) throw error;
@@ -526,14 +527,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const newPost = await submitPostToSupabase();
 
-        window.LohasGallery?.renderGalleryCard?.(newPost, true);
-        window.LohasGallery?.applyFilters?.();
-        window.LohasGallery?.loadMyFavoriteStates?.();
+        // 待審核中的貼文不立刻插進 grid (防止用戶以為已公開)
+        // window.LohasGallery?.renderGalleryCard?.(newPost, true);
+        // window.LohasGallery?.applyFilters?.();
+        // window.LohasGallery?.loadMyFavoriteStates?.();
 
         closeModal();
         clearForm();
 
-        showToast("你的照片已成功分享");
+        showToast("已送出 · 審核通過後將會顯示在靈感牆");
       } catch (error) {
         console.error(error);
         showToast(error.message || "上傳失敗，請檢查 Supabase 權限設定");
