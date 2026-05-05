@@ -201,14 +201,15 @@
     display: inline-block; 
     text-decoration: none; 
     background: none; 
-    border: 1px solid #ddd; 
-    color: #555;
-    padding: 8px 20px; 
+    border: 1.5px solid var(--lohas-brand);  /* 加粗 2px 棕邊, 跟字同色 */
+    color: var(--lohas-brand);
+    padding: 8px 22px; 
     font-size: 12px; 
-    border-radius: 50px;       /* 比照 hero banner 圓角膠囊 */
+    border-radius: 50px;
     cursor: pointer; 
     transition: 0.3s;
     width: fit-content;
+    font-weight: 600;                        /* 加粗字重 */
 }
 .btn-more-simple:hover { 
     background: var(--lohas-brand); 
