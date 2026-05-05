@@ -95,6 +95,7 @@
 <main class="main">
 
   <div class="topbar">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="開啟選單"><i class="fa-solid fa-bars"></i></button>
     <div class="breadcrumb">樂活管理後台 &nbsp;›&nbsp; <b id="breadcrumbCurrent">儀表板</b></div>
     <div class="topbar-right">
       <div class="topbar-search">
@@ -157,50 +158,7 @@
             <a class="dash-panel-link" data-jump="review-designs">前往審核中心 →</a>
           </div>
           <div class="review-list">
-            <div class="review-item">
-              <div class="review-thumb">設 計</div>
-              <div class="review-body">
-                <div class="review-title">想你想到睡不著 <span class="role-pill creator"><i class="fa-solid fa-star"></i>Creator</span></div>
-                <div class="review-meta">by <b>EMO Bonnie</b> · 2 小時前</div>
-              </div>
-              <div class="review-actions">
-                <button class="approve"><i class="fa-solid fa-check"></i></button>
-                <button class="reject openReject"><i class="fa-solid fa-xmark"></i></button>
-              </div>
-            </div>
-            <div class="review-item">
-              <div class="review-thumb g2">照 片</div>
-              <div class="review-body">
-                <div class="review-title">秋日午後 <span class="role-pill member">Member</span></div>
-                <div class="review-meta">by <b>陳*生</b> · 4 小時前</div>
-              </div>
-              <div class="review-actions">
-                <button class="approve"><i class="fa-solid fa-check"></i></button>
-                <button class="reject openReject"><i class="fa-solid fa-xmark"></i></button>
-              </div>
-            </div>
-            <div class="review-item">
-              <div class="review-thumb g3">故 事</div>
-              <div class="review-body">
-                <div class="review-title">當奶奶看見眼鏡 <span class="role-pill creator"><i class="fa-solid fa-star"></i>Creator</span></div>
-                <div class="review-meta">by <b>EMO Bonnie</b> · 6 小時前</div>
-              </div>
-              <div class="review-actions">
-                <button class="approve"><i class="fa-solid fa-check"></i></button>
-                <button class="reject openReject"><i class="fa-solid fa-xmark"></i></button>
-              </div>
-            </div>
-            <div class="review-item">
-              <div class="review-thumb">設 計</div>
-              <div class="review-body">
-                <div class="review-title">DINU 狗狗 <span class="role-pill ip"><i class="fa-solid fa-crown"></i>Collab</span></div>
-                <div class="review-meta">by <b>DTTO FRIENDS</b> · 8 小時前</div>
-              </div>
-              <div class="review-actions">
-                <button class="approve"><i class="fa-solid fa-check"></i></button>
-                <button class="reject openReject"><i class="fa-solid fa-xmark"></i></button>
-              </div>
-            </div>
+            <p class="empty-text" style="text-align:center;padding:40px 0;color:var(--lohas-mute);font-size:12px">載入中...</p>
           </div>
         </div>
 
@@ -272,7 +230,7 @@
         <label>狀態</label>
         <select><option>待審核</option><option>已通過</option><option>已駁回</option></select>
         <div class="spacer"></div>
-        <div class="filter-info">顯示 <b>1-8</b> 共 8 件</div>
+        <div class="filter-info" id="reviewDesignsFilterInfo">— 件</div>
       </div>
 
       <div class="review-grid">
@@ -339,7 +297,7 @@
         <label>狀態</label>
         <select><option>全部</option><option>已發布</option><option>草稿</option><option>已排程</option></select>
         <div class="spacer"></div>
-        <div class="filter-info">共 <b>3</b> 篇</div>
+        <div class="filter-info" id="newsFilterInfo">— 篇</div>
       </div>
 
       <table class="news-table">
