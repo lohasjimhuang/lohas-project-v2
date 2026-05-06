@@ -196,10 +196,11 @@
 .mp .content-page.on{ display:block }
 
 .mp .hero{
-  padding:36px 36px 30px;
+  padding:0 36px 30px;
   background:#fff;
   border-bottom:1px solid var(--lohas-line);
   display:flex; align-items:center; gap:24px;
+  min-height:140px;
 }
 .mp .hero-avatar-wrap{ position:relative }
 .mp .hero-avatar{
