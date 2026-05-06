@@ -107,9 +107,10 @@ body {
   margin-bottom:18px;
 }
 .mp .logo{
-  font-size:14px; font-weight:700;
-  color:var(--lohas-brown);
-  letter-spacing:3px; margin-bottom:4px;
+  display:block;
+  height:24px;
+  width:auto;
+  margin-bottom:4px;
 }
 .mp .role-tag{
   font-size:10px; color:var(--lohas-mute);
