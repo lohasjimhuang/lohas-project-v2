@@ -122,9 +122,9 @@ body {
   width:auto;
 }
 .mp .role-tag{
-  font-size:12px; color:var(--lohas-mute);
-  letter-spacing:2px; font-weight:600;
-  margin-top:12px;
+  font-size:15px; color:var(--lohas-mute);
+  letter-spacing:2.5px; font-weight:600;
+  margin-top:14px;
   display:block;
 }
 .mp .role-tag.creator{ color:var(--c-text); font-weight:600 }
@@ -1422,9 +1422,9 @@ body {
   }
   .mp .mp-mobile-role{
     flex:1;
-    font-size:13px;
+    font-size:16px;
     color:var(--lohas-text);
-    letter-spacing:2px;
+    letter-spacing:3px;
     font-weight:600;
     white-space:nowrap;
     text-align:center;
