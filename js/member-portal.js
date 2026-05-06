@@ -552,7 +552,7 @@
         <div class="empty">
           <i class="fa-regular fa-comment"></i>
           <div class="empty-title">還沒寫過故事</div>
-          <div>分享你的眼鏡故事,讓設計被看見</div>
+          <div>分享你的眼鏡刻圖故事，讓設計被看見</div>
           <button class="empty-cta add-story-card"><i class="fa-solid fa-plus"></i>寫一篇新故事</button>
         </div>`;
       return;
