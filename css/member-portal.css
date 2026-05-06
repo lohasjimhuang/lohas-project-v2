@@ -196,7 +196,7 @@
 .mp .content-page.on{ display:block }
 
 .mp .hero{
-  padding:20px 36px 24px;
+  padding:36px 36px 30px;
   background:#fff;
   border-bottom:1px solid var(--lohas-line);
   display:flex; align-items:center; gap:24px;
@@ -1395,7 +1395,7 @@
     grid-template-columns:repeat(2,1fr);
   }
   .mp .content{ padding:20px 16px }
-  .mp .hero{ padding:14px 20px 18px }
+  .mp .hero{ padding:24px 20px }
 }
 
 @media (max-width: 900px) {
