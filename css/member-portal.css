@@ -12,6 +12,7 @@
 
 .mp{
   --lohas-brown:var(--lohas-brand);
+  --lohas-hover:var(--lohas-hover);
   --lohas-light-brown:var(--lohas-light);
   --lohas-soft:var(--bg-warm);
   --lohas-line:#E8DFD0;
@@ -277,6 +278,7 @@
 .mp .enter-admin-btn:hover{
   background:#3A2F26;
   transform:translateY(-1px);
+  box-shadow:0 4px 12px rgba(45,37,32,.25);
 }
 .mp .enter-admin-btn i{ color:var(--lohas-light); font-size:11px }
 
