@@ -1,13 +1,25 @@
-/* =============================================
-   會員平台 · 頁面專用 CSS
-   --------------------------------------------
-   依賴: lohas-tokens.css + lohas-components.css
-   注意: 會員平台不引用 lohas-base.css (沒有公開站點 header/footer)
-   使用 .mp 命名空間，避免汙染全域
-   ============================================= */
-
 /* =============================================================
    樂活會員中心 · member-portal.css
+   --------------------------------------------
+   依賴: lohas-tokens.css + lohas-components.css
+   命名空間: .mp
+   ============================================================= */
+
+
+/* =============================================================
+   0. body 全域
+   ============================================================= */
+
+body {
+  margin: 0;
+  padding: 24px;
+  background: #F9F8F6;
+  min-height: 100vh;
+}
+
+
+/* =============================================================
+   1. 容器 .mp + tokens
    ============================================================= */
 
 .mp{
@@ -51,7 +63,7 @@
 
 
 /* =============================================================
-   通用工具 (loading / empty / hidden input / 圖片頭像)
+   2. 通用工具
    ============================================================= */
 
 .mp .empty-text{
@@ -74,7 +86,7 @@
 
 
 /* =============================================================
-   Sidebar
+   3. Sidebar
    ============================================================= */
 
 .mp .sidebar{
@@ -183,7 +195,7 @@
 
 
 /* =============================================================
-   Main · Hero
+   4. Main · Hero
    ============================================================= */
 
 .mp .main{
@@ -192,10 +204,8 @@
   max-height:780px;
 }
 
-.mp .content-page{ display:none }
-.mp .content-page.on{ display:block }
-
 .mp .hero{
+  position:relative;
   padding:36px 36px 30px;
   background:#fff;
   border-bottom:1px solid var(--lohas-line);
@@ -241,6 +251,12 @@
   margin:0 0 6px; letter-spacing:1px;
   display:flex; align-items:center; gap:10px;
 }
+.mp .hero-info .id{
+  font-size:12px; color:var(--lohas-sub);
+  letter-spacing:0.5px;
+}
+
+/* Badge */
 .mp .creator-badge{
   display:inline-flex; align-items:center; gap:5px;
   font-size:11px; letter-spacing:1px;
@@ -249,12 +265,7 @@
   background:var(--c-solid); color:#fff;
 }
 .mp .creator-badge i{ font-size:10px; color:#FFD86B }
-.mp .hero-info .id{
-  font-size:12px; color:var(--lohas-sub);
-  letter-spacing:0.5px;
-}
 
-/* === Admin badge + 進入後台按鈕 === */
 .mp .admin-badge{
   display:inline-flex; align-items:center; gap:5px;
   font-size:11px; letter-spacing:1px;
@@ -264,7 +275,7 @@
 }
 .mp .admin-badge i{ font-size:10px; color:var(--lohas-light) }
 
-.mp .hero{ position:relative }
+/* 進入管理後台按鈕 */
 .mp .enter-admin-btn{
   position:absolute; top:24px; right:36px;
   display:inline-flex; align-items:center; gap:7px;
@@ -285,15 +296,13 @@
 
 
 /* =============================================================
-   Content
+   5. Content + Section title
    ============================================================= */
 
 .mp .content{ padding:32px 36px }
 .mp .content-page{ display:none }
 .mp .content-page.on{ display:block }
 
-
-/* Section title */
 .mp .section-title{
   display:flex; justify-content:space-between; align-items:baseline;
   margin:0 0 16px;
@@ -328,7 +337,7 @@
 
 
 /* =============================================================
-   首頁 · 快捷功能 + KPI
+   6. 首頁 · 快捷功能 + KPI
    ============================================================= */
 
 .mp .shortcuts{
@@ -374,7 +383,7 @@
 
 
 /* =============================================================
-   會員資料
+   7. 會員資料
    ============================================================= */
 
 .mp .profile-card{
@@ -397,7 +406,7 @@
 
 
 /* =============================================================
-   我的靈感
+   8. 我的靈感
    ============================================================= */
 
 .mp .inspo-list{
@@ -443,7 +452,7 @@
 
 
 /* =============================================================
-   想刻清單
+   9. 想刻清單
    ============================================================= */
 
 .mp .wish-list{
@@ -521,7 +530,7 @@
 
 
 /* =============================================================
-   照片分享 (跟靈感同款小卡)
+   10. 照片分享
    ============================================================= */
 
 .mp .photo-grid{
@@ -692,7 +701,7 @@
 
 
 /* =============================================================
-   我的故事
+   11. 我的故事
    ============================================================= */
 
 .mp .story-add{
@@ -793,7 +802,8 @@
 .mp .story-menu button.danger i{ color:var(--status-rejected) }
 .mp .story-menu button.danger:hover{ background:var(--status-rejected-bg) }
 
-/* Empty 狀態(故事/照片沒資料) */
+
+/* Empty 狀態 */
 .mp .empty{
   text-align:center;
   padding:60px 20px;
@@ -827,7 +837,7 @@
 
 
 /* =============================================================
-   我的刻圖設計
+   12. 我的刻圖設計 (Creator)
    ============================================================= */
 
 .mp .design-list{
@@ -898,7 +908,7 @@
 .mp .design-list .add-tile span{ font-size:11px; letter-spacing:1px; font-weight:600 }
 
 
-/* 成為創作者 onboard 區塊 */
+/* 成為創作者 onboard */
 .mp .creator-onboard{
   background:linear-gradient(135deg,var(--c-bg),#fff);
   border:1px solid #D5C7E5;
@@ -946,7 +956,7 @@
 
 
 /* =============================================================
-   創作者個人頁編輯器
+   13. 創作者個人頁編輯器
    ============================================================= */
 
 .mp .editor-panel{
@@ -1010,7 +1020,7 @@
 
 
 /* =============================================================
-   Panel + 數據 (創作數據)
+   14. 創作數據 · Panel + Chart
    ============================================================= */
 
 .mp .panel{
@@ -1085,7 +1095,7 @@
 
 
 /* =============================================================
-   分潤紀錄
+   15. 分潤紀錄
    ============================================================= */
 
 .mp .royalty-summary{
@@ -1198,7 +1208,7 @@
 
 
 /* =============================================================
-   Photo Modal
+   16. Photo Modal
    ============================================================= */
 
 .mp .modal-bg{
@@ -1295,7 +1305,7 @@
 
 
 /* =============================================================
-   Buttons
+   17. Buttons
    ============================================================= */
 
 .mp .btn{
@@ -1341,7 +1351,7 @@
 
 
 /* =============================================================
-   角色 / 狀態切換可見性
+   18. 角色 / 狀態切換可見性
    ============================================================= */
 
 .mp:not(.is-creator) .creator-only-section{ display:none }
@@ -1351,7 +1361,7 @@
 
 
 /* =============================================================
-   響應式 (基本)
+   19. RWD · 平板 (max-width: 900px)
    ============================================================= */
 
 @media (max-width: 900px) {
@@ -1359,17 +1369,50 @@
     grid-template-columns:1fr;
     border-radius:0;
     border:0;
+    display:flex;
+    flex-direction:column;
   }
-  .mp .sidebar{
-    border-right:0;
-    border-bottom:1px solid var(--lohas-line);
+
+  /* 手機板 sidebar 隱藏 (簡潔做法) */
+  .mp .sidebar{ display:none }
+
+  .mp .main{
+    order:1;
+    max-height:none;
+    overflow:visible;
   }
-  .mp .main{ max-height:none }
+
+  /* hero 排第一 */
+  .mp .hero{ order:1 }
+
+  /* content 排第二 */
+  .mp .content{
+    order:2;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .mp .content-page.on{
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* 內容區順序 */
+  .mp .content-page.on .shortcuts{ order:1 }
+  .mp .content-page.on .creator-stats{ order:2 }
+  .mp .content-page.on .section-title{ order:3 }
+  .mp .content-page.on .profile-card{ order:4 }
+  .mp .content-page.on .inspo-list,
+  .mp .content-page.on .wish-list,
+  .mp .content-page.on .photo-grid,
+  .mp .content-page.on .story-card,
+  .mp .content-page.on .story-add,
+  .mp .content-page.on .design-list{ order:5 }
+
+  /* grid 收成兩欄 */
   .mp .photo-grid,
   .mp .inspo-list,
-  .mp .design-list{
-    grid-template-columns:repeat(2,1fr);
-  }
+  .mp .design-list,
   .mp .wish-list{
     grid-template-columns:repeat(2,1fr);
   }
@@ -1382,6 +1425,11 @@
     grid-template-columns:1fr 1fr;
   }
 }
+
+
+/* =============================================================
+   20. RWD · 手機 (max-width: 500px)
+   ============================================================= */
 
 @media (max-width: 500px) {
   .mp .photo-grid,
@@ -1396,65 +1444,4 @@
   }
   .mp .content{ padding:20px 16px }
   .mp .hero{ padding:24px 20px }
-}
-
-@media (max-width: 900px) {
-  .mp {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* 手機版先不要顯示左側 sidebar，避免擋在會員資訊上方 */
-  .mp .sidebar {
-    display: none;
-  }
-
-  .mp .main {
-    order: 1;
-    max-height: none;
-    overflow: visible;
-  }
-
-  /* 大頭照區固定放最上方 */
-  .mp .hero {
-    order: 1;
-  }
-
-  .mp .content {
-    order: 2;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .mp .content-page.on {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* 快捷卡固定接在大頭照下面 */
-  .mp .content-page.on .shortcuts {
-    order: 1;
-  }
-
-  /* 其他內容往後排 */
-  .mp .content-page.on .creator-stats {
-    order: 2;
-  }
-
-  .mp .content-page.on .section-title {
-    order: 3;
-  }
-
-  .mp .content-page.on .profile-card {
-    order: 4;
-  }
-
-  .mp .content-page.on .inspo-list,
-  .mp .content-page.on .wish-list,
-  .mp .content-page.on .photo-grid,
-  .mp .content-page.on .story-card,
-  .mp .content-page.on .story-add,
-  .mp .content-page.on .design-list {
-    order: 5;
-  }
 }
