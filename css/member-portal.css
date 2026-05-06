@@ -190,30 +190,12 @@
   background:var(--lohas-soft);
   overflow-y:auto;
   max-height:780px;
-  padding:0;
 }
 
-/* main 內各 content-page 的內容區 - 白底卡片化 */
-.mp .content-page{
-  display:none;
-  padding:32px 36px;
-  background:#fff;
-  margin:14px;
-  border-radius:14px;
-  border:1px solid var(--lohas-line);
-}
-.mp .content-page.on{
-  display:block;
-}
-
-/* hero 區獨立白塊 */
 .mp .hero{
   padding:36px 36px 30px;
   background:#fff;
-  border-bottom:0;
-  margin:14px 14px 0;
-  border-radius:14px;
-  border:1px solid var(--lohas-line);
+  border-bottom:1px solid var(--lohas-line);
   display:flex; align-items:center; gap:24px;
 }
 .mp .hero-avatar-wrap{ position:relative }
@@ -1473,6 +1455,3 @@
     order: 5;
   }
 }
-
-
-
