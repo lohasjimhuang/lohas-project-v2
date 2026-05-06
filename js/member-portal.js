@@ -151,7 +151,9 @@
     if (heroAdminBadge) heroAdminBadge.style.display = State.isAdmin ? 'inline-flex' : 'none';
 
     const enterAdminBtn = document.getElementById('enterAdminBtn');
+    const enterAdminBtnMobile = document.getElementById('enterAdminBtnMobile');
     if (enterAdminBtn) enterAdminBtn.style.display = State.isAdmin ? 'inline-flex' : 'none';
+    if (enterAdminBtnMobile) enterAdminBtnMobile.style.display = State.isAdmin ? 'inline-flex' : 'none';
 
     const roleTag = document.getElementById('roleTag');
     const mobileRoleTag = document.getElementById('mobileRoleTag');
