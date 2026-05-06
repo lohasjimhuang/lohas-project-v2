@@ -118,7 +118,7 @@ body {
 }
 .mp .logo{
   display:block;
-  height:34px;
+  height:26px;
   width:auto;
 }
 .mp .role-tag{
@@ -1417,7 +1417,7 @@ body {
     min-height:60px;
   }
   .mp .mp-mobile-logo{
-    height:32px;
+    height:24px;
     flex-shrink:0;
   }
   .mp .mp-mobile-role{
@@ -1430,16 +1430,21 @@ body {
     text-align:center;
   }
 
-  /* 手機板「進入管理後台」按鈕: 改成 inline-flex (不再 absolute/fixed) */
+  /* 手機板「進入管理後台」按鈕: 圓形 icon (只顯示盾牌, 不顯示文字) */
   .mp .enter-admin-btn{
     position:static;
     top:auto; left:auto; right:auto;
     transform:none;
     flex-shrink:0;
-    padding:7px 14px;
-    font-size:11px;
+    width:32px;
+    height:32px;
+    padding:0;
+    border-radius:50%;
     z-index:auto;
+    justify-content:center;
   }
+  .mp .mp-mobile-admin-btn span{ display:none }
+  .mp .mp-mobile-admin-btn i{ font-size:13px; margin:0 }
 
   /* 手機版: 隱藏 hero 內的 admin 按鈕, 只顯示 mobile-header 的 */
   .mp .hero > .enter-admin-btn{ display:none !important; }
