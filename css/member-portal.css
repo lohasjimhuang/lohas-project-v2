@@ -210,6 +210,8 @@ body {
   background:#fff;
   border-bottom:1px solid var(--lohas-line);
   display:flex; align-items:center; gap:24px;
+  min-height:168px;
+  box-sizing:border-box;
 }
 .mp .hero-avatar-wrap{ position:relative }
 .mp .hero-avatar{
