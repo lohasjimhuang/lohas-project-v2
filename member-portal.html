@@ -72,31 +72,31 @@
     </div>
   </aside>
 
+  <!-- ====== Hero (跟 sidebar / main 同層, 用 grid 對齊) ====== -->
+  <div class="hero">
+    <div class="hero-avatar-wrap">
+      <div class="hero-avatar" id="avatarPreview"></div>
+      <button class="avatar-camera" id="avatarUploadBtn" type="button">
+        <i class="fa-solid fa-camera"></i>
+      </button>
+      <input type="file" id="avatarInput" class="visually-hidden" accept="image/*">
+    </div>
+    <div class="hero-info">
+      <p>歡迎回來,</p>
+      <h1>
+        <span id="dashboard-name">載入中...</span>
+        <span class="creator-badge" id="heroBadge" style="display:none"><i class="fa-solid fa-star"></i>Creator</span>
+        <span class="admin-badge" id="heroAdminBadge" style="display:none"><i class="fa-solid fa-shield-halved"></i>Admin</span>
+      </h1>
+      <div class="id" id="dashboard-id">樂活會員編號:--</div>
+    </div>
+    <a class="enter-admin-btn" id="enterAdminBtn" href="admin-portal.html" style="display:none">
+      <i class="fa-solid fa-shield-halved"></i><span>進入管理後台</span>
+    </a>
+  </div>
+
   <!-- ====== Main ====== -->
   <main class="main">
-
-    <!-- Hero -->
-    <div class="hero">
-      <div class="hero-avatar-wrap">
-        <div class="hero-avatar" id="avatarPreview"></div>
-        <button class="avatar-camera" id="avatarUploadBtn" type="button">
-          <i class="fa-solid fa-camera"></i>
-        </button>
-        <input type="file" id="avatarInput" class="visually-hidden" accept="image/*">
-      </div>
-      <div class="hero-info">
-        <p>歡迎回來,</p>
-        <h1>
-          <span id="dashboard-name">載入中...</span>
-          <span class="creator-badge" id="heroBadge" style="display:none"><i class="fa-solid fa-star"></i>Creator</span>
-          <span class="admin-badge" id="heroAdminBadge" style="display:none"><i class="fa-solid fa-shield-halved"></i>Admin</span>
-        </h1>
-        <div class="id" id="dashboard-id">樂活會員編號:--</div>
-      </div>
-      <a class="enter-admin-btn" id="enterAdminBtn" href="admin-portal.html" style="display:none">
-        <i class="fa-solid fa-shield-halved"></i><span>進入管理後台</span>
-      </a>
-    </div>
 
     <div class="content">
 
