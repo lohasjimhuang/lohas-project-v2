@@ -190,30 +190,15 @@
   background:var(--lohas-soft);
   overflow-y:auto;
   max-height:780px;
-  padding:0;
 }
 
-/* main 內各 content-page 的內容區 - 白底卡片化 */
-.mp .content-page{
-  display:none;
-  padding:32px 36px;
-  background:#fff;
-  margin:14px;
-  border-radius:14px;
-  border:1px solid var(--lohas-line);
-}
-.mp .content-page.on{
-  display:block;
-}
+.mp .content-page{ display:none }
+.mp .content-page.on{ display:block }
 
-/* hero 區獨立白塊 */
 .mp .hero{
   padding:36px 36px 30px;
   background:#fff;
-  border-bottom:0;
-  margin:14px 14px 0;
-  border-radius:14px;
-  border:1px solid var(--lohas-line);
+  border-bottom:1px solid var(--lohas-line);
   display:flex; align-items:center; gap:24px;
 }
 .mp .hero-avatar-wrap{ position:relative }
@@ -1419,43 +1404,9 @@
     flex-direction: column;
   }
 
-  /* 手機板 sidebar 改成抽屜 (漢堡選單) */
+  /* 手機版先不要顯示左側 sidebar，避免擋在會員資訊上方 */
   .mp .sidebar {
-    position:fixed;
-    top:0; left:0;
-    width:280px;
-    height:100vh;
-    z-index:1000;
-    transform:translateX(-100%);
-    transition:transform .25s ease;
-    box-shadow:0 0 0 100vmax rgba(0,0,0,0);
-    pointer-events:none;
-    border-right:1px solid var(--lohas-line);
-    border-bottom:0;
-    display:flex;
-  }
-  .mp .sidebar.is-open{
-    transform:translateX(0);
-    box-shadow:0 0 0 100vmax rgba(0,0,0,.5);
-    pointer-events:auto;
-  }
-
-  /* 手機漢堡按鈕 */
-  .mp .mobile-menu-btn{
-    position:fixed;
-    top:16px; left:16px;
-    z-index:999;
-    width:40px; height:40px;
-    border-radius:10px;
-    border:1px solid var(--lohas-line);
-    background:#fff;
-    color:var(--lohas-brown);
-    font-size:15px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    box-shadow:0 2px 8px rgba(0,0,0,.06);
+    display: none;
   }
 
   .mp .main {
@@ -1467,19 +1418,6 @@
   /* 大頭照區固定放最上方 */
   .mp .hero {
     order: 1;
-    flex-direction:column;
-    align-items:stretch;
-    padding-top:60px; /* 留漢堡按鈕空間 */
-  }
-
-  /* 進入管理後台按鈕 → 手機改全寬置底 */
-  .mp .enter-admin-btn{
-    position:static;
-    width:100%;
-    justify-content:center;
-    margin-top:14px;
-    padding:12px 20px;
-    font-size:13px;
   }
 
   .mp .content {
@@ -1522,7 +1460,4 @@
 }
 
 
-/* 桌面板隱藏漢堡按鈕 */
-@media (min-width: 901px) {
-  .mp .mobile-menu-btn { display:none }
-}
+
