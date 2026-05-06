@@ -163,10 +163,10 @@
       if (State.isAdmin) roleText = 'Admin';
       else if (State.isCreator) roleText = 'Creator';
       else roleText = 'Member';
-      roleTag.textContent = '會員中心';
+      roleTag.textContent = '會員中心 Member Center';
       roleTag.classList.toggle('creator', State.isCreator && !State.isAdmin);
       if (mobileRoleTag) {
-        mobileRoleTag.textContent = '會員中心';
+        mobileRoleTag.textContent = '會員中心 Member Center';
         mobileRoleTag.classList.toggle('creator', State.isCreator && !State.isAdmin);
       }
     }
