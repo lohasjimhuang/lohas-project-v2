@@ -206,11 +206,13 @@ body {
 
 .mp .hero{
   position:relative;
-  padding:36px 36px 30px;
+  padding:28px 36px 27px;
   background:#fff;
   border-bottom:1px solid var(--lohas-line);
-  display:flex; align-items:center; gap:24px;
-  min-height:168px;
+  display:flex;
+  align-items:center;
+  gap:24px;
+  min-height:152px;
   box-sizing:border-box;
 }
 .mp .hero-avatar-wrap{ position:relative }
