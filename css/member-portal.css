@@ -1426,9 +1426,9 @@ body {
     left:50%;
     top:50%;
     transform:translate(-50%, -50%);
-    font-size:14px;
+    font-size:18px;
     color:var(--lohas-text);
-    letter-spacing:1.5px;
+    letter-spacing:3px;
     font-weight:600;
     white-space:nowrap;
   }
