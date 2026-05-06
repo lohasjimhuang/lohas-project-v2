@@ -193,7 +193,14 @@
     if (State.isCreator && State.creatorInfo) {
       const ci = State.creatorInfo;
       const creatorAvatar = document.getElementById('creatorAvatar');
-      if (creatorAvatar) creatorAvatar.textContent = getAvatarText(ci.display_name || m.name);
+      if (creatorAvatar) {
+        const savedCreatorAvatar = localStorage.getItem('lohasCreatorAvatar');
+        if (savedCreatorAvatar) {
+          creatorAvatar.innerHTML = `<img src="${savedCreatorAvatar}" alt="創作者頭像">`;
+        } else {
+          creatorAvatar.textContent = getAvatarText(ci.display_name || m.name);
+        }
+      }
 
       const dn = document.getElementById('creatorDisplayName');
       if (dn) dn.value = ci.display_name || m.name || '';
@@ -1023,6 +1030,35 @@
     }
   }
 
+  function bindCreatorAvatar() {
+    const btn = document.getElementById('creatorAvatarUploadBtn');
+    const input = document.getElementById('creatorAvatarInput');
+    const preview = document.getElementById('creatorAvatar');
+
+    if (btn && input) {
+      btn.addEventListener('click', () => input.click());
+    }
+
+    if (input) {
+      input.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          window.alert('請選擇圖片檔案');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          if (preview) {
+            preview.innerHTML = `<img src="${ev.target.result}" alt="創作者頭像">`;
+          }
+          localStorage.setItem('lohasCreatorAvatar', ev.target.result);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
 
   /* =============================================================
      Navigation · 頁面切換 + 登出
@@ -1037,6 +1073,22 @@
     // 快捷功能跳轉
     root.querySelectorAll('.shortcut-card[data-jump]').forEach(c => {
       c.addEventListener('click', () => goTo(c.dataset.jump));
+    });
+
+    // 快捷功能特殊動作
+    root.querySelectorAll('.shortcut-card[data-action]').forEach(c => {
+      c.addEventListener('click', () => {
+        const action = c.dataset.action;
+        if (action === 'upload-photo') {
+          // 開上傳照片 modal
+          if (window.LohasUpload && window.LohasUpload.openModal) {
+            window.LohasUpload.openModal();
+          }
+        } else if (action === 'upload-design') {
+          // 開上傳刻圖設計 modal (尚未實作 → 暫時提示)
+          alert('上傳刻圖設計功能即將推出');
+        }
+      });
     });
 
     // 登出
@@ -1125,6 +1177,7 @@
 
     applyIdentity();
     bindAvatar();
+    bindCreatorAvatar();
     bindNavigation();
 
     // 預載入首頁需要的東西
