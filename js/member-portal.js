@@ -246,29 +246,39 @@
     const photos = data || [];
     if (photoCount) photoCount.textContent = photos.length ? photos.length + ' 張' : '';
 
-    // 處理駁回 banner
+    // 處理駁回 banner (記憶使用者已 ack 的駁回 ID, 避免重複跳)
     const rejected = photos.filter(p => p.status === 'rejected');
-    if (rejected.length > 0 && banner) {
-      const first = rejected[0];
+    const ackedKey = `lohasPhotoRejectAcked_${State.member.erpid}`;
+    let ackedIds = [];
+    try {
+      ackedIds = JSON.parse(localStorage.getItem(ackedKey) || '[]');
+    } catch (e) { ackedIds = []; }
+    // 過濾出「還沒按過我知道了」的駁回
+    const unackedRejected = rejected.filter(r => !ackedIds.includes(r.id));
+
+    if (unackedRejected.length > 0 && banner) {
+      const first = unackedRejected[0];
       Utils.setText(
         '#photoRejectedTitle',
-        rejected.length === 1
+        unackedRejected.length === 1
           ? `您有 1 張照片「${first.title || '未命名'}」未通過審核`
-          : `您有 ${rejected.length} 張照片未通過審核`
+          : `您有 ${unackedRejected.length} 張照片未通過審核`
       );
       const reasonEl = document.getElementById('photoRejectedReason');
       if (reasonEl) {
         reasonEl.innerHTML = '<b>駁回原因:</b>' + escapeHtml(first.reject_reason || '請聯繫客服了解詳情。');
       }
       banner.style.display = '';
+      // 把目前未 ack 的 ID 存到 banner dataset, ack 時用得到
+      banner.dataset.unackedIds = JSON.stringify(unackedRejected.map(r => r.id));
     } else if (banner) {
       banner.style.display = 'none';
     }
 
-    // 側邊欄紅標
+    // 側邊欄紅標 (用 unacked 數量, 不是全部 rejected 數量)
     if (rejectBadge) {
-      if (rejected.length > 0) {
-        rejectBadge.textContent = rejected.length;
+      if (unackedRejected.length > 0) {
+        rejectBadge.textContent = unackedRejected.length;
         rejectBadge.style.display = 'inline-flex';
       } else {
         rejectBadge.style.display = 'none';
@@ -682,10 +692,11 @@
 
     const designs = data || [];
 
+    // Creator 即使沒設計也顯示「+」上傳框 (不顯示 onboard CTA)
     if (designs.length === 0) {
-      // Creator 但還沒上架任何設計
-      if (designsBlock) designsBlock.style.display = 'none';
-      if (becomeBlock) becomeBlock.style.display = 'block';
+      list.innerHTML = `
+        <button class="add-tile" id="addDesignBtn"><i class="fa-solid fa-plus"></i><span>上 傳 新 設 計</span></button>`;
+      bindAddDesign();
       return;
     }
 
@@ -719,7 +730,30 @@
           </div>
         </div>`;
     }).join('') + `
-      <button class="add-tile"><i class="fa-solid fa-plus"></i><span>上 傳 新 設 計</span></button>`;
+      <button class="add-tile" id="addDesignBtn"><i class="fa-solid fa-plus"></i><span>上 傳 新 設 計</span></button>`;
+
+    bindAddDesign();
+  }
+
+  function bindAddDesign() {
+    const btn = document.getElementById('addDesignBtn');
+    if (btn) {
+      btn.addEventListener('click', () => {
+        alert('上傳刻圖設計功能即將推出');
+      });
+    }
+  }
+
+  function bindPreviewCreator() {
+    const link = document.getElementById('previewCreatorPage');
+    if (link) {
+      link.addEventListener('click', () => {
+        if (!State.member) return;
+        // 開創作者公開頁預覽 (新分頁開)
+        const url = `creator-public.html?id=${encodeURIComponent(State.member.erpid)}`;
+        window.open(url, '_blank');
+      });
+    }
   }
 
 
@@ -1108,10 +1142,24 @@
       root.querySelectorAll('.story-menu').forEach(m => m.classList.remove('on'));
     });
 
-    // 駁回 banner「我知道了」按鈕 → 隱藏 banner
+    // 駁回 banner「我知道了」按鈕 → 隱藏 banner + 記憶 ack
     document.getElementById('photoRejectedAck')?.addEventListener('click', () => {
       const banner = document.getElementById('photoRejectedBanner');
-      if (banner) banner.style.display = 'none';
+      const badge = document.getElementById('photoRejectBadge');
+      if (banner) {
+        banner.style.display = 'none';
+        // 把 unacked IDs 加入 ack 紀錄
+        if (State.member && banner.dataset.unackedIds) {
+          try {
+            const ids = JSON.parse(banner.dataset.unackedIds);
+            const ackedKey = `lohasPhotoRejectAcked_${State.member.erpid}`;
+            const existing = JSON.parse(localStorage.getItem(ackedKey) || '[]');
+            const merged = Array.from(new Set([...existing, ...ids]));
+            localStorage.setItem(ackedKey, JSON.stringify(merged));
+          } catch (e) {}
+        }
+      }
+      if (badge) badge.style.display = 'none';
     });
     document.getElementById('storyRejectedAck')?.addEventListener('click', () => {
       const banner = document.getElementById('storyRejectedBanner');
@@ -1179,6 +1227,7 @@
     bindAvatar();
     bindCreatorAvatar();
     bindNavigation();
+    bindPreviewCreator();
 
     // 預載入首頁需要的東西
     if (State.isCreator) loadAnalytics(); // 首頁累計數據
