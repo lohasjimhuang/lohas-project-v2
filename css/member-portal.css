@@ -1405,7 +1405,7 @@ body {
   /* 手機板 sidebar 隱藏 (簡潔做法) */
   .mp .sidebar{ display:none }
 
-  /* 手機板獨立 header: logo · role-tag · 進入後台 三者水平排列 */
+  /* 手機板獨立 header: logo 靠左 · role-tag 絕對置中 · admin 靠右 */
   .mp .mp-mobile-header{
     display:flex;
     align-items:center;
@@ -1415,19 +1415,22 @@ body {
     border-bottom:1px solid var(--lohas-line);
     order:0;
     min-height:60px;
+    position:relative;
   }
   .mp .mp-mobile-logo{
     height:24px;
     flex-shrink:0;
   }
   .mp .mp-mobile-role{
-    flex:1;
-    font-size:16px;
+    position:absolute;
+    left:50%;
+    top:50%;
+    transform:translate(-50%, -50%);
+    font-size:14px;
     color:var(--lohas-text);
-    letter-spacing:3px;
+    letter-spacing:1.5px;
     font-weight:600;
     white-space:nowrap;
-    text-align:center;
   }
 
   /* 手機板「進入管理後台」按鈕: 圓形 icon (只顯示盾牌, 不顯示文字) */
@@ -1436,6 +1439,7 @@ body {
     top:auto; left:auto; right:auto;
     transform:none;
     flex-shrink:0;
+    margin-left:auto;
     width:32px;
     height:32px;
     padding:0;
