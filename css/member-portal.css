@@ -677,14 +677,13 @@
   letter-spacing:0.5px; font-weight:500;
   cursor:pointer;
   border:1px solid var(--status-rejected);
-  background:var(--status-rejected);
-  color:#fff;
-  flex-shrink:0;
-  transition:.2s;
-}
-.mp .rejected-banner button:hover{
   background:#fff;
   color:var(--status-rejected);
+  flex-shrink:0;
+}
+.mp .rejected-banner button:hover{
+  background:var(--status-rejected);
+  color:#fff;
 }
 
 
