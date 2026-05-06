@@ -74,6 +74,8 @@ body {
   height:24px;
   width:auto;
 }
+/* 桌面版隱藏手機 header 內的 admin 按鈕 (避免兩顆同時顯示) */
+.mp .mp-mobile-admin-btn{ display:none !important; }
 
 
 /* =============================================================
@@ -116,13 +118,13 @@ body {
 }
 .mp .logo{
   display:block;
-  height:24px;
+  height:34px;
   width:auto;
 }
 .mp .role-tag{
-  font-size:10px; color:var(--lohas-mute);
-  letter-spacing:1.5px; font-weight:500;
-  margin-top:10px;
+  font-size:12px; color:var(--lohas-mute);
+  letter-spacing:2px; font-weight:600;
+  margin-top:12px;
   display:block;
 }
 .mp .role-tag.creator{ color:var(--c-text); font-weight:600 }
@@ -1403,46 +1405,48 @@ body {
   /* 手機板 sidebar 隱藏 (簡潔做法) */
   .mp .sidebar{ display:none }
 
-  /* 手機板獨立 header: 左 logo + 中央 role-tag + 右側進入後台按鈕 */
+  /* 手機板獨立 header: logo · role-tag · 進入後台 三者水平排列 */
   .mp .mp-mobile-header{
     display:flex;
     align-items:center;
-    justify-content:space-between;
     gap:12px;
     padding:12px 16px;
     background:#fff;
     border-bottom:1px solid var(--lohas-line);
     order:0;
-    position:relative;
-    min-height:52px;
+    min-height:60px;
   }
   .mp .mp-mobile-logo{
-    height:22px;
+    height:32px;
     flex-shrink:0;
   }
   .mp .mp-mobile-role{
-    position:absolute;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
+    flex:1;
     font-size:13px;
     color:var(--lohas-text);
     letter-spacing:2px;
     font-weight:600;
     white-space:nowrap;
+    text-align:center;
   }
 
-  /* 手機板「進入管理後台」按鈕從 hero 拉出來,放在 mobile-header 右上 */
+  /* 手機板「進入管理後台」按鈕: 改成 inline-flex (不再 absolute/fixed) */
   .mp .enter-admin-btn{
-    position:fixed;
-    top:14px;
-    right:16px;
-    left:auto;
+    position:static;
+    top:auto; left:auto; right:auto;
     transform:none;
-    z-index:100;
+    flex-shrink:0;
     padding:7px 14px;
     font-size:11px;
+    z-index:auto;
   }
+
+  /* 手機版: 隱藏 hero 內的 admin 按鈕, 只顯示 mobile-header 的 */
+  .mp .hero > .enter-admin-btn{ display:none !important; }
+  .mp .mp-mobile-admin-btn{ display:inline-flex !important; }
+  /* JS 控制 display:none 時不顯示 (Admin 才會顯示) */
+  .mp .mp-mobile-admin-btn[style*="display: none"],
+  .mp .mp-mobile-admin-btn[style*="display:none"]{ display:none !important; }
 
   /* hero 排第一 */
   .mp .hero{ order:1 }
