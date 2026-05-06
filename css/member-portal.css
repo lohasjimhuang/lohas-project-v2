@@ -67,6 +67,14 @@ body {
 .mp > .hero{    grid-column:2; grid-row:1; }
 .mp > .main{    grid-column:2; grid-row:2; }
 
+/* 手機版獨立 logo header (桌面隱藏) */
+.mp .mp-mobile-header{ display:none; }
+.mp .mp-mobile-logo{
+  display:block;
+  height:24px;
+  width:auto;
+}
+
 
 /* =============================================================
    2. 通用工具
@@ -98,7 +106,7 @@ body {
 .mp .sidebar{
   background:#fff;
   border-right:1px solid var(--lohas-line);
-  padding:24px 0;
+  padding:16px 0 24px;
   display:flex; flex-direction:column;
 }
 .mp .sidebar-head{
@@ -1393,6 +1401,17 @@ body {
 
   /* 手機板 sidebar 隱藏 (簡潔做法) */
   .mp .sidebar{ display:none }
+
+  /* 手機板獨立 logo header 顯示 */
+  .mp .mp-mobile-header{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:14px 16px;
+    background:#fff;
+    border-bottom:1px solid var(--lohas-line);
+    order:0;
+  }
 
   /* hero 排第一 */
   .mp .hero{ order:1 }
