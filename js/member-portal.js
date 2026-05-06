@@ -154,6 +154,7 @@
     if (enterAdminBtn) enterAdminBtn.style.display = State.isAdmin ? 'inline-flex' : 'none';
 
     const roleTag = document.getElementById('roleTag');
+    const mobileRoleTag = document.getElementById('mobileRoleTag');
     if (roleTag) {
       // 顯示優先級: Admin > Creator > Member
       let roleText;
@@ -162,6 +163,10 @@
       else roleText = 'Member';
       roleTag.textContent = '會員中心 · ' + roleText;
       roleTag.classList.toggle('creator', State.isCreator && !State.isAdmin);
+      if (mobileRoleTag) {
+        mobileRoleTag.textContent = '會員中心 · ' + roleText;
+        mobileRoleTag.classList.toggle('creator', State.isCreator && !State.isAdmin);
+      }
     }
 
     // 頭像
