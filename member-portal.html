@@ -125,9 +125,9 @@
         <div class="shortcuts">
           <a class="shortcut-card" data-jump="inspo"><i class="fa-regular fa-bookmark"></i><span>我的靈感</span></a>
           <a class="shortcut-card" data-jump="wishlist"><i class="fa-solid fa-pencil"></i><span>想刻清單</span></a>
-          <a class="shortcut-card"><i class="fa-solid fa-camera"></i><span>上傳照片</span></a>
+          <a class="shortcut-card" data-action="upload-photo"><i class="fa-solid fa-camera"></i><span>上傳照片</span></a>
           <a class="shortcut-card" data-jump="photos"><i class="fa-regular fa-image"></i><span>已分享照片</span></a>
-          <a class="shortcut-card creator-only" data-jump="my-designs"><i class="fa-regular fa-pen-to-square"></i><span>新增刻圖設計</span></a>
+          <a class="shortcut-card creator-only" data-action="upload-design"><i class="fa-regular fa-pen-to-square"></i><span>新增刻圖設計</span></a>
           <a class="shortcut-card" data-jump="profile"><i class="fa-regular fa-user"></i><span>會員資料</span></a>
         </div>
       </div>
@@ -215,8 +215,13 @@
           <div class="editor-row">
             <div class="editor-label">頭像</div>
             <div style="display:flex;align-items:center;gap:14px">
-              <div class="ed-avatar" id="creatorAvatar">--</div>
-              <button class="btn"><i class="fa-regular fa-image"></i> 更換照片</button>
+              <div class="creator-avatar-wrap">
+                <div class="ed-avatar" id="creatorAvatar">--</div>
+                <button class="ed-avatar-camera" id="creatorAvatarUploadBtn" type="button" aria-label="更換頭像">
+                  <i class="fa-solid fa-camera"></i>
+                </button>
+                <input type="file" id="creatorAvatarInput" class="visually-hidden" accept="image/*">
+              </div>
             </div>
           </div>
           <div class="editor-row">
