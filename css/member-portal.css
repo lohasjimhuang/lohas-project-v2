@@ -1578,7 +1578,7 @@ body {
     display:flex;
     align-items:center;
     gap:12px;
-    padding:14px 16px;
+    padding:14px 8px 14px 12px;
     background:transparent;
     border-bottom:0;
     order:0;
@@ -1594,10 +1594,10 @@ body {
     left:50%;
     top:50%;
     transform:translate(-50%, -50%);
-    font-size:18px;
-    color:var(--lohas-text);
-    letter-spacing:3px;
-    font-weight:600;
+    font-size:13px;
+    color:var(--lohas-mute);
+    letter-spacing:2px;
+    font-weight:500;
     white-space:nowrap;
   }
 
@@ -1824,25 +1824,31 @@ body {
   .mp-mobile-tabbar .tab-upload{
     position:relative;
     flex:1;
+    padding-top:32px;  /* 留空間給凸起圓 */
+  }
+  .mp-mobile-tabbar .tab-upload span{
+    color:var(--lohas-mute);
+    font-size:10px;
+    font-weight:500;
+    letter-spacing:0.5px;
   }
   .mp-mobile-tabbar .tab-upload-circle{
     position:absolute;
-    top:-28px;
+    top:-32px;
     left:50%;
     transform:translateX(-50%);
-    width:58px; height:58px;
+    width:62px; height:62px;
     border-radius:50%;
     background:var(--lohas-brand);
     color:#fff;
     display:flex;
     align-items:center;
     justify-content:center;
-    box-shadow:0 6px 20px rgba(80,66,45,0.35);
-    border:4px solid #fff;
+    box-shadow:0 10px 24px rgba(80,66,45,0.45), 0 0 0 5px #fff;
     transition:transform .15s, background .15s;
   }
   .mp-mobile-tabbar .tab-upload-circle i{
-    font-size:20px !important;
+    font-size:22px !important;
     color:#fff !important;
   }
   .mp-mobile-tabbar .tab-upload:hover .tab-upload-circle,
@@ -1869,6 +1875,6 @@ body {
   .mp.is-creator .shortcuts{
     grid-template-columns:repeat(2,1fr);
   }
-  .mp .content{ padding:20px 16px }
+  .mp .content{ padding:20px 12px }
   .mp .hero{ padding:24px 20px }
 }
