@@ -142,13 +142,20 @@
     // Hero 區
     Utils.setText('#dashboard-name', m.name || '-');
     Utils.setText('#dashboard-id', `樂活會員編號:${m.erpid || '-'}`);
+    // 同步手機版個人資料卡
+    Utils.setText('#mobile-dashboard-name', m.name || '-');
+    Utils.setText('#mobile-dashboard-id', `會員編號:${m.erpid || '-'}`);
 
     const heroBadge = document.getElementById('heroBadge');
     if (heroBadge) heroBadge.style.display = State.isCreator ? 'inline-flex' : 'none';
+    const mobileHeroBadge = document.getElementById('mobileHeroBadge');
+    if (mobileHeroBadge) mobileHeroBadge.style.display = State.isCreator ? 'inline-flex' : 'none';
 
     // Admin badge + 進入後台按鈕
     const heroAdminBadge = document.getElementById('heroAdminBadge');
     if (heroAdminBadge) heroAdminBadge.style.display = State.isAdmin ? 'inline-flex' : 'none';
+    const mobileHeroAdminBadge = document.getElementById('mobileHeroAdminBadge');
+    if (mobileHeroAdminBadge) mobileHeroAdminBadge.style.display = State.isAdmin ? 'inline-flex' : 'none';
 
     const enterAdminBtn = document.getElementById('enterAdminBtn');
     const enterAdminBtnMobile = document.getElementById('enterAdminBtnMobile');
@@ -180,6 +187,18 @@
         avatarEl.innerHTML = `<img src="${saved}" alt="會員頭像">`;
       } else {
         avatarEl.textContent = getAvatarText(m.name);
+      }
+    }
+
+    // 同步手機版頭像
+    const mobileAvatarEl = document.getElementById('mobileAvatar');
+    if (mobileAvatarEl) {
+      mobileAvatarEl.classList.toggle('is-creator', State.isCreator);
+      const saved = localStorage.getItem('lohasMemberAvatar');
+      if (saved) {
+        mobileAvatarEl.innerHTML = `<img src="${saved}" alt="會員頭像">`;
+      } else {
+        mobileAvatarEl.textContent = getAvatarText(m.name);
       }
     }
 
@@ -1537,6 +1556,32 @@
         } else if (action === 'upload-design') {
           // 開上傳刻圖設計 modal (尚未實作 → 暫時提示)
           alert('上傳刻圖設計功能即將推出');
+        }
+      });
+    });
+
+    // 手機板底部 tab bar
+    document.querySelectorAll('.mp-mobile-tabbar .tab-item').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        e.preventDefault();
+        const action = tab.dataset.action;
+        const page = tab.dataset.page;
+
+        // 中央上傳鈕 → 直接開 modal
+        if (action === 'upload-photo') {
+          if (window.LohasUpload && window.LohasUpload.openModal) {
+            window.LohasUpload.openModal();
+          }
+          return;
+        }
+
+        // 其他 tab → 切換到對應頁面 + 高亮自己
+        if (page) {
+          // 高亮 active
+          document.querySelectorAll('.mp-mobile-tabbar .tab-item').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          // 切換頁
+          goTo(page);
         }
       });
     });
