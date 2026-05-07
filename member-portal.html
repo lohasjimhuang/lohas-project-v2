@@ -9,13 +9,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <!-- LOHAS CSS · 載入順序: tokens → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260507-1359">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260507-1359">
-  <link rel="stylesheet" href="css/member-portal.css?v=20260507-1359">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260507-1421">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260507-1421">
+  <link rel="stylesheet" href="css/member-portal.css?v=20260507-1421">
 
   <!-- 上傳 modal 所需資源 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-  <link rel="stylesheet" href="css/upload.css?v=20260507-1359">
+  <link rel="stylesheet" href="css/upload.css?v=20260507-1421">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 <body>
@@ -111,6 +111,24 @@
 
       <!-- ===== 首頁 ===== -->
       <div class="content-page on" data-page="home">
+        <!-- 手機版專用: 個人資料卡 (替代 hero) -->
+        <div class="mobile-profile-card">
+          <div class="hero-avatar-wrap" id="mobileHeroAvatar">
+            <div class="hero-avatar" id="mobileAvatar">--</div>
+            <button class="avatar-camera mobile-avatar-camera" type="button" aria-label="更換頭像">
+              <i class="fa-solid fa-camera"></i>
+            </button>
+          </div>
+          <div class="mobile-profile-info">
+            <h1 class="mobile-profile-name" id="mobile-dashboard-name">載入中...</h1>
+            <div class="mobile-profile-badges">
+              <span class="creator-badge" id="mobileHeroBadge" style="display:none"><i class="fa-solid fa-star"></i>Creator</span>
+              <span class="admin-badge" id="mobileHeroAdminBadge" style="display:none"><i class="fa-solid fa-shield-halved"></i>Admin</span>
+            </div>
+            <div class="mobile-profile-id" id="mobile-dashboard-id">會員編號:--</div>
+          </div>
+        </div>
+
         <div class="creator-only-section">
           <div class="section-title"><h2>累計數據</h2></div>
           <div class="creator-stats" id="homeStats">
@@ -420,6 +438,31 @@
     </div>
   </main>
 
+  <!-- ====== 手機版底部 Tab Bar (只在手機顯示) ====== -->
+  <nav class="mp-mobile-tabbar">
+    <a class="tab-item active" data-tab="home" data-page="home">
+      <i class="fa-solid fa-house"></i>
+      <span>首頁</span>
+    </a>
+    <a class="tab-item" data-tab="inspo" data-page="inspo">
+      <i class="fa-regular fa-bookmark"></i>
+      <span>我的靈感</span>
+    </a>
+    <a class="tab-item tab-upload" data-tab="upload" data-action="upload-photo">
+      <div class="tab-upload-circle">
+        <i class="fa-solid fa-plus"></i>
+      </div>
+    </a>
+    <a class="tab-item" data-tab="wishlist" data-page="wishlist">
+      <i class="fa-solid fa-pencil"></i>
+      <span>想刻清單</span>
+    </a>
+    <a class="tab-item" data-tab="profile" data-page="profile">
+      <i class="fa-regular fa-user"></i>
+      <span>會員資料</span>
+    </a>
+  </nav>
+
   <!-- ====== 全域 Photo Modal ====== -->
   <div class="modal-bg" id="modalBg">
     <div class="modal">
@@ -563,11 +606,11 @@
 
 <!-- ====== 依賴 (按順序載入) ====== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/utils.js?v=20260507-1359"></script>
-<script src="js/auth.js?v=20260507-1359"></script>
-<script src="js/supabase.js?v=20260507-1359"></script>
-<script src="js/member-portal.js?v=20260507-1359"></script>
-<script src="js/upload.js?v=20260507-1359"></script>
+<script src="js/utils.js?v=20260507-1421"></script>
+<script src="js/auth.js?v=20260507-1421"></script>
+<script src="js/supabase.js?v=20260507-1421"></script>
+<script src="js/member-portal.js?v=20260507-1421"></script>
+<script src="js/upload.js?v=20260507-1421"></script>
 
 </body>
 </html>
