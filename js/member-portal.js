@@ -107,7 +107,7 @@
       try {
         const [creatorRes, adminRes] = await Promise.all([
           sb.from('creators')
-            .select('member_id, display_name, bio, avatar_url, status, bank_name, bank_code, bank_branch, bank_account, account_holder')
+            .select('member_id, display_name, bio, avatar_url, status, bank_name, bank_code, bank_branch, bank_account, account_holder, tagline, joining_story, joining_photo_url, video_url, video_title, social_links')
             .eq('member_id', member.erpid)
             .eq('status', 'active')
             .maybeSingle(),
@@ -207,6 +207,29 @@
 
       const bio = document.getElementById('creatorBio');
       if (bio) bio.value = ci.bio || '';
+
+      // 載入新欄位
+      const tagline = document.getElementById('creatorTagline');
+      const joiningPhoto = document.getElementById('creatorJoiningPhoto');
+      const joiningStory = document.getElementById('creatorJoiningStory');
+      const videoUrl = document.getElementById('creatorVideoUrl');
+      const videoTitle = document.getElementById('creatorVideoTitle');
+      if (tagline) tagline.value = ci.tagline || '';
+      if (joiningPhoto) joiningPhoto.value = ci.joining_photo_url || '';
+      if (joiningStory) joiningStory.value = ci.joining_story || '';
+      if (videoUrl) videoUrl.value = ci.video_url || '';
+      if (videoTitle) videoTitle.value = ci.video_title || '';
+
+      // 載入社群連結
+      const social = ci.social_links || {};
+      const ig = document.getElementById('creatorIg');
+      const fb = document.getElementById('creatorFb');
+      const lineId = document.getElementById('creatorLine');
+      const email = document.getElementById('creatorEmail');
+      if (ig) ig.value = social.instagram || '';
+      if (fb) fb.value = social.facebook || '';
+      if (lineId) lineId.value = social.line || '';
+      if (email) email.value = social.email || '';
     }
   }
 
@@ -756,6 +779,150 @@
     }
   }
 
+  // 創作者個人頁:儲存資料 (全欄位)
+  async function saveCreatorInfo() {
+    if (!State.isCreator || !State.member) return;
+    const sb = getSupabase();
+    if (!sb) return;
+
+    const dn = document.getElementById('creatorDisplayName')?.value || '';
+    const tagline = document.getElementById('creatorTagline')?.value || '';
+    const bio = document.getElementById('creatorBio')?.value || '';
+    const joiningPhoto = document.getElementById('creatorJoiningPhoto')?.value || '';
+    const joiningStory = document.getElementById('creatorJoiningStory')?.value || '';
+    const videoUrl = document.getElementById('creatorVideoUrl')?.value || '';
+    const videoTitle = document.getElementById('creatorVideoTitle')?.value || '';
+    const ig = document.getElementById('creatorIg')?.value || '';
+    const fb = document.getElementById('creatorFb')?.value || '';
+    const lineId = document.getElementById('creatorLine')?.value || '';
+    const email = document.getElementById('creatorEmail')?.value || '';
+
+    if (!dn.trim()) {
+      alert('請填寫顯示名稱');
+      return;
+    }
+
+    const social_links = {};
+    if (ig) social_links.instagram = ig;
+    if (fb) social_links.facebook = fb;
+    if (lineId) social_links.line = lineId;
+    if (email) social_links.email = email;
+
+    const { error } = await sb
+      .from('creator_info')
+      .update({
+        display_name: dn,
+        tagline: tagline,
+        bio: bio,
+        joining_photo_url: joiningPhoto,
+        joining_story: joiningStory,
+        video_url: videoUrl,
+        video_title: videoTitle,
+        social_links: social_links
+      })
+      .eq('member_id', State.member.erpid);
+
+    if (error) {
+      console.error('[儲存失敗]', error);
+      alert('儲存失敗:' + error.message);
+      return;
+    }
+
+    // 更新本地 State
+    if (State.creatorInfo) {
+      State.creatorInfo.display_name = dn;
+      State.creatorInfo.tagline = tagline;
+      State.creatorInfo.bio = bio;
+      State.creatorInfo.joining_photo_url = joiningPhoto;
+      State.creatorInfo.joining_story = joiningStory;
+      State.creatorInfo.video_url = videoUrl;
+      State.creatorInfo.video_title = videoTitle;
+      State.creatorInfo.social_links = social_links;
+    }
+
+    alert('已儲存');
+  }
+
+  function bindSaveCreatorInfo() {
+    document.getElementById('saveCreatorInfo')?.addEventListener('click', saveCreatorInfo);
+  }
+
+  // 匯款資料 form 顯示 / 隱藏 / 儲存
+  function showBankForm(account) {
+    const form = document.getElementById('bankForm');
+    const list = document.getElementById('bankInfoList');
+    const editBtn = document.getElementById('bankEditBtn');
+
+    if (form) {
+      form.style.display = '';
+      document.getElementById('bankName').value = account?.bank_name || '';
+      document.getElementById('bankBranch').value = account?.branch || '';
+      document.getElementById('bankAccount').value = account?.account_number || '';
+      document.getElementById('bankRecipient').value = account?.recipient_name || '';
+    }
+    if (list) list.style.display = 'none';
+    if (editBtn) editBtn.style.display = 'none';
+  }
+
+  async function saveBankForm() {
+    if (!State.member) return;
+    const sb = getSupabase();
+    if (!sb) return;
+
+    const bank_name = document.getElementById('bankName')?.value?.trim();
+    const branch = document.getElementById('bankBranch')?.value?.trim();
+    const account_number = document.getElementById('bankAccount')?.value?.trim();
+    const recipient_name = document.getElementById('bankRecipient')?.value?.trim();
+
+    if (!bank_name || !branch || !account_number || !recipient_name) {
+      alert('請填寫所有欄位');
+      return;
+    }
+    if (!/^\d+$/.test(account_number)) {
+      alert('帳號請輸入純數字');
+      return;
+    }
+
+    // upsert (有就 update, 沒就 insert)
+    const { error } = await sb
+      .from('payout_accounts')
+      .upsert({
+        member_id: State.member.erpid,
+        bank_name,
+        branch,
+        account_number,
+        recipient_name,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'member_id' });
+
+    if (error) {
+      console.error('[儲存匯款失敗]', error);
+      alert('儲存失敗:' + error.message);
+      return;
+    }
+
+    alert('已儲存匯款資料');
+    loadEarnings();
+  }
+
+  function bindBankForm() {
+    const sb = getSupabase();
+    document.getElementById('bankSaveBtn')?.addEventListener('click', saveBankForm);
+    document.getElementById('bankCancelBtn')?.addEventListener('click', () => {
+      document.getElementById('bankForm').style.display = 'none';
+      loadEarnings();
+    });
+    document.getElementById('bankEditBtn')?.addEventListener('click', async () => {
+      if (!sb || !State.member) return;
+      const { data: account } = await sb
+        .from('payout_accounts')
+        .select('*')
+        .eq('member_id', State.member.erpid)
+        .maybeSingle();
+      showBankForm(account);
+    });
+  }
+
 
   /* =============================================================
      Analytics · 創作數據 (Creator only)
@@ -877,73 +1044,98 @@
   async function loadEarnings() {
     if (!State.isCreator) return;
     const sb = getSupabase();
-    if (!sb || !State.member || !State.creatorInfo) return;
+    if (!sb || !State.member) return;
 
-    const ci = State.creatorInfo;
+    // 載入匯款資料
+    const { data: account } = await sb
+      .from('payout_accounts')
+      .select('*')
+      .eq('member_id', State.member.erpid)
+      .maybeSingle();
 
-    // 匯款資料 banner
-    const banner = document.getElementById('bankBanner');
-    if (banner && ci.bank_name) {
-      const bs = document.getElementById('bankBannerSub');
-      if (bs) bs.textContent = `${ci.bank_name}(${ci.bank_code || '--'})· 帳號末四碼 ${(ci.bank_account || '').slice(-4)} · 戶名:${ci.account_holder || '--'}`;
-      banner.style.display = '';
-    }
-
-    // 匯款資料明細
     const bankInfo = document.getElementById('bankInfoList');
-    if (bankInfo) {
-      bankInfo.innerHTML = `
-        <div class="bank-info-row"><div class="bank-info-label">收 款 戶 名</div><div class="bank-info-value">${escapeHtml(ci.account_holder || '-')}</div></div>
-        <div class="bank-info-row"><div class="bank-info-label">銀 行</div><div class="bank-info-value">${escapeHtml(ci.bank_name || '-')}(${escapeHtml(ci.bank_code || '-')})</div></div>
-        <div class="bank-info-row"><div class="bank-info-label">分 行</div><div class="bank-info-value">${escapeHtml(ci.bank_branch || '-')}</div></div>
-        <div class="bank-info-row"><div class="bank-info-label">帳 號</div><div class="bank-info-value masked">${maskBankAccount(ci.bank_account)}</div></div>`;
+    const bankForm = document.getElementById('bankForm');
+    const bankEditBtn = document.getElementById('bankEditBtn');
+
+    if (account) {
+      // 已有資料 - 顯示明細
+      if (bankInfo) {
+        bankInfo.innerHTML = `
+          <div class="bank-info-row"><div class="bank-info-label">受 款 人</div><div class="bank-info-value">${escapeHtml(account.recipient_name || '-')}</div></div>
+          <div class="bank-info-row"><div class="bank-info-label">銀 行</div><div class="bank-info-value">${escapeHtml(account.bank_name || '-')}</div></div>
+          <div class="bank-info-row"><div class="bank-info-label">分 行</div><div class="bank-info-value">${escapeHtml(account.branch || '-')}</div></div>
+          <div class="bank-info-row"><div class="bank-info-label">帳 號</div><div class="bank-info-value masked">${maskBankAccount(account.account_number)}</div></div>`;
+        bankInfo.style.display = '';
+      }
+      if (bankForm) bankForm.style.display = 'none';
+      if (bankEditBtn) bankEditBtn.style.display = '';
+    } else {
+      // 沒資料 - 顯示「未設定 · 點此建立」
+      if (bankInfo) {
+        bankInfo.innerHTML = `
+          <div class="empty" style="padding:30px 20px;background:transparent;border:1px dashed var(--lohas-light-brown);border-radius:10px">
+            <i class="fa-solid fa-circle-exclamation" style="color:var(--status-pending);font-size:22px"></i>
+            <div class="empty-title" style="margin-top:8px">尚未設定匯款資料</div>
+            <div style="font-size:11px;color:var(--lohas-mute);margin:8px 0 14px">完成設定後才能領取分潤</div>
+            <button class="btn secondary" id="bankCreateBtn"><i class="fa-solid fa-plus"></i>建立匯款資料</button>
+          </div>`;
+        bankInfo.style.display = '';
+        document.getElementById('bankCreateBtn')?.addEventListener('click', () => showBankForm(null));
+      }
+      if (bankForm) bankForm.style.display = 'none';
+      if (bankEditBtn) bankEditBtn.style.display = 'none';
     }
 
     // 累計分潤、本月、下次匯款
-    const { data: orders } = await sb
-      .from('engraving_orders')
-      .select('royalty_amount, ordered_at')
+    const { data: records } = await sb
+      .from('royalty_records')
+      .select('amount, used_at, payout_status')
       .eq('creator_id', State.member.erpid);
 
-    const total = (orders || []).reduce((s, o) => s + Number(o.royalty_amount || 0), 0);
+    const total = (records || []).reduce((s, r) => s + Number(r.amount || 0), 0);
     const now = new Date();
-    const thisMonth = (orders || [])
-      .filter(o => {
-        const d = new Date(o.ordered_at);
+    const thisMonth = (records || [])
+      .filter(r => {
+        const d = new Date(r.used_at);
         return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
       })
-      .reduce((s, o) => s + Number(o.royalty_amount || 0), 0);
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
+    const pending = (records || [])
+      .filter(r => r.payout_status === 'pending')
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
 
     document.querySelectorAll('[data-stat="thisMonth"]').forEach(el => el.textContent = '$' + thisMonth.toLocaleString());
     document.querySelectorAll('[data-stat="totalRoyalty"]').forEach(el => el.textContent = '$' + total.toLocaleString());
-    document.querySelectorAll('[data-stat="nextPayout"]').forEach(el => el.textContent = '$' + thisMonth.toLocaleString());
+    document.querySelectorAll('[data-stat="nextPayout"]').forEach(el => el.textContent = '$' + pending.toLocaleString());
 
-    // 匯款進度
+    // 匯款進度 - 顯示分潤明細
     const payoutList = document.getElementById('payoutList');
     if (payoutList) {
-      const { data: payouts } = await sb
-        .from('royalty_payouts')
-        .select('*')
-        .eq('creator_id', State.member.erpid)
-        .order('scheduled_date', { ascending: false })
-        .limit(10);
-
-      const items = payouts || [];
-      if (items.length === 0) {
-        payoutList.innerHTML = '<p class="empty-text">尚無匯款紀錄</p>';
+      if (!records || records.length === 0) {
+        payoutList.innerHTML = '<p class="empty-text">尚無分潤紀錄,等待第一筆刻圖被使用!</p>';
       } else {
-        payoutList.innerHTML = items.map(p => {
-          const isPaid = p.status === 'paid';
+        // 抓詳細的 records 含 design_name
+        const { data: detailed } = await sb
+          .from('royalty_records')
+          .select('id, amount, used_at, payout_status, design_name')
+          .eq('creator_id', State.member.erpid)
+          .order('used_at', { ascending: false })
+          .limit(20);
+
+        payoutList.innerHTML = (detailed || []).map(r => {
+          const isPaid = r.payout_status === 'paid';
+          const dt = new Date(r.used_at);
+          const dateStr = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
           return `
             <div class="payout-row ${isPaid ? '' : 'upcoming'}">
               <div class="payout-icon ${isPaid ? 'paid-icon' : 'upcoming-icon'}">
                 <i class="fa-solid fa-${isPaid ? 'check' : 'clock'}"></i>
               </div>
               <div class="payout-info">
-                <div class="payout-date">${p.paid_date || p.scheduled_date || '-'} · ${isPaid ? '已匯款' : '待匯款'}</div>
-                <div class="payout-meta">${escapeHtml(p.period || '')} 分潤${p.bank_account_masked ? ' · ' + p.bank_account_masked : ''}</div>
+                <div class="payout-date">${dateStr} · ${isPaid ? '已匯款' : '待匯款'}</div>
+                <div class="payout-meta">${escapeHtml(r.design_name || '未命名設計')}</div>
               </div>
-              <div class="payout-amt">$${Number(p.amount || 0).toLocaleString()}</div>
+              <div class="payout-amt">$${Number(r.amount || 0).toLocaleString()}</div>
             </div>`;
         }).join('');
       }
@@ -1228,6 +1420,8 @@
     bindCreatorAvatar();
     bindNavigation();
     bindPreviewCreator();
+    bindSaveCreatorInfo();
+    bindBankForm();
 
     // 預載入首頁需要的東西
     if (State.isCreator) loadAnalytics(); // 首頁累計數據
