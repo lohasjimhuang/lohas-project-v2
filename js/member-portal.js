@@ -271,6 +271,45 @@
      Photos · 我的照片 (gallery_posts)
      ============================================================= */
 
+  // 輕量版: 只算駁回數量, 更新側邊欄紅圓圓 (init 時用)
+  async function refreshPhotoRejectBadge() {
+    const rejectBadge = document.getElementById('photoRejectBadge');
+    if (!rejectBadge || !State.member) return;
+
+    const sb = getSupabase();
+    if (!sb) return;
+
+    const postsTable = (Supabase.CONFIG && Supabase.CONFIG.POSTS_TABLE) || 'gallery_posts';
+
+    try {
+      const { data, error } = await sb
+        .from(postsTable)
+        .select('id, status')
+        .eq('member_id', State.member.erpid)
+        .eq('status', 'rejected');
+
+      if (error) return;
+
+      const rejected = data || [];
+      const ackedKey = `lohasPhotoRejectAcked_${State.member.erpid}`;
+      let ackedIds = [];
+      try {
+        ackedIds = JSON.parse(localStorage.getItem(ackedKey) || '[]');
+      } catch (e) { ackedIds = []; }
+
+      const unackedRejected = rejected.filter(r => !ackedIds.includes(r.id));
+
+      if (unackedRejected.length > 0) {
+        rejectBadge.textContent = unackedRejected.length;
+        rejectBadge.style.display = 'inline-flex';
+      } else {
+        rejectBadge.style.display = 'none';
+      }
+    } catch (err) {
+      console.warn('[refreshPhotoRejectBadge]', err);
+    }
+  }
+
   async function loadPhotos() {
     const list = document.getElementById('myPhotoList');
     const banner = document.getElementById('photoRejectedBanner');
@@ -633,7 +672,7 @@
           <i class="fa-regular fa-comment"></i>
           <div class="empty-title">還沒寫過故事</div>
           <div>分享你的眼鏡刻圖故事，讓設計被看見</div>
-          <button class="action-btn add-story-card"><span>寫一篇新故事</span></button>
+          <button class="action-btn add-story-card" style="margin-top:18px"><span>分享照片並寫下故事</span></button>
         </div>`;
       return;
     }
@@ -671,7 +710,7 @@
         </div>
       </div>
     `).join('') + `
-      <button class="action-btn add-story-card" style="margin:14px 0 0"><span>寫一篇新故事</span></button>`;
+      <button class="action-btn add-story-card" style="margin:14px 0 0"><span>分享照片並寫下故事</span></button>`;
 
     // 綁選單按鈕
     list.querySelectorAll('.story-menu-btn').forEach(b => {
@@ -1737,6 +1776,9 @@
     bindPreviewCreator();
     bindSaveCreatorInfo();
     bindBankForm();
+
+    // 一進來就先計算一次駁回數量, 顯示側邊欄紅圓圓
+    refreshPhotoRejectBadge();
 
     // 預載入首頁需要的東西
     if (State.isCreator) loadAnalytics(); // 首頁累計數據
