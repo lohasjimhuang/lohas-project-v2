@@ -224,7 +224,7 @@ body {
 
 .mp .hero{
   position:relative;
-  padding:36px 36px 12px;
+  padding:36px 36px 6px;
   background:#fff;
   border-bottom:1px solid var(--lohas-line);
   display:flex;
@@ -327,7 +327,7 @@ body {
    5. Content + Section title
    ============================================================= */
 
-.mp .content{ padding:6px 36px 32px }
+.mp .content{ padding:0 36px 32px }
 .mp .content-page{ display:none }
 .mp .content-page.on{ display:block }
 
