@@ -9,13 +9,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <!-- LOHAS CSS · 載入順序: tokens → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260507-1142">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260507-1142">
-  <link rel="stylesheet" href="css/member-portal.css?v=20260507-1142">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260507-1246">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260507-1246">
+  <link rel="stylesheet" href="css/member-portal.css?v=20260507-1246">
 
   <!-- 上傳 modal 所需資源 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-  <link rel="stylesheet" href="css/gallery.css?v=20260507-1142">
+  <link rel="stylesheet" href="css/gallery.css?v=20260507-1246">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 <body>
@@ -231,7 +231,7 @@
           <div class="editor-row">
             <div class="editor-label">短標籤</div>
             <div>
-              <input class="editor-input" id="creatorTagline" placeholder="情緒化的兔子 · 插畫家"/>
+              <input class="editor-input" id="creatorTagline" placeholder="例如：插畫家"/>
               <div style="font-size:11px;color:var(--lohas-mute);margin-top:4px;letter-spacing:0.3px">顯示在名字下方,例如「情緒化的兔子 · 插畫家」</div>
             </div>
           </div>
@@ -244,20 +244,20 @@
         <div class="editor-panel">
           <h3 class="editor-panel-h"><i class="fa-regular fa-heart"></i>與樂活的緣分</h3>
           <div class="editor-row">
-            <div class="editor-label">配鏡照片</div>
+            <div class="editor-label">圖片</div>
             <div>
               <div class="creator-photo-wrap">
                 <div class="creator-photo-preview" id="creatorJoiningPhotoPreview">
                   <i class="fa-regular fa-image"></i>
-                  <span>3:4 直式照片</span>
+                  <span>3:4 直式</span>
                 </div>
                 <button class="creator-photo-upload-btn" id="creatorJoiningPhotoBtn" type="button">
-                  <i class="fa-solid fa-camera"></i>更換照片
+                  <i class="fa-solid fa-camera"></i>更換圖片
                 </button>
                 <input type="file" id="creatorJoiningPhotoInput" class="visually-hidden" accept="image/*">
                 <input type="hidden" id="creatorJoiningPhoto"/>
               </div>
-              <div style="font-size:11px;color:var(--lohas-mute);margin-top:6px;letter-spacing:0.3px">3:4 直式照片,顯示在緣分區左側</div>
+              <div style="font-size:11px;color:var(--lohas-mute);margin-top:6px;letter-spacing:0.3px">3:4 直式照片,顯示在文字左側</div>
             </div>
           </div>
           <div class="editor-row">
@@ -563,11 +563,11 @@
 
 <!-- ====== 依賴 (按順序載入) ====== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/utils.js?v=20260507-1142"></script>
-<script src="js/auth.js?v=20260507-1142"></script>
-<script src="js/supabase.js?v=20260507-1142"></script>
-<script src="js/member-portal.js?v=20260507-1142"></script>
-<script src="js/upload.js?v=20260507-1142"></script>
+<script src="js/utils.js?v=20260507-1246"></script>
+<script src="js/auth.js?v=20260507-1246"></script>
+<script src="js/supabase.js?v=20260507-1246"></script>
+<script src="js/member-portal.js?v=20260507-1246"></script>
+<script src="js/upload.js?v=20260507-1246"></script>
 
 </body>
 </html>
