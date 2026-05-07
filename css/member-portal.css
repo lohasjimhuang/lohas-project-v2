@@ -1564,7 +1564,7 @@ body {
   }
 
   /* 手機板「進入管理後台」按鈕: 圓形 icon (只顯示盾牌, 不顯示文字) */
-  .mp .enter-admin-btn{
+  .mp .mp-mobile-admin-btn{
     position:static;
     top:auto; left:auto; right:auto;
     transform:none;
