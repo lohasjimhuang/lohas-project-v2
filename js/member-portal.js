@@ -1314,15 +1314,77 @@
         }
         const reader = new FileReader();
         reader.onload = function (ev) {
-          if (preview) {
-            preview.style.backgroundImage = `url('${ev.target.result}')`;
-            preview.classList.add('has-image');
-          }
-          if (hidden) hidden.value = ev.target.result;
+          // 先開裁切 modal (3:4 比例)
+          openCropModal(ev.target.result, 3 / 4, (croppedDataUrl) => {
+            if (preview) {
+              preview.style.backgroundImage = `url('${croppedDataUrl}')`;
+              preview.classList.add('has-image');
+            }
+            if (hidden) hidden.value = croppedDataUrl;
+          });
         };
         reader.readAsDataURL(file);
+        // 清除 file input 讓同一張可以重複選
+        input.value = '';
       });
     }
+  }
+
+  // 共用裁切 modal (3:4 直式 / 也可以傳其他 ratio)
+  let _cropper = null;
+  let _cropCallback = null;
+
+  function openCropModal(dataUrl, aspectRatio, callback) {
+    const modal = document.getElementById('cropModal');
+    const img = document.getElementById('cropImage');
+    if (!modal || !img) {
+      // 沒 modal 直接 callback 原圖
+      callback(dataUrl);
+      return;
+    }
+    _cropCallback = callback;
+    img.src = dataUrl;
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    // 等 modal 顯示後再初始化 Cropper
+    setTimeout(() => {
+      if (_cropper) { _cropper.destroy(); _cropper = null; }
+      if (window.Cropper) {
+        _cropper = new window.Cropper(img, {
+          aspectRatio: aspectRatio,
+          viewMode: 1,
+          autoCropArea: 0.95,
+          background: false,
+          movable: true,
+          zoomable: true,
+          rotatable: false,
+          scalable: false
+        });
+      }
+    }, 50);
+
+    // 綁套用 / 取消 (只綁一次, 用 once)
+    const apply = document.getElementById('applyCrop');
+    const cancel = document.getElementById('closeCrop');
+    const cancelBtn = document.getElementById('cancelCrop');
+
+    function doApply() {
+      if (_cropper && _cropCallback) {
+        const canvas = _cropper.getCroppedCanvas({ maxWidth: 1200, maxHeight: 1600 });
+        const result = canvas.toDataURL('image/jpeg', 0.92);
+        _cropCallback(result);
+      }
+      closeCrop();
+    }
+    function closeCrop() {
+      if (_cropper) { _cropper.destroy(); _cropper = null; }
+      _cropCallback = null;
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    apply?.addEventListener('click', doApply, { once: true });
+    cancel?.addEventListener('click', closeCrop, { once: true });
+    cancelBtn?.addEventListener('click', closeCrop, { once: true });
   }
 
   // 自訂內容區塊 (可新增 / 刪除多筆圖文)
