@@ -121,7 +121,7 @@ body {
 }
 .mp .logo{
   display:block;
-  height:26px;
+  height:38px;
   width:auto;
 }
 .mp .role-tag{
@@ -1595,7 +1595,7 @@ body {
     position:relative;
   }
   .mp .mp-mobile-logo{
-    height:36px;
+    height:44px;
     width:auto;
     margin-right:auto;
   }
