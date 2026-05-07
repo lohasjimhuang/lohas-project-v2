@@ -1546,6 +1546,11 @@ body {
    19. RWD · 平板 (max-width: 900px)
    ============================================================= */
 
+/* 桌面版預設隱藏 mobile-profile-card 跟 mobile tab bar */
+.mp .mobile-profile-card{ display:none }
+.mp-mobile-tabbar{ display:none }
+
+
 @media (max-width: 900px) {
   .mp{
     grid-template-columns:1fr;
@@ -1834,11 +1839,6 @@ body {
   }
 }
 
-/* 桌面版預設隱藏 mobile-profile-card */
-.mp .mobile-profile-card{ display:none }
-
-/* 桌面版預設隱藏 mobile tab bar */
-.mp-mobile-tabbar{ display:none }
 
 @media (max-width: 500px) {
   .mp .photo-grid,
