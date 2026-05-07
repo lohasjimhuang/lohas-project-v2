@@ -107,7 +107,7 @@
       try {
         const [creatorRes, adminRes] = await Promise.all([
           sb.from('creator_info')
-            .select('member_id, display_name, bio, avatar_url, status, bank_name, bank_code, bank_branch, bank_account, account_holder, tagline, joining_story, joining_photo_url, video_url, video_title, social_links')
+            .select('member_id, display_name, bio, avatar_url, status, bank_name, bank_code, bank_branch, bank_account, account_holder, tagline, joining_story, joining_photo_url, video_url, video_title, social_links, custom_blocks')
             .eq('member_id', member.erpid)
             .eq('status', 'active')
             .maybeSingle(),
@@ -216,6 +216,12 @@
       const videoTitle = document.getElementById('creatorVideoTitle');
       if (tagline) tagline.value = ci.tagline || '';
       if (joiningPhoto) joiningPhoto.value = ci.joining_photo_url || '';
+      // 同步圖片到預覽框
+      const joiningPhotoPreview = document.getElementById('creatorJoiningPhotoPreview');
+      if (joiningPhotoPreview && ci.joining_photo_url) {
+        joiningPhotoPreview.style.backgroundImage = `url('${ci.joining_photo_url}')`;
+        joiningPhotoPreview.classList.add('has-image');
+      }
       if (joiningStory) joiningStory.value = ci.joining_story || '';
       if (videoUrl) videoUrl.value = ci.video_url || '';
       if (videoTitle) videoTitle.value = ci.video_title || '';
@@ -808,6 +814,8 @@
     if (lineId) social_links.line = lineId;
     if (email) social_links.email = email;
 
+    const customBlocks = collectCustomBlocks();
+
     const { error } = await sb
       .from('creator_info')
       .update({
@@ -818,7 +826,8 @@
         joining_story: joiningStory,
         video_url: videoUrl,
         video_title: videoTitle,
-        social_links: social_links
+        social_links: social_links,
+        custom_blocks: customBlocks
       })
       .eq('member_id', State.member.erpid);
 
@@ -838,6 +847,7 @@
       State.creatorInfo.video_url = videoUrl;
       State.creatorInfo.video_title = videoTitle;
       State.creatorInfo.social_links = social_links;
+      State.creatorInfo.custom_blocks = customBlocks;
     }
 
     alert('已儲存');
@@ -1077,7 +1087,7 @@
             <i class="fa-solid fa-circle-exclamation" style="color:var(--status-pending);font-size:22px"></i>
             <div class="empty-title" style="margin-top:8px">尚未設定匯款資料</div>
             <div style="font-size:11px;color:var(--lohas-mute);margin:8px 0 14px">完成設定後才能領取分潤</div>
-            <button class="btn secondary" id="bankCreateBtn"><i class="fa-solid fa-plus"></i>建立匯款資料</button>
+            <button class="empty-cta" id="bankCreateBtn">建立匯款資料</button>
           </div>`;
         bankInfo.style.display = '';
         document.getElementById('bankCreateBtn')?.addEventListener('click', () => showBankForm(null));
@@ -1285,6 +1295,154 @@
     }
   }
 
+  function bindCreatorJoiningPhoto() {
+    const btn = document.getElementById('creatorJoiningPhotoBtn');
+    const preview = document.getElementById('creatorJoiningPhotoPreview');
+    const input = document.getElementById('creatorJoiningPhotoInput');
+    const hidden = document.getElementById('creatorJoiningPhoto');
+
+    if (preview && input) preview.addEventListener('click', () => input.click());
+    if (btn && input) btn.addEventListener('click', () => input.click());
+
+    if (input) {
+      input.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+          window.alert('請選擇圖片檔案');
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          if (preview) {
+            preview.style.backgroundImage = `url('${ev.target.result}')`;
+            preview.classList.add('has-image');
+          }
+          if (hidden) hidden.value = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
+  // 自訂內容區塊 (可新增 / 刪除多筆圖文)
+  let customBlockCounter = 0;
+
+  function renderCustomBlock(index, data = {}) {
+    const id = `cb_${index}`;
+    return `
+      <div class="custom-block" data-index="${index}" id="${id}">
+        <div class="custom-block-h">
+          <span class="custom-block-num">區塊 ${index + 1}</span>
+          <button class="custom-block-remove" data-index="${index}" type="button" title="刪除此區塊">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+        <div class="editor-row">
+          <div class="editor-label">標題</div>
+          <div><input class="editor-input cb-title" placeholder="例如:創作風格" value="${escapeHtml(data.title || '')}"/></div>
+        </div>
+        <div class="editor-row">
+          <div class="editor-label">圖片</div>
+          <div>
+            <div class="creator-photo-wrap">
+              <div class="creator-photo-preview cb-photo-preview ${data.image ? 'has-image' : ''}" ${data.image ? `style="background-image:url('${escapeHtml(data.image)}')"` : ''}>
+                <i class="fa-regular fa-image"></i>
+                <span>選填</span>
+              </div>
+              <input type="file" class="visually-hidden cb-photo-input" accept="image/*">
+              <input type="hidden" class="cb-image" value="${escapeHtml(data.image || '')}"/>
+            </div>
+          </div>
+        </div>
+        <div class="editor-row">
+          <div class="editor-label">內文</div>
+          <div><textarea class="editor-area cb-text" placeholder="輸入內文...">${escapeHtml(data.text || '')}</textarea></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function bindCustomBlockEvents(blockEl) {
+    // 刪除
+    blockEl.querySelector('.custom-block-remove')?.addEventListener('click', () => {
+      if (confirm('確定要刪除此區塊?')) {
+        blockEl.remove();
+        renumberCustomBlocks();
+      }
+    });
+    // 圖片上傳
+    const photoPreview = blockEl.querySelector('.cb-photo-preview');
+    const photoInput = blockEl.querySelector('.cb-photo-input');
+    const photoHidden = blockEl.querySelector('.cb-image');
+    if (photoPreview && photoInput) {
+      photoPreview.addEventListener('click', () => photoInput.click());
+      photoInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          photoPreview.style.backgroundImage = `url('${ev.target.result}')`;
+          photoPreview.classList.add('has-image');
+          if (photoHidden) photoHidden.value = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+  }
+
+  function renumberCustomBlocks() {
+    document.querySelectorAll('.custom-block').forEach((el, i) => {
+      el.querySelector('.custom-block-num').textContent = `區塊 ${i + 1}`;
+    });
+  }
+
+  function bindCustomBlocks() {
+    const list = document.getElementById('customBlocksList');
+    const addBtn = document.getElementById('addCustomBlockBtn');
+
+    if (!list || !addBtn) return;
+
+    addBtn.addEventListener('click', () => {
+      // 移除空狀態提示
+      const empty = list.querySelector('.empty-text');
+      if (empty) empty.remove();
+
+      const idx = list.querySelectorAll('.custom-block').length;
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = renderCustomBlock(idx);
+      const blockEl = wrapper.firstElementChild;
+      list.appendChild(blockEl);
+      bindCustomBlockEvents(blockEl);
+    });
+
+    // 載入既有資料
+    if (State.creatorInfo && Array.isArray(State.creatorInfo.custom_blocks)) {
+      State.creatorInfo.custom_blocks.forEach((data, i) => {
+        const empty = list.querySelector('.empty-text');
+        if (empty) empty.remove();
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = renderCustomBlock(i, data);
+        const blockEl = wrapper.firstElementChild;
+        list.appendChild(blockEl);
+        bindCustomBlockEvents(blockEl);
+      });
+    }
+  }
+
+  function collectCustomBlocks() {
+    const blocks = [];
+    document.querySelectorAll('.custom-block').forEach(el => {
+      const title = el.querySelector('.cb-title')?.value || '';
+      const image = el.querySelector('.cb-image')?.value || '';
+      const text = el.querySelector('.cb-text')?.value || '';
+      if (title || text || image) {
+        blocks.push({ title, image, text });
+      }
+    });
+    return blocks;
+  }
+
 
   /* =============================================================
      Navigation · 頁面切換 + 登出
@@ -1418,6 +1576,8 @@
     applyIdentity();
     bindAvatar();
     bindCreatorAvatar();
+    bindCreatorJoiningPhoto();
+    bindCustomBlocks();
     bindNavigation();
     bindPreviewCreator();
     bindSaveCreatorInfo();
