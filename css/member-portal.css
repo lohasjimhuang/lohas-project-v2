@@ -1667,7 +1667,7 @@ body {
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:24px 22px 12px;
+    padding:36px 22px 12px;
     border-bottom:1px solid var(--lohas-line);
   }
   .mp-drawer-header h3{
@@ -2044,5 +2044,19 @@ body {
     grid-template-columns:repeat(2,1fr);
   }
   .mp .content{ padding:20px 8px }
+
+  /* 手機板 profile-card padding 縮小 + 改 1 欄 */
+  .mp .profile-card{
+    padding:18px 16px;
+  }
+  .mp .profile-grid{
+    grid-template-columns:1fr;
+    gap:14px;
+  }
+  /* 長文字自動換行 (避免 email 太長被切) */
+  .mp .profile-field>div{
+    word-break:break-all;
+    overflow-wrap:anywhere;
+  }
   .mp .hero{ padding:24px 20px }
 }
