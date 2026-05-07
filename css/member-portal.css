@@ -1607,11 +1607,12 @@ body {
   }
 
   /* 內容區順序 (手機板: 快捷標+卡 → 累計數據卡) */
-  .mp .content-page.on .shortcuts-title{ order:0 }
   .mp .content-page.on .shortcuts{ order:1 }
   .mp .content-page.on .creator-only-section{ order:2 }
   .mp .content-page.on .creator-stats{ order:2 }
   .mp .content-page.on .section-title{ order:3 }
+  /* shortcuts-title 必須在 section-title 之後才能覆蓋 (specificity 相同, 後者贏) */
+  .mp .content-page.on .section-title.shortcuts-title{ order:0 }
   .mp .content-page.on .profile-card{ order:4 }
   .mp .content-page.on .inspo-list,
   .mp .content-page.on .wish-list,
