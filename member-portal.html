@@ -9,13 +9,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <!-- LOHAS CSS · 載入順序: tokens → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260507-1533">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260507-1533">
-  <link rel="stylesheet" href="css/member-portal.css?v=20260507-1533">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260507-1546">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260507-1546">
+  <link rel="stylesheet" href="css/member-portal.css?v=20260507-1546">
 
   <!-- 上傳 modal 所需資源 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-  <link rel="stylesheet" href="css/upload.css?v=20260507-1533">
+  <link rel="stylesheet" href="css/upload.css?v=20260507-1546">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 <body>
@@ -25,11 +25,90 @@
   <!-- ====== 手機版獨立 Header (只在手機顯示) ====== -->
   <header class="mp-mobile-header">
     <img class="mp-mobile-logo" src="images/lohas-logo.svg" alt="LOHAS">
-    <span class="mp-mobile-role" id="mobileRoleTag">會員中心</span>
-    <a class="enter-admin-btn mp-mobile-admin-btn" id="enterAdminBtnMobile" href="admin-portal.html" style="display:none">
-      <i class="fa-solid fa-shield-halved"></i><span>進入管理後台</span>
-    </a>
+    <button type="button" class="mp-mobile-burger" id="mpMobileBurger" aria-label="選單">
+      <i class="fa-solid fa-bars"></i>
+    </button>
   </header>
+
+  <!-- ====== 手機版抽屜選單 ====== -->
+  <div class="mp-drawer-overlay" id="mpDrawerOverlay"></div>
+  <aside class="mp-drawer" id="mpDrawer">
+    <div class="mp-drawer-header">
+      <h3>會員中心</h3>
+      <button type="button" class="mp-drawer-close" id="mpDrawerClose" aria-label="關閉">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="mp-drawer-body">
+      <div class="drawer-group">
+        <div class="drawer-group-label">雷 刻 服 務 專 區</div>
+        <button class="drawer-item" data-page="inspo">
+          <i class="fa-regular fa-bookmark"></i>
+          <span>我的靈感</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+        <button class="drawer-item" data-page="wishlist">
+          <i class="fa-solid fa-pencil"></i>
+          <span>想刻清單</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+        <button class="drawer-item" data-page="photos">
+          <i class="fa-regular fa-image"></i>
+          <span>照片分享</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+        <button class="drawer-item" data-page="stories">
+          <i class="fa-regular fa-comment"></i>
+          <span>我的故事</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+        <button class="drawer-item" data-page="my-designs">
+          <i class="fa-solid fa-pen-ruler"></i>
+          <span>我的刻圖設計</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+      </div>
+
+      <div class="drawer-group creator-only">
+        <div class="drawer-group-label">創 作 者</div>
+        <button class="drawer-item" data-page="creator-page">
+          <i class="fa-regular fa-id-badge"></i>
+          <span>創作者個人頁</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+        <button class="drawer-item" data-page="analytics">
+          <i class="fa-regular fa-chart-bar"></i>
+          <span>創作數據</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+        <button class="drawer-item" data-page="earnings">
+          <i class="fa-solid fa-coins"></i>
+          <span>分潤紀錄</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+      </div>
+
+      <div class="drawer-group">
+        <div class="drawer-group-label">帳 戶</div>
+        <button class="drawer-item" data-page="profile">
+          <i class="fa-regular fa-user"></i>
+          <span>會員資料</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+        <a class="drawer-item drawer-admin-link" id="drawerAdminLink" href="admin-portal.html" style="display:none">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>進入管理後台</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </a>
+        <button class="drawer-item drawer-logout" id="mobile-logout-btn-drawer">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>登出</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
 
   <!-- ====== Sidebar ====== -->
   <aside class="sidebar">
@@ -74,6 +153,7 @@
     <div class="nav-divider"></div>
     <div class="nav-section">
       <button class="nav-link" data-page="profile"><i class="fa-regular fa-user"></i><span>會員資料</span></button>
+      <a class="nav-link admin-link" id="sidebarAdminLink" href="admin-portal.html" style="display:none"><i class="fa-solid fa-shield-halved"></i><span>進入管理後台</span></a>
     </div>
 
     <div class="nav-section" style="margin-top:auto">
@@ -601,11 +681,11 @@
 
 <!-- ====== 依賴 (按順序載入) ====== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/utils.js?v=20260507-1533"></script>
-<script src="js/auth.js?v=20260507-1533"></script>
-<script src="js/supabase.js?v=20260507-1533"></script>
-<script src="js/member-portal.js?v=20260507-1533"></script>
-<script src="js/upload.js?v=20260507-1533"></script>
+<script src="js/utils.js?v=20260507-1546"></script>
+<script src="js/auth.js?v=20260507-1546"></script>
+<script src="js/supabase.js?v=20260507-1546"></script>
+<script src="js/member-portal.js?v=20260507-1546"></script>
+<script src="js/upload.js?v=20260507-1546"></script>
 
 </body>
 </html>
