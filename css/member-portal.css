@@ -224,7 +224,7 @@ body {
 
 .mp .hero{
   position:relative;
-  padding:36px 36px 30px;
+  padding:36px 36px 12px;
   background:#fff;
   border-bottom:1px solid var(--lohas-line);
   display:flex;
@@ -312,14 +312,22 @@ body {
   background:#3A2F26;
   transform:translateY(-1px);
 }
-.mp .enter-admin-btn i{ color:var(--lohas-light); font-size:11px }
+.mp .enter-admin-btn i{
+  color:var(--lohas-light);
+  font-size:11px;
+  width:11px;
+  height:11px;
+  line-height:11px;
+  text-align:center;
+  display:inline-block;
+}
 
 
 /* =============================================================
    5. Content + Section title
    ============================================================= */
 
-.mp .content{ padding:0 36px 32px }
+.mp .content{ padding:6px 36px 32px }
 .mp .content-page{ display:none }
 .mp .content-page.on{ display:block }
 
@@ -328,6 +336,14 @@ body {
   margin:0 0 16px;
   border-bottom:1px solid var(--lohas-line);
   padding-bottom:10px;
+}
+
+/* 內容區第一個 section-title (緊貼 hero, 上方無留白) */
+.mp .content-page.on > .section-title:first-child,
+.mp .content-page.on > *:first-child .section-title,
+.mp .content-page.on > .creator-only-section:first-child .section-title{
+  padding-top:0;
+  margin-top:0;
 }
 .mp .section-title h2{
   font-size:18px; font-weight:600;
@@ -1590,8 +1606,10 @@ body {
     flex-direction:column;
   }
 
-  /* 內容區順序 */
+  /* 內容區順序 (手機板: 快捷標+卡 → 累計數據卡) */
+  .mp .content-page.on .shortcuts-title{ order:0 }
   .mp .content-page.on .shortcuts{ order:1 }
+  .mp .content-page.on .creator-only-section{ order:2 }
   .mp .content-page.on .creator-stats{ order:2 }
   .mp .content-page.on .section-title{ order:3 }
   .mp .content-page.on .profile-card{ order:4 }
