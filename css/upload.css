@@ -5,6 +5,16 @@
    從 gallery.css 抽出, 給 member-portal 等其他頁面共用
    ============================================================= */
 
+/* Token alias (因為 modal 不在 .mp 命名空間內, 需要獨立定義) */
+.modal-overlay,
+#cropModal,
+.toast {
+  --lohas-brown: var(--lohas-brand);
+  --lohas-light-brown: var(--lohas-light);
+  --lohas-soft: var(--bg-warm);
+  --lohas-bg: var(--bg-soft);
+}
+
 /* =========================
    Modal Base
 ========================= */
