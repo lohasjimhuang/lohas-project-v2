@@ -606,7 +606,7 @@
           <i class="fa-regular fa-comment"></i>
           <div class="empty-title">還沒寫過故事</div>
           <div>分享你的眼鏡刻圖故事，讓設計被看見</div>
-          <button class="empty-cta add-story-card">寫一篇新故事</button>
+          <button class="enter-admin-btn add-story-card" style="position:static"><i class="fa-solid fa-pen-to-square"></i><span>寫一篇新故事</span></button>
         </div>`;
       return;
     }
@@ -644,7 +644,7 @@
         </div>
       </div>
     `).join('') + `
-      <button class="story-add add-story-card"><i class="fa-solid fa-plus"></i><span>寫 一 篇 新 故 事</span></button>`;
+      <button class="enter-admin-btn add-story-card" style="position:static;margin:14px 0 0"><i class="fa-solid fa-pen-to-square"></i><span>寫一篇新故事</span></button>`;
 
     // 綁選單按鈕
     list.querySelectorAll('.story-menu-btn').forEach(b => {
@@ -1087,7 +1087,7 @@
             <i class="fa-solid fa-circle-exclamation" style="color:var(--status-pending);font-size:22px"></i>
             <div class="empty-title" style="margin-top:8px">尚未設定匯款資料</div>
             <div style="font-size:11px;color:var(--lohas-mute);margin:8px 0 14px">完成設定後才能領取分潤</div>
-            <button class="empty-cta" id="bankCreateBtn">建立匯款資料</button>
+            <button class="enter-admin-btn" id="bankCreateBtn" style="position:static"><i class="fa-solid fa-plus"></i><span>建立匯款資料</span></button>
           </div>`;
         bankInfo.style.display = '';
         document.getElementById('bankCreateBtn')?.addEventListener('click', () => showBankForm(null));
@@ -1433,7 +1433,7 @@
         renumberCustomBlocks();
       }
     });
-    // 圖片上傳
+    // 圖片上傳 (跟緣分區一樣加 3:4 裁切)
     const photoPreview = blockEl.querySelector('.cb-photo-preview');
     const photoInput = blockEl.querySelector('.cb-photo-input');
     const photoHidden = blockEl.querySelector('.cb-image');
@@ -1444,11 +1444,15 @@
         if (!file || !file.type.startsWith('image/')) return;
         const reader = new FileReader();
         reader.onload = (ev) => {
-          photoPreview.style.backgroundImage = `url('${ev.target.result}')`;
-          photoPreview.classList.add('has-image');
-          if (photoHidden) photoHidden.value = ev.target.result;
+          // 開裁切 modal (3:4 比例, 跟緣分區一致)
+          openCropModal(ev.target.result, 3 / 4, (croppedDataUrl) => {
+            photoPreview.style.backgroundImage = `url('${croppedDataUrl}')`;
+            photoPreview.classList.add('has-image');
+            if (photoHidden) photoHidden.value = croppedDataUrl;
+          });
         };
         reader.readAsDataURL(file);
+        photoInput.value = '';
       });
     }
   }
