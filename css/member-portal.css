@@ -1550,6 +1550,8 @@ body {
 /* 桌面版預設隱藏 mobile-profile-card 跟 mobile tab bar */
 .mp .mobile-profile-card{ display:none }
 .mp-mobile-tabbar{ display:none }
+.mp-drawer{ display:none }
+.mp-drawer-overlay{ display:none }
 
 
 @media (max-width: 900px) {
