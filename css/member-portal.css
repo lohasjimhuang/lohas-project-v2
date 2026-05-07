@@ -136,7 +136,7 @@ body {
 .mp .role-tag.creator{ color:var(--c-text); font-weight:600 }
 
 .mp .nav-section{ padding:0 14px; margin-bottom:14px; border:0 }
-.mp .nav-section:first-of-type{ padding-top:24px }
+.mp .nav-section:first-of-type{ padding-top:40px }
 .mp .nav-section-label{
   font-size:10px; letter-spacing:2px;
   color:var(--lohas-mute); font-weight:600;
