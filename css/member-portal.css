@@ -322,6 +322,38 @@ body {
   display:inline-block;
 }
 
+/* Action button (儲存創作者 / 建立匯款 / 寫一篇新故事 等)
+   深色框 + 白底 + 深色字, hover 淺色 */
+.mp .action-btn{
+  display:inline-flex; align-items:center; gap:7px;
+  padding:9px 16px;
+  background:#fff;
+  color:var(--lohas-brand);
+  border:1.5px solid var(--lohas-brand);
+  border-radius:999px;
+  font-family:inherit; font-size:12px;
+  letter-spacing:1px; font-weight:600;
+  cursor:pointer;
+  text-decoration:none;
+  transition:all .2s;
+  vertical-align:middle;
+}
+.mp .action-btn:hover{
+  background:var(--lohas-hover);
+  border-color:var(--lohas-hover);
+  color:#fff;
+  transform:translateY(-1px);
+}
+.mp .action-btn i{
+  font-size:11px;
+  width:11px;
+  height:11px;
+  line-height:11px;
+  text-align:center;
+  display:inline-block;
+}
+.mp .action-btn:hover i{ color:#fff }
+
 
 /* =============================================================
    5. Content + Section title
