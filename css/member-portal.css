@@ -319,7 +319,7 @@ body {
    5. Content + Section title
    ============================================================= */
 
-.mp .content{ padding:4px 36px 32px }
+.mp .content{ padding:24px 36px 32px }
 .mp .content-page{ display:none }
 .mp .content-page.on{ display:block }
 
@@ -1062,6 +1062,93 @@ body {
 }
 .mp .ed-avatar-camera:hover{ background:var(--lohas-hover) }
 
+/* 配鏡照片上傳 (緣分區) */
+.mp .creator-photo-wrap{
+  display:inline-block;
+  position:relative;
+}
+.mp .creator-photo-preview{
+  width:160px;
+  aspect-ratio:3/4;
+  border:2px dashed var(--lohas-light-brown);
+  border-radius:10px;
+  background:var(--lohas-tip);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:var(--lohas-mute);
+  font-size:11px;
+  letter-spacing:1.5px;
+  background-size:cover;
+  background-position:center;
+  overflow:hidden;
+  cursor:pointer;
+  transition:border-color .15s;
+}
+.mp .creator-photo-preview:hover{
+  border-color:var(--lohas-brown);
+}
+.mp .creator-photo-preview i{ font-size:22px; opacity:0.6 }
+.mp .creator-photo-preview.has-image{
+  border-style:solid;
+  border-color:var(--lohas-line);
+}
+.mp .creator-photo-preview.has-image i,
+.mp .creator-photo-preview.has-image span{ display:none }
+.mp .creator-photo-upload-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:8px;
+  padding:7px 14px;
+  background:#fff;
+  color:var(--lohas-text);
+  border:1px solid var(--lohas-line);
+  border-radius:8px;
+  font-family:inherit; font-size:12px;
+  letter-spacing:0.3px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.mp .creator-photo-upload-btn:hover{
+  border-color:var(--lohas-brown);
+  color:var(--lohas-brown);
+}
+
+/* 自訂內容區塊 */
+.mp .custom-block{
+  background:var(--lohas-soft);
+  border:1px solid var(--lohas-line);
+  border-radius:10px;
+  padding:18px;
+  margin-bottom:14px;
+}
+.mp .custom-block:last-child{ margin-bottom:0 }
+.mp .custom-block-h{
+  display:flex; align-items:center; justify-content:space-between;
+  padding-bottom:14px;
+  border-bottom:1px dashed var(--lohas-line);
+  margin-bottom:14px;
+}
+.mp .custom-block-num{
+  font-size:11px; color:var(--lohas-brown);
+  letter-spacing:1.5px; font-weight:600;
+}
+.mp .custom-block-remove{
+  width:28px; height:28px;
+  border-radius:6px;
+  background:transparent;
+  color:var(--lohas-mute);
+  border:0; font-size:11px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:all .15s;
+}
+.mp .custom-block-remove:hover{
+  background:var(--status-rejected-bg);
+  color:var(--status-rejected);
+}
+
 
 /* =============================================================
    14. 創作數據 · Panel + Chart
@@ -1143,7 +1230,7 @@ body {
    ============================================================= */
 
 .mp .royalty-summary{
-  background:linear-gradient(135deg,#FFF7E5,#fff);
+  background:#FFFAF0;
   border:1px solid #E8D8A8;
   border-radius:14px;
   padding:24px;
@@ -1165,7 +1252,7 @@ body {
 }
 
 .mp .bank-banner{
-  background:linear-gradient(135deg,#FFF7E5,#fff);
+  background:#FFFAF0;
   border:1px solid #E8D8A8;
   border-radius:14px;
   padding:18px 22px;
