@@ -487,7 +487,7 @@
       // 2. 從 Supabase 撈創作者 / 停權 / admin 狀態
       const sb = getSb();
       const [creatorsRes, statusRes, adminsRes, postsCountRes] = await Promise.all([
-        sb.from('creators').select('member_id, status'),
+        sb.from('creator_info').select('member_id, status'),
         sb.from('member_status').select('member_id, status'),
         sb.from('admins').select('member_id'),
         // 累積上傳統計 - 撈每個會員的數量
@@ -689,7 +689,7 @@
     if (!sb) return alert('Supabase 連線失敗');
 
     try {
-      const { error } = await sb.from('creators').upsert({
+      const { error } = await sb.from('creator_info').upsert({
         member_id: erpid,
         display_name: name,
         status: 'active'

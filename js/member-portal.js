@@ -106,7 +106,7 @@
       // 平行查 Creator + Admin 身份
       try {
         const [creatorRes, adminRes] = await Promise.all([
-          sb.from('creators')
+          sb.from('creator_info')
             .select('member_id, display_name, bio, avatar_url, status, bank_name, bank_code, bank_branch, bank_account, account_holder, tagline, joining_story, joining_photo_url, video_url, video_title, social_links')
             .eq('member_id', member.erpid)
             .eq('status', 'active')
