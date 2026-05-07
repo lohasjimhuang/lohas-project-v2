@@ -224,7 +224,7 @@ body {
 
 .mp .hero{
   position:relative;
-  padding:36px 36px 26px;
+  padding:36px 36px 42px;
   background:#fff;
   border-bottom:1px solid var(--lohas-line);
   display:flex;
