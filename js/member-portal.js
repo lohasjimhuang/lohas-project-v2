@@ -606,7 +606,7 @@
           <i class="fa-regular fa-comment"></i>
           <div class="empty-title">還沒寫過故事</div>
           <div>分享你的眼鏡刻圖故事，讓設計被看見</div>
-          <button class="enter-admin-btn add-story-card" style="position:static"><i class="fa-solid fa-pen-to-square"></i><span>寫一篇新故事</span></button>
+          <button class="action-btn add-story-card"><i class="fa-solid fa-pen-to-square"></i><span>寫一篇新故事</span></button>
         </div>`;
       return;
     }
@@ -644,7 +644,7 @@
         </div>
       </div>
     `).join('') + `
-      <button class="enter-admin-btn add-story-card" style="position:static;margin:14px 0 0"><i class="fa-solid fa-pen-to-square"></i><span>寫一篇新故事</span></button>`;
+      <button class="action-btn add-story-card" style="margin:14px 0 0"><i class="fa-solid fa-pen-to-square"></i><span>寫一篇新故事</span></button>`;
 
     // 綁選單按鈕
     list.querySelectorAll('.story-menu-btn').forEach(b => {
@@ -1087,7 +1087,7 @@
             <i class="fa-solid fa-circle-exclamation" style="color:var(--status-pending);font-size:22px"></i>
             <div class="empty-title" style="margin-top:8px">尚未設定匯款資料</div>
             <div style="font-size:11px;color:var(--lohas-mute);margin:8px 0 14px">完成設定後才能領取分潤</div>
-            <button class="enter-admin-btn" id="bankCreateBtn" style="position:static"><i class="fa-solid fa-plus"></i><span>建立匯款資料</span></button>
+            <button class="action-btn" id="bankCreateBtn"><i class="fa-solid fa-plus"></i><span>建立匯款資料</span></button>
           </div>`;
         bankInfo.style.display = '';
         document.getElementById('bankCreateBtn')?.addEventListener('click', () => showBankForm(null));
