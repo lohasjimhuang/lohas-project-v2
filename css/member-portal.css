@@ -1573,18 +1573,186 @@ body {
   /* 手機板 sidebar 隱藏 (簡潔做法) */
   .mp .sidebar{ display:none }
 
-  /* 手機板獨立 header: logo 靠左 · role-tag 絕對置中 · admin 靠右 */
+  /* 手機板獨立 header: logo 靠左 · 鈴鐺 + 漢堡靠右 */
   .mp .mp-mobile-header{
     display:flex;
     align-items:center;
-    gap:12px;
-    padding:14px 8px 14px 12px;
+    justify-content:space-between;
+    gap:8px;
+    padding:14px 12px;
     background:transparent;
     border-bottom:0;
     order:0;
     min-height:60px;
     position:relative;
   }
+  .mp .mp-mobile-logo{
+    height:24px;
+    width:auto;
+    margin-right:auto;
+  }
+  .mp .mp-mobile-bell,
+  .mp .mp-mobile-burger{
+    width:38px; height:38px;
+    background:transparent;
+    border:0;
+    color:var(--lohas-text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:18px;
+    border-radius:50%;
+    transition:background .15s;
+  }
+  .mp .mp-mobile-bell:hover,
+  .mp .mp-mobile-burger:hover{
+    background:rgba(80,66,45,0.08);
+  }
+  .mp .mp-mobile-bell{
+    position:relative;
+  }
+  /* 鈴鐺紅點 (有通知時) */
+  .mp .mp-mobile-bell::after{
+    content:"";
+    position:absolute;
+    top:9px; right:10px;
+    width:6px; height:6px;
+    border-radius:50%;
+    background:#C97B5C;
+  }
+
+  /* 砍掉舊的 mobile-role 跟 mobile-admin-btn */
+  .mp .mp-mobile-role,
+  .mp .mp-mobile-admin-btn{ display:none !important }
+
+  /* 抽屜 overlay */
+  .mp-drawer-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.4);
+    z-index:998;
+    backdrop-filter:blur(2px);
+  }
+  .mp-drawer-overlay.is-open{ display:block }
+
+  /* 抽屜本體 (從底部往上滑) */
+  .mp-drawer{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    background:#fff;
+    border-radius:20px 20px 0 0;
+    z-index:999;
+    transform:translateY(100%);
+    transition:transform .3s ease;
+    max-height:88vh;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 -10px 40px rgba(0,0,0,0.15);
+  }
+  .mp-drawer.is-open{
+    transform:translateY(0);
+  }
+  /* 上方拖把 (drag handle) 視覺 */
+  .mp-drawer::before{
+    content:"";
+    position:absolute;
+    top:8px; left:50%;
+    transform:translateX(-50%);
+    width:40px; height:4px;
+    background:#D5CBB9;
+    border-radius:999px;
+  }
+  .mp-drawer-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:24px 22px 12px;
+    border-bottom:1px solid var(--lohas-line);
+  }
+  .mp-drawer-header h3{
+    font-size:18px;
+    font-weight:600;
+    color:var(--lohas-text);
+    letter-spacing:1px;
+    margin:0;
+  }
+  .mp-drawer-close{
+    width:32px; height:32px;
+    background:transparent;
+    border:0;
+    color:var(--lohas-mute);
+    font-size:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    border-radius:50%;
+    transition:background .15s;
+  }
+  .mp-drawer-close:hover{
+    background:rgba(80,66,45,0.08);
+  }
+  .mp-drawer-body{
+    overflow-y:auto;
+    padding:14px 16px 24px;
+    flex:1;
+  }
+  .drawer-group{
+    margin-bottom:18px;
+  }
+  .drawer-group:last-child{ margin-bottom:0 }
+  .drawer-group-label{
+    font-size:11px;
+    color:var(--lohas-mute);
+    letter-spacing:2px;
+    font-weight:600;
+    margin:0 0 6px;
+    padding:0 8px;
+  }
+  .drawer-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 12px;
+    background:transparent;
+    border:0;
+    border-radius:12px;
+    width:100%;
+    text-align:left;
+    color:var(--lohas-text);
+    font-size:15px;
+    letter-spacing:0.3px;
+    cursor:pointer;
+    text-decoration:none;
+    transition:background .15s;
+    font-family:inherit;
+  }
+  .drawer-item:hover{
+    background:var(--lohas-tip);
+  }
+  .drawer-item > i:first-child{
+    width:22px;
+    color:var(--lohas-brown);
+    font-size:16px;
+    text-align:center;
+  }
+  .drawer-item > span{
+    flex:1;
+  }
+  .drawer-arrow{
+    color:var(--lohas-mute);
+    font-size:11px !important;
+  }
+  .drawer-item.drawer-logout{
+    color:#A85A4A;
+  }
+  .drawer-item.drawer-logout i:first-child{
+    color:#A85A4A;
+  }
+
+  /* 非 Creator 隱藏創作者區 */
+  .mp:not(.is-creator) .drawer-group.creator-only{ display:none }
   .mp .mp-mobile-logo{
     height:24px;
     flex-shrink:0;
@@ -1875,6 +2043,6 @@ body {
   .mp.is-creator .shortcuts{
     grid-template-columns:repeat(2,1fr);
   }
-  .mp .content{ padding:20px 12px }
+  .mp .content{ padding:20px 8px }
   .mp .hero{ padding:24px 20px }
 }
