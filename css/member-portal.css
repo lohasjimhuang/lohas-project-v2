@@ -2077,3 +2077,14 @@ body {
   }
   .mp .hero{ padding:24px 20px }
 }
+
+@media (min-width: 769px){
+  .mp .sidebar .nav-section:first-of-type + .nav-divider{
+    display:none;
+  }
+
+  .mp .sidebar .nav-section:first-of-type{
+    padding-top:56px;
+    margin-bottom:18px;
+  }
+}
