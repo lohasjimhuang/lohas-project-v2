@@ -639,10 +639,6 @@
 
 /* =============================================
    細部標籤 chip 雲 (上傳 modal)
-   --------------------------------------------
-   依賴 token: --lohas-brand / --lohas-bd / --lohas-soft
-              --text-sub / --text-muted / --r-md / --r-pill
-   注意: 與 .chip (篩選用) 行為不同, 故獨立命名 .tag-chip
    ============================================= */
 
 .tag-chip-cloud{
@@ -713,4 +709,72 @@
   color:var(--lohas-brand);
   font-size:12px;
   border-radius:var(--r-pill);
+}
+
+
+/* =============================================
+   主類聯動子類 chip bar (gallery 篩選列)
+   --------------------------------------------
+   位置: gallery.html 的 #subtagBar
+   行為: 主類選了 → 浮現對應子類 chip → 點 chip 篩照片
+   ============================================= */
+
+.subtag-bar{
+  max-width:1200px;
+  margin:0 auto;
+  padding:14px 20px 18px;
+  border-bottom:1px solid #f0ece7;
+  background:#fff;
+}
+
+.subtag-bar-label{
+  display:block;
+  margin:0 0 10px;
+  color:#9b8c79;
+  font-size:11px;
+  letter-spacing:.08em;
+  font-weight:500;
+}
+
+.subtag-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.subtag-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 13px;
+  border:1px solid var(--lohas-bd);
+  background:#fff;
+  color:var(--text-sub);
+  font-size:12.5px;
+  border-radius:var(--r-pill);
+  cursor:pointer;
+  user-select:none;
+  font-family:inherit;
+  transition:.2s ease;
+}
+
+.subtag-chip:hover{
+  border-color:var(--lohas-light);
+  color:var(--lohas-brand);
+}
+
+.subtag-chip.is-active{
+  background:var(--lohas-brand);
+  border-color:var(--lohas-brand);
+  color:#fff;
+}
+
+@media (max-width:768px){
+  .subtag-bar{
+    padding:12px 16px 14px;
+  }
+
+  .subtag-chip{
+    font-size:12px;
+    padding:5px 11px;
+  }
 }
