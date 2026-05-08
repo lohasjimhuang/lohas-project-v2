@@ -635,3 +635,82 @@
     padding-bottom:42px;
   }
 }
+
+
+/* =============================================
+   細部標籤 chip 雲 (上傳 modal)
+   --------------------------------------------
+   依賴 token: --lohas-brand / --lohas-bd / --lohas-soft
+              --text-sub / --text-muted / --r-md / --r-pill
+   注意: 與 .chip (篩選用) 行為不同, 故獨立命名 .tag-chip
+   ============================================= */
+
+.tag-chip-cloud{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  padding:12px;
+  background:var(--lohas-soft);
+  border:1px dashed var(--lohas-light);
+  border-radius:var(--r-md);
+  min-height:48px;
+}
+
+.tag-chip-cloud:empty::before{
+  content:"請先選擇靈感主題";
+  color:var(--text-muted);
+  font-size:12px;
+  padding:4px 2px;
+}
+
+.tag-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:6px 12px;
+  border:1px solid var(--lohas-bd);
+  background:#fff;
+  color:var(--text-sub);
+  font-size:12px;
+  border-radius:var(--r-pill);
+  cursor:pointer;
+  user-select:none;
+  font-family:inherit;
+  transition:.2s ease;
+}
+
+.tag-chip:hover{
+  border-color:var(--lohas-light);
+  color:var(--lohas-brand);
+}
+
+.tag-chip.is-active{
+  background:var(--lohas-brand);
+  border-color:var(--lohas-brand);
+  color:#fff;
+}
+
+.tag-chip.is-active::after{
+  content:"✓";
+  font-size:11px;
+  margin-left:2px;
+}
+
+/* 詳情 modal 顯示已選 tag */
+.detail-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:12px 0 18px;
+}
+
+.detail-tag{
+  display:inline-flex;
+  align-items:center;
+  padding:5px 11px;
+  background:#fff;
+  border:1px solid var(--lohas-bd);
+  color:var(--lohas-brand);
+  font-size:12px;
+  border-radius:var(--r-pill);
+}
