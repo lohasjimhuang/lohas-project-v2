@@ -236,7 +236,6 @@
   color:var(--lohas-brown);
 }
 
-/* 主圖區 placeholder · icon 大 + 主文字明顯 */
 .main-upload .upload-placeholder i{
   font-size:40px;
   margin-bottom:4px;
@@ -249,7 +248,6 @@
   letter-spacing:.02em;
 }
 
-/* 副圖區 placeholder · 緊湊 */
 .sub-upload .upload-placeholder i{
   font-size:24px;
 }
@@ -638,7 +636,7 @@
 
 
 /* =============================================
-   細部標籤 chip 雲 (上傳 modal)
+   子標籤 chip 雲 (上傳 modal · hashtag 風格)
    ============================================= */
 
 .tag-chip-cloud{
@@ -662,12 +660,12 @@
 .tag-chip{
   display:inline-flex;
   align-items:center;
-  gap:4px;
-  padding:6px 12px;
+  gap:5px;
+  padding:5px 12px 5px 10px;
   border:1px solid var(--lohas-bd);
   background:#fff;
   color:var(--text-sub);
-  font-size:12px;
+  font-size:12.5px;
   border-radius:var(--r-pill);
   cursor:pointer;
   user-select:none;
@@ -675,21 +673,29 @@
   transition:.2s ease;
 }
 
+.tag-chip::before{
+  content:"#";
+  color:var(--lohas-light);
+  font-weight:500;
+}
+
 .tag-chip:hover{
-  border-color:var(--lohas-light);
+  border-color:var(--lohas-brand);
+  color:var(--lohas-brand);
+}
+
+.tag-chip:hover::before{
   color:var(--lohas-brand);
 }
 
 .tag-chip.is-active{
-  background:var(--lohas-brand);
-  border-color:var(--lohas-brand);
-  color:#fff;
+  background:#FAF3E8;
+  border-color:var(--lohas-light);
+  color:var(--lohas-brand);
 }
 
-.tag-chip.is-active::after{
-  content:"✓";
-  font-size:11px;
-  margin-left:2px;
+.tag-chip.is-active::before{
+  color:var(--lohas-light);
 }
 
 /* 詳情 modal 顯示已選 tag */
@@ -703,7 +709,8 @@
 .detail-tag{
   display:inline-flex;
   align-items:center;
-  padding:5px 11px;
+  gap:4px;
+  padding:5px 11px 5px 10px;
   background:#fff;
   border:1px solid var(--lohas-bd);
   color:var(--lohas-brand);
@@ -711,12 +718,19 @@
   border-radius:var(--r-pill);
 }
 
+.detail-tag::before{
+  content:"#";
+  color:var(--lohas-light);
+  font-weight:500;
+}
+
 
 /* =============================================
-   主類聯動子類 chip bar (gallery 篩選列)
+   主類聯動子標籤 chip bar (gallery 篩選列)
    --------------------------------------------
    位置: gallery.html 的 #subtagBar
-   行為: 主類選了 → 浮現對應子類 chip → 點 chip 篩照片
+   行為: 主類選了 → 浮現對應子標籤 → 點 chip 篩照片
+   風格: hashtag 風 (Style D)
    ============================================= */
 
 .subtag-bar{
@@ -745,7 +759,8 @@
 .subtag-chip{
   display:inline-flex;
   align-items:center;
-  padding:6px 13px;
+  gap:5px;
+  padding:5px 12px 5px 10px;
   border:1px solid var(--lohas-bd);
   background:#fff;
   color:var(--text-sub);
@@ -757,15 +772,35 @@
   transition:.2s ease;
 }
 
+.subtag-chip::before{
+  content:"#";
+  color:var(--lohas-light);
+  font-weight:500;
+}
+
 .subtag-chip:hover{
-  border-color:var(--lohas-light);
+  border-color:var(--lohas-brand);
+  color:var(--lohas-brand);
+}
+
+.subtag-chip:hover::before{
   color:var(--lohas-brand);
 }
 
 .subtag-chip.is-active{
-  background:var(--lohas-brand);
-  border-color:var(--lohas-brand);
-  color:#fff;
+  background:#FAF3E8;
+  border-color:var(--lohas-light);
+  color:var(--lohas-brand);
+}
+
+.subtag-chip.is-active::before{
+  color:var(--lohas-light);
+}
+
+/* 「全部」chip 不加 # 前綴 */
+.subtag-chip[data-subtag=""]::before,
+.tag-chip[data-tag="全部"]::before{
+  content:none;
 }
 
 @media (max-width:768px){
@@ -775,6 +810,6 @@
 
   .subtag-chip{
     font-size:12px;
-    padding:5px 11px;
+    padding:5px 11px 5px 9px;
   }
 }
