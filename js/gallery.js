@@ -26,14 +26,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const mobileSearchInput = document.getElementById("mobileSearchInput");
   const resultMeta = document.querySelector(".result-meta");
 
+  // === [subtag] === 子類 chip 容器 (主類聯動)
+  const subtagBar = document.getElementById("subtagBar");
+  const subtagChipsEl = document.getElementById("subtagChips");
+
   const filterState = {
     topic: "全部作品",
     carrier: "全部位置",
     keyword: "",
-    storyOnly: false
+    storyOnly: false,
+    subtag: "" // === [subtag] === 已選的子類 (空字串 = 全部)
   };
 
-  // === [auth] === 統一取會員的小工具
   function getMember() {
     return Auth?.getStoredMember?.()
       ?? JSON.parse(localStorage.getItem("lohasMember") || "null");
@@ -66,6 +70,33 @@ document.addEventListener("DOMContentLoaded", () => {
     return `${first}＊${suffix}`;
   }
 
+  // === [subtag] === 主類聯動: 渲染對應的子類 chip
+  function renderSubtagBar(topic) {
+    if (!subtagBar || !subtagChipsEl) return;
+
+    // 主類是「全部照片」/「想刻什麼？」/ 任何非已知主類 → 隱藏
+    const subtags = (window.LohasSubcategories || {})[topic] || null;
+
+    if (!subtags) {
+      subtagBar.style.display = "none";
+      subtagChipsEl.innerHTML = "";
+      filterState.subtag = "";
+      return;
+    }
+
+    subtagBar.style.display = "";
+
+    // 第一個固定是「全部」
+    const allItems = ["全部", ...subtags];
+
+    subtagChipsEl.innerHTML = allItems
+      .map(tag => {
+        const isActive = (tag === "全部" && !filterState.subtag) || tag === filterState.subtag;
+        return `<button type="button" class="subtag-chip${isActive ? " is-active" : ""}" data-subtag="${tag === "全部" ? "" : tag}">${tag}</button>`;
+      })
+      .join("");
+  }
+
   function openDetailModal(card) {
     if (!detailModal || !detailBody) return;
 
@@ -82,7 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const mainImage = images[0] || "images/lens-01.jpg";
     const subImages = images.slice(1, 3);
 
-    // === [tag] === 解析 dataset 上的細部標籤
     const tags = (card.dataset.subcategories || "")
       .split(",")
       .map(s => s.trim())
@@ -174,7 +204,6 @@ document.addEventListener("DOMContentLoaded", () => {
     card.dataset.story = storyText || "這是一份來自顧客的真實刻圖照片分享。";
     card.dataset.images = (post.image_urls || [imageUrl]).join(",");
     card.dataset.type = cardType;
-    // === [tag] === 把 subcategories 寫進 dataset
     card.dataset.subcategories = (post.subcategories || []).join(",");
 
     const iconClass = isStory ? "fa-solid fa-book-open" : "fa-solid fa-camera";
@@ -215,7 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { data, error } = await supabaseClient
       .from(SUPABASE_TABLE)
-      // === [tag] === 撈 subcategories 欄位
       .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,subcategories,created_at,status")
       .eq("is_public", true)
       .eq("status", "approved")
@@ -267,7 +295,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const matchKeyword = !keyword || tags.includes(keyword);
       const matchStoryOnly = !filterState.storyOnly || card.dataset.type === "story";
-      const shouldShow = matchTopic && matchCarrier && matchKeyword && matchStoryOnly;
+
+      // === [subtag] === 子類比對 (有選才比對, 沒選 = 全部)
+      const cardSubtags = (card.dataset.subcategories || "").split(",").map(s => s.trim());
+      const matchSubtag = !filterState.subtag || cardSubtags.includes(filterState.subtag);
+
+      const shouldShow = matchTopic && matchCarrier && matchKeyword && matchStoryOnly && matchSubtag;
 
       card.style.display = shouldShow ? "block" : "none";
       if (shouldShow) visibleCount += 1;
@@ -281,11 +314,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (desktopCarrierFilter) filterState.carrier = desktopCarrierFilter.value;
     if (desktopSearchInput) filterState.keyword = desktopSearchInput.value;
 
+    // === [subtag] === 主類變了 → 重渲染子類 chip + 清空已選子類
+    filterState.subtag = "";
+    renderSubtagBar(filterState.topic);
+
     applyFilters();
   }
 
   async function toggleFavorite(postId, btn) {
-    // === [auth] === 用 LohasAuth.requireLogin 統一處理
     if (Auth?.requireLogin) {
       if (!Auth.requireLogin("gallery.html")) return;
     } else {
@@ -355,7 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadMyFavoriteStates() {
-    // === [auth] === 用 getMember
     const member = getMember();
     if (!member?.erpid || !supabaseClient) return;
 
@@ -416,6 +451,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     drawerApply?.addEventListener("click", () => {
       closeFilterDrawer();
+      // === [subtag] === drawer 套用後也要重渲染子類 chip
+      renderSubtagBar(filterState.topic);
       applyFilters();
       showToast("已套用篩選條件");
     });
@@ -424,6 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
       filterState.topic = "全部作品";
       filterState.carrier = "全部位置";
       filterState.keyword = "";
+      filterState.subtag = "";
 
       if (desktopTopicFilter) desktopTopicFilter.value = "全部照片";
       if (desktopCarrierFilter) desktopCarrierFilter.value = "全部位置";
@@ -438,6 +476,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (firstChip) firstChip.classList.add("active");
       });
 
+      // === [subtag] === reset 也要清子類 bar
+      renderSubtagBar(filterState.topic);
       applyFilters();
       showToast("已重設篩選");
     });
@@ -469,6 +509,9 @@ document.addEventListener("DOMContentLoaded", () => {
     select.addEventListener("change", () => {
       if (select === mobileTopicFilter) {
         filterState.topic = mobileTopicFilter.value;
+        // === [subtag] === 手機 select 改了主類也要重渲染
+        filterState.subtag = "";
+        renderSubtagBar(filterState.topic);
       } else if (select === mobileCarrierFilter) {
         filterState.carrier = mobileCarrierFilter.value;
       } else {
@@ -479,7 +522,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 「只看有故事的」toggle
+  // === [subtag] === 子類 chip 點擊 (event delegation)
+  subtagChipsEl?.addEventListener("click", event => {
+    const chip = event.target.closest(".subtag-chip");
+    if (!chip) return;
+
+    const tag = chip.dataset.subtag || "";
+    filterState.subtag = tag;
+
+    // 切 active 狀態
+    subtagChipsEl.querySelectorAll(".subtag-chip").forEach(item => {
+      item.classList.toggle("is-active", (item.dataset.subtag || "") === tag);
+    });
+
+    applyFilters();
+  });
+
   const toggleStoryBtn = document.getElementById("toggleStoryBtn");
   toggleStoryBtn?.addEventListener("click", () => {
     filterState.storyOnly = !filterState.storyOnly;
@@ -528,6 +586,9 @@ document.addEventListener("DOMContentLoaded", () => {
     applyFilters,
     loadMyFavoriteStates
   };
+
+  // === [subtag] === 初始化: 預設「全部照片」沒對應子類, 會自動隱藏
+  renderSubtagBar(filterState.topic);
 
   applyFilters();
   loadPostsFromSupabase();
