@@ -2069,3 +2069,24 @@ body {
   }
   .mp .hero{ padding:24px 20px }
 }
+
+/* =============================================================
+   Desktop Sidebar 微調
+   - 移除「首頁」與「雷刻服務專區」中間線
+   - 首頁往下移動
+   ============================================================= */
+
+@media (min-width: 901px){
+
+  /* 刪除首頁下面、雷刻服務專區上面的分隔線 */
+  .mp .sidebar .nav-section:first-of-type + .nav-divider{
+    display:none;
+  }
+
+  /* 首頁整組往下移 */
+  .mp .sidebar .nav-section:first-of-type{
+    padding-top:56px;
+    margin-bottom:22px;
+  }
+
+}
