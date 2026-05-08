@@ -609,6 +609,126 @@ body {
    10. 照片分享
    ============================================================= */
 
+/* Share Tabs (我的分享內部切換) */
+.mp .share-tabs{
+  display:inline-flex;
+  gap:4px;
+  background:#fff;
+  border:1px solid var(--lohas-line);
+  border-radius:999px;
+  padding:4px;
+  margin-bottom:18px;
+}
+.mp .share-tab{
+  padding:8px 16px;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:500;
+  letter-spacing:0.5px;
+  color:var(--lohas-sub);
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  transition:all .15s;
+}
+.mp .share-tab:hover{
+  color:var(--lohas-brown);
+}
+.mp .share-tab.active{
+  background:var(--lohas-brand);
+  color:#fff;
+  font-weight:600;
+}
+.mp .share-tab-count{
+  font-size:10px;
+  background:rgba(80,66,45,0.1);
+  color:var(--lohas-mute);
+  padding:2px 7px;
+  border-radius:999px;
+  font-weight:600;
+  min-width:20px;
+  text-align:center;
+}
+.mp .share-tab.active .share-tab-count{
+  background:rgba(255,255,255,0.25);
+  color:#fff;
+}
+
+/* 故事卡片 (在 photo-grid 內顯示) */
+.mp .photo-grid .share-story-card{
+  background:#fff;
+  border:1px solid var(--lohas-line);
+  border-radius:12px;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  cursor:pointer;
+  transition:border-color .15s;
+  align-self:start;
+  position:relative;
+}
+.mp .photo-grid .share-story-card:hover{ border-color:var(--lohas-brown) }
+.mp .share-story-card .story-cover-img{
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:8px;
+  background-size:cover;
+  background-position:center;
+  background-color:var(--lohas-tip);
+  margin-bottom:6px;
+}
+.mp .share-story-card .story-card-title{
+  font-size:14px;
+  color:var(--lohas-brown);
+  font-weight:600;
+  letter-spacing:0.3px;
+  margin:0;
+}
+.mp .share-story-card .story-card-excerpt{
+  font-size:12px;
+  color:var(--lohas-sub);
+  line-height:1.7;
+  letter-spacing:0.2px;
+  margin:0;
+  display:-webkit-box;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.mp .share-story-card .story-card-meta{
+  font-size:10.5px;
+  color:var(--lohas-mute);
+  letter-spacing:0.3px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding-top:8px;
+  border-top:1px dashed var(--lohas-line);
+  margin-top:auto;
+}
+.mp .share-story-card .has-story-tag{
+  position:absolute;
+  top:10px; right:10px;
+  background:rgba(255,255,255,0.95);
+  color:var(--lohas-brown);
+  font-size:10px;
+  padding:3px 8px;
+  border-radius:999px;
+  font-weight:600;
+  letter-spacing:0.3px;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  backdrop-filter:blur(6px);
+  z-index:2;
+}
+.mp .share-story-card .has-story-tag i{ font-size:9px }
+
 .mp .photo-grid{
   display:grid; grid-template-columns:repeat(3,1fr); gap:14px;
 }
@@ -2070,3 +2190,27 @@ body {
   .mp .hero{ padding:24px 20px }
 }
 
+
+/* =============================================================
+   Desktop Sidebar：首頁單獨置中在上下分隔線之間
+   ============================================================= */
+
+@media (min-width: 901px) {
+  .mp .sidebar-head {
+    padding: 0 24px 18px;
+    margin-bottom: 12px;
+  }
+
+  .mp .nav-section:first-of-type {
+    padding: 0 14px;
+    margin: 0;
+  }
+
+  .mp .nav-section:first-of-type .nav-link {
+    margin: 0;
+  }
+
+  .mp .nav-divider:first-of-type {
+    margin: 12px 14px;
+  }
+}
