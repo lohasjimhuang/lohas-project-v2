@@ -135,8 +135,16 @@ body {
 }
 .mp .role-tag.creator{ color:var(--c-text); font-weight:600 }
 
-.mp .nav-section{ padding:0 14px; margin-bottom:14px; border:0 }
-.mp .nav-section:first-of-type{ padding-top:40px }
+/* Sidebar：首頁區塊往下移 */
+.mp .nav-section:first-of-type{
+  padding-top:56px;
+  margin-bottom:18px;
+}
+
+/* Sidebar：移除首頁與雷刻服務專區中間的分隔線 */
+.mp .sidebar > .nav-divider:first-of-type{
+  display:none;
+}
 .mp .nav-section-label{
   font-size:10px; letter-spacing:2px;
   color:var(--lohas-mute); font-weight:600;
