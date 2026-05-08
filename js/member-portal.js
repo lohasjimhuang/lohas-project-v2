@@ -268,7 +268,237 @@
 
 
   /* =============================================================
-     Photos · 我的照片 (gallery_posts)
+     Shares · 我的分享 (合併 photo + story)
+     ============================================================= */
+
+  // 全域 state: 當前 share 資料 + 選中的 tab
+  const ShareState = {
+    items: [],       // 所有 gallery_posts (含 type=photo 跟 type=story)
+    activeTab: 'all' // all / story / photo
+  };
+
+  async function loadShares() {
+    const grid = document.getElementById('myShareList');
+    const banner = document.getElementById('photoRejectedBanner');
+    const rejectBadge = document.getElementById('photoRejectBadge');
+    const shareCount = document.getElementById('shareCount');
+
+    if (!grid || !State.member) return;
+
+    const sb = getSupabase();
+    if (!sb) {
+      grid.innerHTML = '<p class="empty-text">尚未設定 Supabase</p>';
+      return;
+    }
+
+    const postsTable = (Supabase.CONFIG && Supabase.CONFIG.POSTS_TABLE) || 'gallery_posts';
+
+    const { data, error } = await sb
+      .from(postsTable)
+      .select('id, title, topic, carrier, story, type, image_urls, main_image_url, status, reject_reason, created_at')
+      .eq('member_id', State.member.erpid)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('[讀取分享失敗]', error);
+      grid.innerHTML = '<p class="empty-text">讀取失敗</p>';
+      return;
+    }
+
+    const items = data || [];
+    ShareState.items = items;
+    if (shareCount) shareCount.textContent = items.length ? items.length + ' 則' : '';
+
+    // 處理駁回 banner (沿用之前邏輯)
+    const rejected = items.filter(p => p.status === 'rejected');
+    const ackedKey = `lohasPhotoRejectAcked_${State.member.erpid}`;
+    let ackedIds = [];
+    try {
+      ackedIds = JSON.parse(localStorage.getItem(ackedKey) || '[]');
+    } catch (e) { ackedIds = []; }
+    const unackedRejected = rejected.filter(r => !ackedIds.includes(r.id));
+
+    if (unackedRejected.length > 0 && banner) {
+      const first = unackedRejected[0];
+      Utils.setText(
+        '#photoRejectedTitle',
+        unackedRejected.length === 1
+          ? `您有 1 則分享「${first.title || '未命名'}」未通過審核`
+          : `您有 ${unackedRejected.length} 則分享未通過審核`
+      );
+      const reasonEl = document.getElementById('photoRejectedReason');
+      if (reasonEl) {
+        reasonEl.innerHTML = '<b>駁回原因:</b>' + escapeHtml(first.reject_reason || '請聯繫客服了解詳情。');
+      }
+      banner.style.display = '';
+      banner.dataset.unackedIds = JSON.stringify(unackedRejected.map(r => r.id));
+    } else if (banner) {
+      banner.style.display = 'none';
+    }
+
+    // 側邊欄紅標
+    if (rejectBadge) {
+      if (unackedRejected.length > 0) {
+        rejectBadge.textContent = unackedRejected.length;
+        rejectBadge.style.display = 'inline-flex';
+      } else {
+        rejectBadge.style.display = 'none';
+      }
+    }
+
+    // 更新 tab 計數
+    updateShareTabCounts();
+    // 渲染當前 tab
+    renderShares();
+    // 綁 tab 點擊 (只綁一次)
+    bindShareTabsOnce();
+  }
+
+  function updateShareTabCounts() {
+    const items = ShareState.items;
+    const all = items.length;
+    const stories = items.filter(p => p.type === 'story').length;
+    const photos = items.filter(p => p.type === 'photo').length;
+
+    document.getElementById('shareTabCountAll')?.replaceChildren(document.createTextNode(all));
+    document.getElementById('shareTabCountStory')?.replaceChildren(document.createTextNode(stories));
+    document.getElementById('shareTabCountPhoto')?.replaceChildren(document.createTextNode(photos));
+  }
+
+  function renderShares() {
+    const grid = document.getElementById('myShareList');
+    if (!grid) return;
+
+    let items = ShareState.items;
+    if (ShareState.activeTab === 'story') items = items.filter(p => p.type === 'story');
+    else if (ShareState.activeTab === 'photo') items = items.filter(p => p.type === 'photo');
+
+    if (items.length === 0) {
+      const emptyMsg = ShareState.activeTab === 'story' ? '還沒有寫過故事'
+        : ShareState.activeTab === 'photo' ? '還沒上傳純照片'
+        : '尚未上傳任何分享';
+      grid.innerHTML = `
+        <p class="empty-text">${emptyMsg}</p>
+        <button class="add-photo-card">
+          <i class="fa-solid fa-plus"></i><span>上 傳 新 分 享</span>
+        </button>`;
+      return;
+    }
+
+    const grads = ['', 'g2', 'g3', 'g4', 'g5', 'g6'];
+
+    const cards = items.map((p, i) => {
+      const img = p.main_image_url
+        || (Array.isArray(p.image_urls) ? p.image_urls[0] : '')
+        || '';
+      const status = p.status || 'pending';
+      const grad = grads[i % grads.length];
+      const date = formatDate(p.created_at);
+      const isStory = p.type === 'story';
+
+      // 故事卡: 含故事文字摘要
+      if (isStory) {
+        const excerpt = (p.story || '').replace(/\s+/g, ' ').trim();
+        return `
+          <div class="share-story-card" data-id="${p.id}">
+            ${img ? `<div class="story-cover-img" style="background-image:url('${img}')"></div>` : ''}
+            <span class="status-badge ${status}" style="position:absolute;top:10px;left:10px">
+              <i class="fa-solid fa-${status === 'pending' ? 'clock' : status === 'approved' ? 'check' : 'xmark'}"></i>
+              ${status === 'pending' ? '待審核' : status === 'approved' ? '已公開' : '未通過'}
+            </span>
+            <span class="has-story-tag"><i class="fa-solid fa-book-open"></i>有故事</span>
+            <h3 class="story-card-title">${escapeHtml(p.title || '未命名')}</h3>
+            <p class="story-card-excerpt">${escapeHtml(excerpt)}</p>
+            <div class="story-card-meta">
+              <span>${escapeHtml(date)}</span>
+            </div>
+          </div>`;
+      }
+
+      // 照片卡 (沿用原本)
+      return `
+        <div class="photo-card" data-id="${p.id}">
+          <div class="photo-cover ${grad}"
+               data-id="${p.id}"
+               data-name="${escapeHtml(p.title || '未命名')}"
+               data-date="${escapeHtml(date)}"
+               data-status="${status}"
+               data-fav="0"
+               data-cover="${grad}"
+               data-reason="${escapeHtml(p.reject_reason || '')}"
+               ${img ? `style="background-image:url('${img}');background-size:cover;background-position:center"` : ''}>
+            <span class="status-badge ${status}">
+              <i class="fa-solid fa-${status === 'pending' ? 'clock' : status === 'approved' ? 'check' : 'xmark'}"></i>
+              ${status === 'pending' ? '待審核' : status === 'approved' ? '已公開' : '未通過'}
+            </span>
+            <div class="photo-cover-dim"></div>
+            <div class="photo-cover-text">詳 情</div>
+          </div>
+          <div class="photo-info">
+            <div class="photo-name">${escapeHtml(p.title || '未命名')}</div>
+            <div class="photo-date">${escapeHtml(date)}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+    grid.innerHTML = cards + `
+      <button class="add-photo-card">
+        <i class="fa-solid fa-plus"></i><span>上 傳 新 分 享</span>
+      </button>`;
+
+    // 綁 photo-cover 點擊 → modal
+    grid.querySelectorAll('.photo-cover').forEach(cover => {
+      cover.addEventListener('click', () => openPhotoModal(cover));
+    });
+    // 綁 story-card 點擊 → modal (簡化版, 用 photo modal 顯示)
+    grid.querySelectorAll('.share-story-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = card.dataset.id;
+        const item = ShareState.items.find(p => p.id === id);
+        if (!item) return;
+        // 模擬一個 cover 給 openPhotoModal
+        const fakeCover = {
+          dataset: {
+            id: item.id,
+            name: item.title || '未命名',
+            date: formatDate(item.created_at),
+            status: item.status || 'pending',
+            fav: '0',
+            cover: '',
+            reason: item.reject_reason || ''
+          },
+          style: {
+            background: item.main_image_url ? `url('${item.main_image_url}')` : '',
+            backgroundImage: item.main_image_url ? `url('${item.main_image_url}')` : ''
+          }
+        };
+        openPhotoModal(fakeCover);
+      });
+    });
+  }
+
+  let _shareTabsBound = false;
+  function bindShareTabsOnce() {
+    if (_shareTabsBound) return;
+    _shareTabsBound = true;
+
+    document.querySelectorAll('.share-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.shareTab;
+        if (!tabName) return;
+        // 高亮 active
+        document.querySelectorAll('.share-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        // 切換
+        ShareState.activeTab = tabName;
+        renderShares();
+      });
+    });
+  }
+
+
+  /* =============================================================
+     Photos · 我的照片 (gallery_posts) [legacy]
      ============================================================= */
 
   // 輕量版: 只算駁回數量, 更新側邊欄紅圓圓 (init 時用)
@@ -1736,22 +1966,18 @@
     });
 
     // 進入頁面時延遲載入該頁資料
-    if (page === 'photos') loadPhotos();
+    if (page === 'shares') {
+      loadShares();  // 合併版: 一次載入照片 + 故事
+    }
     if (page === 'inspo') loadInspos();
     if (page === 'wishlist') loadWishlist();
-    if (page === 'stories') loadStories();
     if (page === 'my-designs') loadMyDesigns();
     if (page === 'analytics') loadAnalytics();
     if (page === 'earnings') loadEarnings();
 
-    // 進入照片頁 → 隱藏 sidebar 紅標 (已看過)
-    if (page === 'photos') {
+    // 進入分享頁 → 隱藏 sidebar 紅標 (已看過)
+    if (page === 'shares') {
       const badge = document.getElementById('photoRejectBadge');
-      if (badge) badge.style.display = 'none';
-    }
-    // 進入故事頁 → 隱藏 sidebar 紅標
-    if (page === 'stories') {
-      const badge = document.getElementById('storyRejectBadge');
       if (badge) badge.style.display = 'none';
     }
 
