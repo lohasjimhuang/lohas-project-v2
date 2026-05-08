@@ -1,5 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const Supabase = window.LohasSupabase;
+  const Auth = window.LohasAuth;
   const supabaseClient = Supabase?.getClient?.() || null;
 
   const SUPABASE_TABLE = Supabase?.CONFIG?.POSTS_TABLE || "gallery_posts";
@@ -31,6 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
     keyword: "",
     storyOnly: false
   };
+
+  // === [auth] === 統一取會員的小工具
+  function getMember() {
+    return Auth?.getStoredMember?.()
+      ?? JSON.parse(localStorage.getItem("lohasMember") || "null");
+  }
 
   function showToast(message) {
     if (!toast) return;
@@ -75,6 +82,18 @@ document.addEventListener("DOMContentLoaded", () => {
     const mainImage = images[0] || "images/lens-01.jpg";
     const subImages = images.slice(1, 3);
 
+    // === [tag] === 解析 dataset 上的細部標籤
+    const tags = (card.dataset.subcategories || "")
+      .split(",")
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const tagsHTML = tags.length
+      ? `<div class="detail-tags">${tags
+          .map(t => `<span class="detail-tag">${t}</span>`)
+          .join("")}</div>`
+      : "";
+
     detailBody.innerHTML = `
       <div class="detail-gallery">
         <div class="detail-main-image">
@@ -99,6 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
         <span class="detail-chip">${topic}</span>
         <span class="detail-chip">${carrier}</span>
       </div>
+
+      ${tagsHTML}
 
       <p class="detail-story">${story}</p>
     `;
@@ -132,13 +153,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const displayName = maskName(post.customer_name || "顧客");
 
-    // 自動分流: 故事文字 >= 50 字 = story 卡 (有引言 + 書本 icon)
-    // 也尊重 post.type 欄位 (新版資料), 沒有就 fallback 到字數判斷
     const storyText = post.story || "";
     const cardType = post.type || (storyText.length >= 50 ? "story" : "photo");
     const isStory = cardType === "story";
 
-    // story 卡的引言 = 故事的第一句 (取到第一個句號 / 換行 / 30 字)
     let storyQuote = "";
     if (isStory) {
       const firstLine = storyText.split(/[。\n\r]/)[0].trim();
@@ -156,6 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
     card.dataset.story = storyText || "這是一份來自顧客的真實刻圖照片分享。";
     card.dataset.images = (post.image_urls || [imageUrl]).join(",");
     card.dataset.type = cardType;
+    // === [tag] === 把 subcategories 寫進 dataset
+    card.dataset.subcategories = (post.subcategories || []).join(",");
 
     const iconClass = isStory ? "fa-solid fa-book-open" : "fa-solid fa-camera";
     const quoteHTML = isStory
@@ -195,14 +215,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { data, error } = await supabaseClient
       .from(SUPABASE_TABLE)
-      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at,status")
+      // === [tag] === 撈 subcategories 欄位
+      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,subcategories,created_at,status")
       .eq("is_public", true)
       .eq("status", "approved")
       .order("created_at", { ascending: false });
 
     if (error) {
       console.error(error);
-      showToast("讀取照片失敗，請檢查 Supabase 設定");
+      showToast("讀取照片失敗,請檢查 Supabase 設定");
       return;
     }
 
@@ -264,13 +285,20 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function toggleFavorite(postId, btn) {
-    const member = JSON.parse(localStorage.getItem("lohasMember") || "null");
-
-    if (!member || !member.erpid) {
-      localStorage.setItem("redirectAfterLogin", "gallery.html");
-      window.location.href = "login.html";
-      return;
+    // === [auth] === 用 LohasAuth.requireLogin 統一處理
+    if (Auth?.requireLogin) {
+      if (!Auth.requireLogin("gallery.html")) return;
+    } else {
+      const fallbackMember = JSON.parse(localStorage.getItem("lohasMember") || "null");
+      if (!fallbackMember || !fallbackMember.erpid) {
+        localStorage.setItem("redirectAfterLogin", "gallery.html");
+        window.location.href = "login.html";
+        return;
+      }
     }
+
+    const member = getMember();
+    if (!member?.erpid) return;
 
     if (!supabaseClient) {
       showToast("Supabase 尚未設定");
@@ -327,9 +355,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadMyFavoriteStates() {
-    const member = JSON.parse(localStorage.getItem("lohasMember") || "null");
-
-    if (!member || !member.erpid || !supabaseClient) return;
+    // === [auth] === 用 getMember
+    const member = getMember();
+    if (!member?.erpid || !supabaseClient) return;
 
     const { data, error } = await supabaseClient
       .from(FAVORITES_TABLE)

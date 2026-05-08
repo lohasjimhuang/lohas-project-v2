@@ -9,16 +9,23 @@
     FAVORITES_TABLE: 'gallery_favorites'
   };
 
+  // === [singleton] === 快取 client, 避免重複 createClient
+  let _client = null;
+
   function isConfigured() {
     return !!CONFIG.SUPABASE_URL && !!CONFIG.SUPABASE_ANON_KEY;
   }
 
   function getClient() {
+    if (_client) return _client;
     if (!window.supabase || !isConfigured()) return null;
-    return window.supabase.createClient(
+
+    _client = window.supabase.createClient(
       CONFIG.SUPABASE_URL,
       CONFIG.SUPABASE_ANON_KEY
     );
+
+    return _client;
   }
 
   window.LohasSupabase = {
