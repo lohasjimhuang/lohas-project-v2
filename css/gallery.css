@@ -331,6 +331,20 @@ main{
   align-items:center;
 }
 
+.mobile-toggle-story{
+  height:40px;
+  width:40px;
+  padding:0;
+  flex-shrink:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.mobile-toggle-story i{
+  font-size:14px;
+}
+
 .mobile-filter-open{
   height:40px;
   border:0;
