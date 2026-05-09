@@ -22,10 +22,10 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1830">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1830">
-  <link rel="stylesheet" href="css/upload.css?v=20260509-1830">
-  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1830">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260510-0143">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260510-0143">
+  <link rel="stylesheet" href="css/upload.css?v=20260510-0143">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260510-0143">
 
 </head>
 <body>
@@ -105,7 +105,6 @@
 <main class="main">
 
   <div class="topbar">
-    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="開啟選單"><i class="fa-solid fa-bars"></i></button>
     <div class="breadcrumb">樂活管理後台 &nbsp;›&nbsp; <b id="breadcrumbCurrent">儀表板</b></div>
     <div class="topbar-right">
       <div class="topbar-search">
@@ -113,6 +112,7 @@
         <input placeholder="搜尋會員、設計、故事..."/>
       </div>
       <a class="icon-btn-lg" id="btnOpenFront" href="index.html" target="_blank" title="在新分頁打開樂活官網"><i class="fa-solid fa-up-right-from-square"></i></a>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="開啟選單"><i class="fa-solid fa-bars"></i></button>
     </div>
   </div>
 
@@ -165,7 +165,6 @@
         <div class="dash-panel">
           <div class="dash-panel-head">
             <h3 class="dash-panel-h">優先處理 · 待審核</h3>
-            <a class="dash-panel-link" data-jump="review-designs">前往審核中心 →</a>
           </div>
           <div class="review-list">
             <p class="empty-text" style="text-align:center;padding:40px 0;color:var(--lohas-mute);font-size:12px">載入中...</p>
@@ -761,13 +760,13 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js?v=20260509-1830"></script>
-<script src="js/auth.js?v=20260509-1830"></script>
-<script src="js/supabase.js?v=20260509-1830"></script>
-<script src="js/cropper-helper.js?v=20260509-1830"></script>
+<script src="js/utils.js?v=20260510-0143"></script>
+<script src="js/auth.js?v=20260510-0143"></script>
+<script src="js/supabase.js?v=20260510-0143"></script>
+<script src="js/cropper-helper.js?v=20260510-0143"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js?v=20260509-1830"></script>
+<script src="js/admin-portal.js?v=20260510-0143"></script>
 
 </body>
 </html>
