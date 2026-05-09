@@ -133,12 +133,13 @@
   const pageTitles = {
     'dashboard': '儀表板',
     'review-designs': '刻圖審核',
-    'review-photos': '照片審核',
-    'review-stories': '故事審核',
+    'review-uploads': '上傳審核',
     'cm-banner': '首頁與分頁 Banner',
     'cm-news': '最新消息',
+    'admin-upload': '樂活官方上傳',
     'users': '會員列表',
     'creators': '創作者管理',
+    'admin-grant-creator': '新增創作者個人頁',
     'ip': 'IP 合作'
   };
 
@@ -157,9 +158,10 @@
     if (page === 'dashboard') { loadDashboard(); refreshReviewCounts(); }
     if (page === 'users') loadUsers();
     if (page === 'review-designs') { loadDesignReview(); refreshReviewCounts(); }
-    if (page === 'review-photos') { loadPhotoReview(); refreshReviewCounts(); }
-    if (page === 'review-stories') { loadStoryReview(); refreshReviewCounts(); }
+    if (page === 'review-uploads') { loadReviewUploads(); refreshReviewCounts(); }
     if (page === 'cm-news') loadNews();
+    if (page === 'admin-upload') { initAdminUpload(); loadAdminUploadHistory(); }
+    if (page === 'admin-grant-creator') initGrantCreator();
 
     root.querySelector('.main').scrollTop = 0;
   }
@@ -201,8 +203,7 @@
 
       // 側邊欄 badge 也更新
       updateBadge('review-designs', dCount);
-      updateBadge('review-photos', pCount);
-      updateBadge('review-stories', sCount);
+      updateBadge('review-uploads', pCount + sCount);
 
     } catch (err) {
       console.error('[儀表板 KPI 載入失敗]', err);
@@ -268,6 +269,9 @@
 
     // 載入 Dashboard 待審核小列表 (最早送審的前 4 筆)
     loadDashboardReviewList();
+
+    // 載入最近活動 (#2)
+    loadDashboardActivity();
   }
 
   // 本月 / 上月 / 上月底 時間區間
@@ -325,20 +329,16 @@
       const pCount = photos.count || 0;
       const sCount = stories.count || 0;
 
-      // sidebar 三個 badge
+      // sidebar 兩個 badge (上傳合併)
       updateBadge('review-designs', dCount);
-      updateBadge('review-photos', pCount);
-      updateBadge('review-stories', sCount);
+      updateBadge('review-uploads', pCount + sCount);
 
       // page-sub 文字
       const designsSub = root.querySelector('#reviewDesignsSub');
       if (designsSub) designsSub.textContent = `${dCount} 件待審核 · 通過後自動上架創作者市集`;
 
-      const photosSub = root.querySelector('#reviewPhotosSub');
-      if (photosSub) photosSub.textContent = `${pCount} 件待審核 · 通過後將出現在靈感牆`;
-
-      const storiesSub = root.querySelector('#reviewStoriesSub');
-      if (storiesSub) storiesSub.textContent = `${sCount} 件待審核 · 故事 ≥ 50 字會自動歸類`;
+      const uploadsSub = root.querySelector('#reviewUploadsSub');
+      if (uploadsSub) uploadsSub.textContent = `${pCount + sCount} 件待審核 · 通過後將出現在靈感牆`;
 
       // 刻圖審核 review-tabs (按 type 分類)
       const designsByType = (designs.data || []).reduce((acc, d) => {
@@ -443,6 +443,112 @@
 
     } catch (err) {
       console.error('[Dashboard 待審核列表載入失敗]', err);
+    }
+  }
+
+  /**
+   * #2 最近活動 - 混合 上傳 / 通過 / 升級 / 駁回 等真實事件
+   * 從 engraving_designs / gallery_posts / creator_info 拼接
+   */
+  async function loadDashboardActivity() {
+    const sb = getSb();
+    if (!sb) return;
+    const list = document.getElementById('activityList');
+    if (!list) return;
+
+    try {
+      const [designs, gallery, creators] = await Promise.all([
+        sb.from('engraving_designs')
+          .select('id, name, creator_id, status, created_at')
+          .order('created_at', { ascending: false })
+          .limit(10),
+        sb.from('gallery_posts')
+          .select('id, title, customer_name, type, status, created_at')
+          .order('created_at', { ascending: false })
+          .limit(10),
+        sb.from('creator_info')
+          .select('member_id, display_name, status, created_at')
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
+
+      const events = [];
+
+      // 刻圖事件
+      (designs.data || []).forEach(d => {
+        let type, text;
+        if (d.status === 'pending') {
+          type = 'upload';
+          text = `<b>${maskName(d.name || '匿名')}</b> 上傳了刻圖設計`;
+        } else if (d.status === 'approved') {
+          type = 'approve';
+          text = `<b>${maskName(d.name || '設計')}</b> 通過刻圖審核`;
+        } else if (d.status === 'rejected') {
+          type = 'reject';
+          text = `<b>${maskName(d.name || '設計')}</b> 刻圖被駁回`;
+        } else {
+          return;
+        }
+        events.push({ type, time: d.created_at, text });
+      });
+
+      // 上傳事件
+      (gallery.data || []).forEach(g => {
+        const typeLabel = g.type === 'story' ? '故事' : '照片';
+        let type, text;
+        if (g.status === 'pending') {
+          type = 'upload';
+          text = `<b>${maskName(g.customer_name || '會員')}</b> 上傳了${typeLabel}`;
+        } else if (g.status === 'approved') {
+          type = 'approve';
+          text = `<b>${maskName(g.customer_name || '會員')}</b> 的${typeLabel}通過審核`;
+        } else if (g.status === 'rejected') {
+          type = 'reject';
+          text = `<b>${maskName(g.customer_name || '會員')}</b> 的${typeLabel}被駁回`;
+        } else {
+          return;
+        }
+        events.push({ type, time: g.created_at, text });
+      });
+
+      // 創作者事件
+      (creators.data || []).forEach(c => {
+        if (c.status === 'active' && c.created_at) {
+          events.push({
+            type: 'upgrade',
+            time: c.created_at,
+            text: `<b>${maskName(c.display_name || '會員')}</b> 升級為 Creator`
+          });
+        }
+      });
+
+      events.sort((a, b) => new Date(b.time) - new Date(a.time));
+      const top = events.slice(0, 8);
+
+      if (top.length === 0) {
+        list.innerHTML = '<p class="empty-text" style="text-align:center;padding:40px 0;color:var(--lohas-mute);font-size:12px">尚無活動紀錄</p>';
+        return;
+      }
+
+      const iconMap = {
+        upload: '<i class="fa-solid fa-upload"></i>',
+        approve: '<i class="fa-solid fa-check"></i>',
+        reject: '<i class="fa-solid fa-xmark"></i>',
+        upgrade: '<i class="fa-solid fa-star"></i>'
+      };
+
+      list.innerHTML = top.map(e => `
+        <div class="activity-item">
+          <div class="activity-icon ${e.type === 'upgrade' ? 'upload' : e.type}">${iconMap[e.type] || iconMap.upload}</div>
+          <div class="activity-body">
+            <div class="activity-text">${e.text}</div>
+            <div class="activity-time">${formatTime(e.time)}</div>
+          </div>
+        </div>`).join('');
+
+    } catch (err) {
+      console.error('[最近活動載入失敗]', err);
+      list.innerHTML = `<p class="empty-text" style="text-align:center;padding:40px 0;color:var(--lohas-mute);font-size:12px">載入失敗: ${err.message || ''}</p>`;
     }
   }
 
@@ -923,6 +1029,131 @@
     return loadGalleryReview('story', statusFilter);
   }
 
+  /**
+   * 合併版上傳審核 (#1) - 取代分開的 loadPhotoReview / loadStoryReview
+   * 用 type filter (all/photo/story) + status filter (pending/approved/rejected)
+   */
+  async function loadReviewUploads(opts) {
+    const page = root.querySelector(`.content-page[data-page="review-uploads"]`);
+    if (!page) return;
+
+    const grid = document.getElementById('reviewUploadsGrid');
+    const subEl = document.getElementById('reviewUploadsSub');
+    const statusSelect = document.getElementById('reviewUploadsStatus');
+    const typeSelect = document.getElementById('reviewUploadsType');
+    const refreshBtn = document.getElementById('reviewUploadsRefresh');
+
+    // 第一次綁事件
+    if (!page.dataset.bound) {
+      page.dataset.bound = '1';
+      statusSelect?.addEventListener('change', () => loadReviewUploads());
+      typeSelect?.addEventListener('change', () => loadReviewUploads());
+      refreshBtn?.addEventListener('click', () => loadReviewUploads());
+    }
+
+    const status = (opts && opts.status) || statusSelect?.value || 'pending';
+    const typeF = (opts && opts.type) || typeSelect?.value || 'all';
+
+    grid.innerHTML = '<p class="empty-text" style="grid-column:1/-1;text-align:center;padding:60px;color:var(--lohas-mute)">載入中...</p>';
+
+    const sb = getSb();
+    if (!sb) {
+      grid.innerHTML = '<p class="empty-text" style="grid-column:1/-1">Supabase 未連線</p>';
+      return;
+    }
+
+    try {
+      let query = sb.from('gallery_posts')
+        .select('id, title, topic, carrier, story, type, customer_name, member_id, image_urls, main_image_url, created_at, status')
+        .eq('status', status);
+
+      // 類型篩選
+      if (typeF === 'photo') {
+        // 只有照片 = type='photo' 或 type IS NULL (舊資料)
+        query = query.or('type.eq.photo,type.is.null');
+      } else if (typeF === 'story') {
+        query = query.eq('type', 'story');
+      }
+      // typeF === 'all' 不篩
+
+      query = query.order('created_at', { ascending: status === 'pending' });
+
+      const { data, error } = await query;
+
+      if (error) {
+        grid.innerHTML = `<p class="empty-text" style="grid-column:1/-1">載入失敗: ${escapeHtml(error.message)}</p>`;
+        return;
+      }
+
+      const posts = data || [];
+      const statusLabel = status === 'pending' ? '待審核' : status === 'approved' ? '已通過' : '已駁回';
+      const typeLabel = typeF === 'photo' ? '照片' : typeF === 'story' ? '故事' : '上傳';
+      if (subEl) subEl.textContent = `${posts.length} 件${statusLabel} · ${typeLabel}`;
+
+      if (posts.length === 0) {
+        const emptyMsg = status === 'pending'
+          ? `目前沒有待審核${typeLabel}`
+          : `沒有${statusLabel}的${typeLabel}`;
+        grid.innerHTML = `<p class="empty-text" style="grid-column:1/-1;text-align:center;padding:60px;color:var(--lohas-mute)">${emptyMsg}</p>`;
+        return;
+      }
+
+      grid.innerHTML = posts.map(p => {
+        const imgUrl = p.main_image_url || (p.image_urls && p.image_urls[0]) || '';
+        const imgStyle = imgUrl
+          ? `style="background-image:url('${escapeHtml(imgUrl)}');background-size:cover;background-position:center"`
+          : '';
+        const customerLabel = maskName(p.customer_name || '顧客');
+        const meta = [p.topic, p.carrier].filter(Boolean).join(' · ');
+        const isStory = p.type === 'story';
+
+        let actionsHtml = '';
+        if (status === 'pending') {
+          actionsHtml = `
+            <button class="approve" data-act="approve" data-id="${p.id}" data-type="${p.type || 'photo'}"><i class="fa-solid fa-check"></i>通 過</button>
+            <button class="reject" data-act="reject" data-id="${p.id}" data-type="${p.type || 'photo'}" data-title="${escapeHtml(p.title || '')}" data-by="${escapeHtml(customerLabel)}"><i class="fa-solid fa-xmark"></i>駁 回</button>`;
+        } else if (status === 'approved') {
+          actionsHtml = `<button class="reject" data-act="revoke" data-id="${p.id}" data-type="${p.type || 'photo'}"><i class="fa-solid fa-undo"></i>取消通過</button>`;
+        } else {
+          actionsHtml = `<button class="approve" data-act="approve" data-id="${p.id}" data-type="${p.type || 'photo'}"><i class="fa-solid fa-check"></i>重新通過</button>`;
+        }
+
+        return `
+          <div class="rcard" data-id="${p.id}">
+            <div class="rcard-img" ${imgStyle}>
+              <span class="rcard-pill">${isStory ? '<i class="fa-solid fa-book-open"></i>故事' : '<i class="fa-solid fa-camera"></i>照片'}</span>
+              ${imgUrl ? '' : escapeHtml(p.title || '無圖')}
+            </div>
+            <div class="rcard-info">
+              <div class="rcard-title">${escapeHtml(p.title || '未命名')}</div>
+              <div class="rcard-by">by <b>${escapeHtml(customerLabel)}</b> <span class="role-pill member">Member</span></div>
+              ${p.story ? `<div class="rcard-quote">${escapeHtml(p.story)}</div>` : ''}
+              <div class="rcard-meta">
+                <i class="fa-regular fa-clock"></i>送審 ${formatTime(p.created_at)}
+                ${meta ? ` · <i class="fa-regular fa-folder"></i> ${escapeHtml(meta)}` : ''}
+              </div>
+              <div class="rcard-actions">${actionsHtml}</div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // 綁按鈕
+      grid.querySelectorAll('[data-act="approve"]').forEach(b => {
+        b.addEventListener('click', () => approveGalleryPost(b.dataset.id, b.dataset.type));
+      });
+      grid.querySelectorAll('[data-act="reject"]').forEach(b => {
+        b.addEventListener('click', () => rejectGalleryPost(b.dataset.id, b.dataset.type, { title: b.dataset.title, by: b.dataset.by }));
+      });
+      grid.querySelectorAll('[data-act="revoke"]').forEach(b => {
+        b.addEventListener('click', () => revokeGalleryPost(b.dataset.id, b.dataset.type));
+      });
+
+    } catch (err) {
+      console.error(`[上傳審核載入失敗]`, err);
+      grid.innerHTML = `<p class="empty-text" style="grid-column:1/-1">載入失敗: ${escapeHtml(err.message || err)}</p>`;
+    }
+  }
+
   async function loadGalleryReview(typeFilter, statusFilter) {
     const isStory = typeFilter === 'story';
     const pageKey = isStory ? 'review-stories' : 'review-photos';
@@ -1045,8 +1276,7 @@
 
     if (error) return alert('通過失敗: ' + error.message);
 
-    if (typeFilter === 'story') loadStoryReview();
-    else loadPhotoReview();
+    loadReviewUploads();
     loadDashboard?.(); refreshReviewCounts?.();
   }
 
@@ -1066,8 +1296,7 @@
 
     if (error) return alert('取消失敗: ' + error.message);
 
-    if (typeFilter === 'story') loadStoryReview();
-    else loadPhotoReview();
+    loadReviewUploads();
     loadDashboard?.(); refreshReviewCounts?.();
   }
 
@@ -1155,8 +1384,7 @@
 
     // 重新載入當前頁
     if (currentRejectTarget?.type === 'design') loadDesignReview();
-    if (currentRejectTarget?.type === 'photo') loadPhotoReview();
-    if (currentRejectTarget?.type === 'story') loadStoryReview();
+    if (currentRejectTarget?.type === 'photo' || currentRejectTarget?.type === 'story') loadReviewUploads();
     loadDashboard(); refreshReviewCounts?.();
   }
 
@@ -1404,7 +1632,279 @@
     suspendUser,
     restoreUser,
     createNews,
-    applyFilters
+    applyFilters,
+    initAdminUpload,
+    loadAdminUploadHistory,
+    initGrantCreator
   };
+
+
+  /* =============================================================
+     #4 樂活官方上傳照片 (用 Supabase Storage 直傳)
+     ============================================================= */
+
+  let AdminUploadFile = null;
+
+  function initAdminUpload() {
+    const submitBtn = document.getElementById('adminUploadSubmit');
+    const resetBtn = document.getElementById('adminUploadReset');
+    const dropzone = document.getElementById('adminUploadDropzone');
+    const fileInput = document.getElementById('adminUploadFileInput');
+    const clearBtn = document.getElementById('adminUploadClearImg');
+
+    if (submitBtn && !submitBtn.dataset.bound) {
+      submitBtn.dataset.bound = '1';
+      submitBtn.addEventListener('click', adminUploadSubmit);
+    }
+    if (resetBtn && !resetBtn.dataset.bound) {
+      resetBtn.dataset.bound = '1';
+      resetBtn.addEventListener('click', adminUploadReset);
+    }
+    if (dropzone && !dropzone.dataset.bound) {
+      dropzone.dataset.bound = '1';
+      dropzone.addEventListener('click', () => fileInput?.click());
+    }
+    if (fileInput && !fileInput.dataset.bound) {
+      fileInput.dataset.bound = '1';
+      fileInput.addEventListener('change', e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        AdminUploadFile = file;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const preview = document.getElementById('adminUploadPreview');
+          if (preview) preview.style.backgroundImage = `url('${ev.target.result}')`;
+          dropzone?.classList.add('has-image');
+          if (clearBtn) clearBtn.style.display = 'inline-flex';
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    if (clearBtn && !clearBtn.dataset.bound) {
+      clearBtn.dataset.bound = '1';
+      clearBtn.addEventListener('click', () => {
+        AdminUploadFile = null;
+        document.getElementById('adminUploadPreview').style.backgroundImage = '';
+        dropzone?.classList.remove('has-image');
+        clearBtn.style.display = 'none';
+        if (fileInput) fileInput.value = '';
+      });
+    }
+  }
+
+  function adminUploadReset() {
+    ['adminUploadTitle', 'adminUploadStory'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('adminUploadName').value = 'LOHAS 企劃部';
+    document.getElementById('adminUploadTopic').selectedIndex = 0;
+    document.getElementById('adminUploadCarrier').selectedIndex = 0;
+    document.getElementById('adminUploadHint').textContent = '';
+    AdminUploadFile = null;
+    document.getElementById('adminUploadPreview').style.backgroundImage = '';
+    document.getElementById('adminUploadDropzone')?.classList.remove('has-image');
+    document.getElementById('adminUploadClearImg').style.display = 'none';
+    const fi = document.getElementById('adminUploadFileInput');
+    if (fi) fi.value = '';
+  }
+
+  async function adminUploadSubmit() {
+    const sb = getSb();
+    if (!sb) return alert('Supabase 未連線');
+
+    const customer_name = document.getElementById('adminUploadName').value.trim() || 'LOHAS 企劃部';
+    const title = document.getElementById('adminUploadTitle').value.trim();
+    const topic = document.getElementById('adminUploadTopic').value;
+    const carrier = document.getElementById('adminUploadCarrier').value;
+    const story = document.getElementById('adminUploadStory').value.trim();
+    const hint = document.getElementById('adminUploadHint');
+
+    if (!title) {
+      hint.style.color = 'var(--status-rejected)';
+      hint.textContent = '請填寫標題';
+      return;
+    }
+    if (!AdminUploadFile) {
+      hint.style.color = 'var(--status-rejected)';
+      hint.textContent = '請選擇圖片';
+      return;
+    }
+
+    // 上傳到 Storage
+    hint.style.color = 'var(--lohas-mute)';
+    hint.textContent = '上傳圖片中...';
+
+    try {
+      const ext = AdminUploadFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const filePath = `public/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+      const SUPABASE_BUCKET = window.LohasSupabase?.CONFIG?.STORAGE_BUCKET || 'gallery-uploads';
+
+      const { error: uploadError } = await sb.storage
+        .from(SUPABASE_BUCKET)
+        .upload(filePath, AdminUploadFile, { cacheControl: '3600', upsert: false });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(filePath);
+      const publicUrl = data.publicUrl;
+
+      // 寫入 gallery_posts (status='approved' 自動通過)
+      const type = story.length >= 50 ? 'story' : 'photo';
+      const payload = {
+        title,
+        topic: topic || null,
+        carrier: carrier || null,
+        story: story || null,
+        type,
+        customer_name,
+        member_id: null,
+        image_urls: [publicUrl],
+        main_image_url: publicUrl,
+        status: 'approved'
+      };
+
+      hint.textContent = '寫入資料庫中...';
+
+      const { error: insertError } = await sb.from('gallery_posts').insert(payload);
+      if (insertError) throw insertError;
+
+      hint.style.color = 'var(--status-approved)';
+      hint.textContent = `✓ 已上傳並自動通過 (類型: ${type === 'story' ? '故事' : '照片'})`;
+
+      // 清空表單 + 重新載入歷史
+      adminUploadReset();
+      loadAdminUploadHistory();
+
+    } catch (err) {
+      hint.style.color = 'var(--status-rejected)';
+      hint.textContent = '上傳失敗: ' + (err.message || err);
+      console.error('[官方上傳失敗]', err);
+    }
+  }
+
+  async function loadAdminUploadHistory() {
+    const sb = getSb();
+    const list = document.getElementById('adminUploadHistory');
+    if (!sb || !list) return;
+
+    list.innerHTML = '<p class="empty-text">載入中...</p>';
+
+    const { data, error } = await sb
+      .from('gallery_posts')
+      .select('id, title, customer_name, type, main_image_url, image_urls, created_at')
+      .is('member_id', null)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (error) {
+      list.innerHTML = `<p class="empty-text">載入失敗: ${escapeHtml(error.message)}</p>`;
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      list.innerHTML = '<p class="empty-text" style="text-align:center;padding:30px 0;color:var(--lohas-mute)">尚無官方上傳紀錄</p>';
+      return;
+    }
+
+    list.innerHTML = data.map(p => {
+      const img = p.main_image_url || (p.image_urls && p.image_urls[0]) || '';
+      const imgStyle = img ? `style="background-image:url('${escapeHtml(img)}')"` : '';
+      const typeLabel = p.type === 'story' ? '故事' : '照片';
+      return `
+        <div class="admin-upload-row">
+          <div class="admin-upload-thumb" ${imgStyle}></div>
+          <div class="admin-upload-info">
+            <div class="admin-upload-title">${escapeHtml(p.title || '未命名')}</div>
+            <div class="admin-upload-meta">
+              <i class="fa-regular fa-clock"></i> ${formatTime(p.created_at)}
+              · ${typeLabel}
+              · 由 ${escapeHtml(p.customer_name || '官方')} 上傳
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+
+  /* =============================================================
+     #3 新增創作者個人頁 (獨立, 不綁會員)
+        - 用虛擬 member_id 占位 (前綴 virt-)
+        - 預設名稱 LOHAS 企劃部
+        - 砍歷史區塊, 純表單
+     ============================================================= */
+
+  function initGrantCreator() {
+    const submitBtn = document.getElementById('grantSubmit');
+    const cancelBtn = document.getElementById('grantCancel');
+
+    if (submitBtn && !submitBtn.dataset.bound) {
+      submitBtn.dataset.bound = '1';
+      submitBtn.addEventListener('click', grantCreatorSubmit);
+    }
+    if (cancelBtn && !cancelBtn.dataset.bound) {
+      cancelBtn.dataset.bound = '1';
+      cancelBtn.addEventListener('click', grantCreatorReset);
+    }
+
+    grantCreatorReset();
+  }
+
+  function grantCreatorReset() {
+    document.getElementById('grantDisplayName').value = 'LOHAS 企劃部';
+    ['grantBio', 'grantAvatarUrl', 'grantContact'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    const hint = document.getElementById('grantHint');
+    if (hint) hint.textContent = '';
+  }
+
+  async function grantCreatorSubmit() {
+    const sb = getSb();
+    if (!sb) return alert('Supabase 未連線');
+
+    const display_name = document.getElementById('grantDisplayName').value.trim();
+    const bio = document.getElementById('grantBio').value.trim();
+    const avatarUrl = document.getElementById('grantAvatarUrl').value.trim();
+    const contact = document.getElementById('grantContact').value.trim();
+    const hint = document.getElementById('grantHint');
+
+    if (!display_name) {
+      hint.style.color = 'var(--status-rejected)';
+      hint.textContent = '請填寫創作者名稱';
+      return;
+    }
+
+    if (!confirm(`確定建立創作者「${display_name}」?`)) return;
+
+    const virtId = 'virt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+
+    hint.style.color = 'var(--lohas-mute)';
+    hint.textContent = '建立中...';
+
+    const payload = {
+      member_id: virtId,
+      display_name,
+      bio: bio || null,
+      avatar_url: avatarUrl || null,
+      contact: contact || null,
+      status: 'active'
+    };
+
+    const { error } = await sb.from('creator_info').insert(payload);
+
+    if (error) {
+      hint.style.color = 'var(--status-rejected)';
+      hint.textContent = '建立失敗: ' + error.message;
+      console.error('[建立獨立創作者失敗]', error);
+      return;
+    }
+
+    hint.style.color = 'var(--status-approved)';
+    hint.textContent = `✓ 已建立創作者「${display_name}」 (ID: ${virtId})`;
+
+    setTimeout(() => grantCreatorReset(), 2500);
+  }
 
 })(window);
