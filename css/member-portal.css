@@ -375,6 +375,32 @@ body {
 }
 .mp .action-btn:hover i{ color:#fff }
 
+/* Action button (實心版) - 用於重要 CTA, 例如建立匯款資料
+   深色實心 + 白字, hover 變淺色 */
+.mp .action-btn-solid{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 20px;
+  background:var(--lohas-brand);
+  color:#fff;
+  border:0;
+  border-radius:999px;
+  font-family:inherit; font-size:12px;
+  letter-spacing:1px; font-weight:600;
+  cursor:pointer;
+  text-decoration:none;
+  transition:all .2s;
+  vertical-align:middle;
+}
+.mp .action-btn-solid:hover{
+  background:var(--lohas-hover);
+  transform:translateY(-1px);
+}
+.mp .action-btn-solid i{
+  font-size:11px;
+  color:#fff;
+  flex-shrink:0;
+}
+
 
 /* =============================================================
    5. Content + Section title
