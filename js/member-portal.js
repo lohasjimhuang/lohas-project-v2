@@ -1362,6 +1362,8 @@
     const bankInfo = document.getElementById('bankInfoList');
     const bankForm = document.getElementById('bankForm');
     const bankEditBtn = document.getElementById('bankEditBtn');
+    const bankStatusBadge = document.getElementById('bankStatusBadge');
+    const bankCreateBtnHero = document.getElementById('bankCreateBtnHero');
 
     if (account) {
       // 已有資料 - 顯示明細
@@ -1375,24 +1377,45 @@
       }
       if (bankForm) bankForm.style.display = 'none';
       if (bankEditBtn) bankEditBtn.style.display = '';
+      // Badge: 已設定 (綠勾)
+      if (bankStatusBadge) {
+        bankStatusBadge.className = 'bank-status-pill set';
+        bankStatusBadge.innerHTML = '<i class="fa-solid fa-shield-halved"></i>已 設 定';
+        bankStatusBadge.style.display = 'inline-flex';
+      }
+      // hero 按鈕隱藏 (已設定不需要)
+      if (bankCreateBtnHero) bankCreateBtnHero.style.display = 'none';
     } else {
-      // 沒資料 - 顯示「未設定 · 點此建立」
+      // 沒資料 - 顯示「未設定卡片」(Stripe 風)
       if (bankInfo) {
         bankInfo.innerHTML = `
-          <div class="empty" style="padding:30px 20px;background:transparent;border:1px dashed var(--lohas-light-brown);border-radius:10px">
-            <i class="fa-solid fa-circle-exclamation" style="color:var(--status-pending);font-size:22px"></i>
-            <div class="empty-title" style="margin-top:8px">尚未設定匯款資料</div>
-            <div style="font-size:11px;color:var(--lohas-mute);margin:8px 0 14px">完成設定後才能領取分潤</div>
-            <button class="action-btn-solid" id="bankCreateBtn"><i class="fa-solid fa-plus"></i><span>建立匯款資料</span></button>
+          <div class="bank-empty-card">
+            <div class="bank-empty-icon"><i class="fa-regular fa-credit-card"></i></div>
+            <div class="bank-empty-info">
+              <div class="bank-empty-title">完成設定即可領取分潤</div>
+              <div class="bank-empty-desc">填寫銀行帳號讓樂活每月將分潤匯入你的帳戶</div>
+            </div>
+            <button class="action-btn-solid" id="bankCreateBtn"><i class="fa-solid fa-plus"></i><span>建立</span></button>
           </div>`;
         bankInfo.style.display = '';
         document.getElementById('bankCreateBtn')?.addEventListener('click', () => showBankForm(null));
       }
       if (bankForm) bankForm.style.display = 'none';
       if (bankEditBtn) bankEditBtn.style.display = 'none';
+      // Badge: 未設定 (橘色)
+      if (bankStatusBadge) {
+        bankStatusBadge.className = 'bank-status-pill unset';
+        bankStatusBadge.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>未 設 定';
+        bankStatusBadge.style.display = 'inline-flex';
+      }
+      // hero 按鈕顯示 (引導去填表)
+      if (bankCreateBtnHero) {
+        bankCreateBtnHero.style.display = 'inline-flex';
+        bankCreateBtnHero.onclick = () => showBankForm(null);
+      }
     }
 
-    // 累計分潤、本月、下次匯款
+    // 累計分潤、本月、下次匯款、已領總額
     const { data: records } = await sb
       .from('royalty_records')
       .select('amount, used_at, payout_status')
@@ -1409,10 +1432,27 @@
     const pending = (records || [])
       .filter(r => r.payout_status === 'pending')
       .reduce((s, r) => s + Number(r.amount || 0), 0);
+    const paidTotal = (records || [])
+      .filter(r => r.payout_status === 'paid')
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
 
     document.querySelectorAll('[data-stat="thisMonth"]').forEach(el => el.textContent = '$' + thisMonth.toLocaleString());
     document.querySelectorAll('[data-stat="totalRoyalty"]').forEach(el => el.textContent = '$' + total.toLocaleString());
     document.querySelectorAll('[data-stat="nextPayout"]').forEach(el => el.textContent = '$' + pending.toLocaleString());
+    document.querySelectorAll('[data-stat="paidTotal"]').forEach(el => el.textContent = '$' + paidTotal.toLocaleString());
+
+    // Hero 區「下次匯款日期」(算下個月最後一天)
+    const heroDate = document.getElementById('payoutHeroDate');
+    if (heroDate) {
+      const next = new Date(now.getFullYear(), now.getMonth() + 1, 0); // 本月最後一天
+      const dateStr = `${next.getFullYear()}/${String(next.getMonth()+1).padStart(2,'0')}/${String(next.getDate()).padStart(2,'0')}`;
+      const pendingCount = (records || []).filter(r => r.payout_status === 'pending').length;
+      if (pending > 0) {
+        heroDate.textContent = `預計 ${dateStr} 匯款 · ${pendingCount} 筆訂單`;
+      } else {
+        heroDate.textContent = '尚無待匯款分潤';
+      }
+    }
 
     // 匯款進度 - 顯示分潤明細
     const payoutList = document.getElementById('payoutList');
