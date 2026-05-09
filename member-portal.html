@@ -9,13 +9,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <!-- LOHAS CSS · 載入順序: tokens → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1057">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1057">
-  <link rel="stylesheet" href="css/member-portal.css?v=20260509-1057">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1331">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1331">
+  <link rel="stylesheet" href="css/member-portal.css?v=20260509-1331">
 
   <!-- 上傳 modal 所需資源 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-  <link rel="stylesheet" href="css/upload.css?v=20260509-1057">
+  <link rel="stylesheet" href="css/upload.css?v=20260509-1331">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 <body>
@@ -469,6 +469,7 @@
             <span><i class="fa-solid fa-building-columns"></i>收款銀行帳戶</span>
             <span id="bankStatusBadge" style="display:none"></span>
             <button class="btn" id="bankEditBtn" style="display:none"><i class="fa-regular fa-pen-to-square"></i>編輯</button>
+            <button class="btn danger" id="bankDeleteBtn" style="display:none"><i class="fa-regular fa-trash-can"></i>刪除</button>
           </h3>
           <div id="bankInfoList">
             <p class="empty-text">載入中...</p>
@@ -689,11 +690,11 @@
 
 <!-- ====== 依賴 (按順序載入) ====== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/utils.js?v=20260509-1057"></script>
-<script src="js/auth.js?v=20260509-1057"></script>
-<script src="js/supabase.js?v=20260509-1057"></script>
-<script src="js/member-portal.js?v=20260509-1057"></script>
-<script src="js/upload.js?v=20260509-1057"></script>
+<script src="js/utils.js?v=20260509-1331"></script>
+<script src="js/auth.js?v=20260509-1331"></script>
+<script src="js/supabase.js?v=20260509-1331"></script>
+<script src="js/member-portal.js?v=20260509-1331"></script>
+<script src="js/upload.js?v=20260509-1331"></script>
 
 </body>
 </html>
