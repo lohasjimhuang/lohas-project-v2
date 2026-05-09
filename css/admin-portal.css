@@ -1460,3 +1460,261 @@
   letter-spacing:0.3px;
   margin-top:2px;
 }
+
+/* admin-upload 容器尺寸覆蓋 (適合後台 form-card 寬度) */
+.ad .admin-upload-grid{
+  max-width:520px;
+}
+.ad .admin-upload-grid .upload-box{
+  cursor:pointer;
+  position:relative;
+}
+.ad .upload-remove-btn{
+  position:absolute;
+  top:8px; right:8px;
+  width:28px; height:28px;
+  border-radius:50%;
+  border:0;
+  background:rgba(0,0,0,0.6);
+  color:#fff;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:11px;
+  z-index:2;
+}
+.ad .upload-remove-btn:hover{
+  background:rgba(176,80,80,0.9);
+}
+
+
+/* =============================================================
+   創作者個人頁編輯器 (從會員平台 copy 過來, namespace 改 .ad)
+   ============================================================= */
+
+.ad .creator-edit-wrap{
+  max-width:760px;
+}
+
+.ad .editor-panel{
+  background:#fff; border:1px solid var(--lohas-line);
+  border-radius:14px;
+  padding:22px 24px;
+  margin-bottom:14px;
+}
+.ad .editor-panel-h{
+  font-size:13px; color:var(--lohas-brown);
+  font-weight:600; letter-spacing:0.5px;
+  margin:0 0 14px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--lohas-line);
+  display:flex; align-items:center; gap:8px;
+}
+.ad .editor-panel-h i{ font-size:11px; color:var(--lohas-mute) }
+.ad .editor-row{
+  display:grid; grid-template-columns:120px 1fr;
+  gap:14px; align-items:flex-start;
+  padding:12px 0;
+  border-bottom:1px dashed var(--lohas-line);
+}
+.ad .editor-row:last-child{ border-bottom:0 }
+.ad .editor-label{
+  font-size:11px; color:var(--lohas-mute);
+  letter-spacing:0.5px; font-weight:600;
+  padding-top:10px;
+}
+.ad .editor-input,
+.ad .editor-area{
+  width:100%; padding:9px 12px;
+  border:1px solid var(--lohas-line);
+  border-radius:8px;
+  font-family:inherit; font-size:13px;
+  outline:none;
+  color:var(--lohas-text);
+  background:#fff;
+}
+.ad .editor-input:focus,
+.ad .editor-area:focus{
+  border-color:var(--lohas-brown);
+}
+.ad .editor-area{ min-height:100px; resize:vertical; line-height:1.8 }
+.ad .ed-avatar{
+  width:64px; height:64px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--lohas-light-brown),var(--lohas-brown));
+  color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:600;
+  overflow:hidden;
+}
+.ad .ed-avatar img{
+  width:100%; height:100%;
+  object-fit:cover;
+  border-radius:50%;
+  display:block;
+}
+.ad .creator-avatar-wrap{
+  position:relative;
+  display:inline-block;
+}
+.ad .ed-avatar-camera{
+  position:absolute; bottom:0; right:0;
+  width:26px; height:26px;
+  background:var(--lohas-brown); color:#fff;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px;
+  border:2px solid #fff;
+  cursor:pointer;
+  transition:background .15s;
+  padding:0;
+}
+.ad .ed-avatar-camera:hover{ background:var(--lohas-hover) }
+.ad .creator-photo-wrap{
+  display:inline-block;
+  position:relative;
+}
+.ad .creator-photo-preview{
+  width:160px;
+  aspect-ratio:3/4;
+  border:2px dashed var(--lohas-light-brown);
+  border-radius:10px;
+  background:var(--lohas-tip);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:var(--lohas-mute);
+  font-size:11px;
+  letter-spacing:1.5px;
+  background-size:cover;
+  background-position:center;
+  overflow:hidden;
+  cursor:pointer;
+  transition:border-color .15s;
+}
+.ad .creator-photo-preview:hover{
+  border-color:var(--lohas-brown);
+}
+.ad .creator-photo-preview i{ font-size:22px; opacity:0.6 }
+.ad .creator-photo-preview.has-image{
+  border-style:solid;
+  border-color:var(--lohas-line);
+}
+.ad .creator-photo-preview.has-image i,
+.ad .creator-photo-preview.has-image span{ display:none }
+.ad .creator-photo-upload-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:8px;
+  padding:7px 14px;
+  background:#fff;
+  color:var(--lohas-text);
+  border:1px solid var(--lohas-line);
+  border-radius:8px;
+  font-family:inherit; font-size:12px;
+  letter-spacing:0.3px;
+  cursor:pointer;
+}
+.ad .creator-photo-upload-btn:hover{ background:var(--lohas-tip) }
+.ad .visually-hidden{
+  position:absolute; width:1px; height:1px;
+  padding:0; margin:-1px; overflow:hidden;
+  clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+.ad .action-btn-solid{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 20px;
+  background:var(--lohas-brown);
+  color:#fff;
+  border:0;
+  border-radius:999px;
+  font-family:inherit; font-size:12px;
+  letter-spacing:1px; font-weight:600;
+  cursor:pointer;
+  text-decoration:none;
+  transition:all .2s;
+}
+.ad .action-btn-solid:hover{
+  background:var(--lohas-hover);
+  transform:translateY(-1px);
+}
+
+/* 新增創作者成功訊息卡片 */
+.ad .ag-success-card{
+  margin-top:14px;
+  padding:16px 18px;
+  background:var(--lohas-soft);
+  border:1px solid var(--lohas-line);
+  border-radius:10px;
+}
+.ad .ag-success-label{
+  font-size:10px;
+  color:var(--lohas-mute);
+  letter-spacing:2px;
+  font-weight:600;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.ad .ag-success-url-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.ad .ag-success-url{
+  flex:1;
+  min-width:0;
+  padding:8px 12px;
+  background:#fff;
+  border:1px solid var(--lohas-line);
+  border-radius:6px;
+  font-family:monospace;
+  font-size:11.5px;
+  color:var(--lohas-brown);
+  text-decoration:none;
+  word-break:break-all;
+  letter-spacing:0;
+}
+.ad .ag-success-url:hover{
+  border-color:var(--lohas-brown);
+  background:var(--lohas-tip);
+}
+.ad .ag-copy-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:7px 12px;
+  background:#fff;
+  color:var(--lohas-brown);
+  border:1px solid var(--lohas-line);
+  border-radius:6px;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.3px;
+  cursor:pointer;
+  flex-shrink:0;
+}
+.ad .ag-copy-btn:hover{
+  background:var(--lohas-brown);
+  color:#fff;
+  border-color:var(--lohas-brown);
+}
+.ad .ag-copy-btn i{ font-size:10px }
+.ad .ag-success-hint{
+  font-size:10.5px;
+  color:var(--lohas-mute);
+  margin-top:8px;
+  letter-spacing:0.3px;
+}
+.ad .ag-success-hint code{
+  font-family:monospace;
+  background:#fff;
+  padding:1px 6px;
+  border-radius:3px;
+  border:1px solid var(--lohas-line);
+  font-size:10.5px;
+  color:var(--lohas-text);
+}
