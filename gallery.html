@@ -50,10 +50,6 @@
               <i class="fa-solid fa-magnifying-glass"></i>
               <input type="search" class="filter-search-input" id="mobileSearchInput" placeholder="搜尋照片關鍵字" />
             </div>
-            <button type="button" class="toggle-story-btn mobile-toggle-story" id="mobileToggleStoryBtn" aria-pressed="false">
-              <i class="fa-solid fa-book-open"></i>
-              <span>只看有故事的</span>
-            </button>
           </div>
           <div class="mobile-row">
             <select class="filter-select" id="mobileTopicFilter" aria-label="想刻什麼？">
@@ -63,16 +59,33 @@
               <option>刻在哪裡？</option><option>鏡片</option><option>鏡腳</option><option>眼鏡布</option><option>眼鏡盒</option><option>鼻墊</option><option>其他周邊配件</option>
             </select>
           </div>
+
+          <div class="card-tabs mobile-card-tabs" role="tablist">
+            <button type="button" class="card-tab is-active" role="tab" aria-selected="true" data-card-type="all">全部</button>
+            <button type="button" class="card-tab" role="tab" aria-selected="false" data-card-type="photo">
+              <i class="fa-solid fa-camera"></i>
+              <span>只看照片</span>
+            </button>
+            <button type="button" class="card-tab" role="tab" aria-selected="false" data-card-type="story">
+              <i class="fa-solid fa-book-open"></i>
+              <span>只看故事</span>
+            </button>
+          </div>
         </div>
         <div class="jins-filter-area">
           
           <div class="jins-filter-top">
-            
-            <div class="result-meta">載入中...</div>
-            <button type="button" class="toggle-story-btn" id="toggleStoryBtn" aria-pressed="false">
-              <i class="fa-solid fa-book-open"></i>
-              <span>只看有故事的</span>
-            </button>
+            <div class="card-tabs" role="tablist">
+              <button type="button" class="card-tab is-active" role="tab" aria-selected="true" data-card-type="all">全部</button>
+              <button type="button" class="card-tab" role="tab" aria-selected="false" data-card-type="photo">
+                <i class="fa-solid fa-camera"></i>
+                <span>只看照片</span>
+              </button>
+              <button type="button" class="card-tab" role="tab" aria-selected="false" data-card-type="story">
+                <i class="fa-solid fa-book-open"></i>
+                <span>只看故事</span>
+              </button>
+            </div>
           </div>
 
           <div class="filter-toolbar">
