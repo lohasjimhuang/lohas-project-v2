@@ -1564,9 +1564,12 @@
     if (delBtn) delBtn.addEventListener('click', () => deletePhoto(delBtn.dataset.id));
     const reBtn = modalActions.querySelector('[data-action="reupload"]');
     if (reBtn) reBtn.addEventListener('click', () => {
+      // 找原 post 資料 (傳給編輯模式)
+      const post = ShareState.items?.find(p => p.id === id) || PhotoState.items?.find(p => p.id === id) || null;
       closeModal();
-      // 開上傳 modal (在會員平台彈出, 不跳頁)
-      if (window.LohasUpload && window.LohasUpload.openModal) {
+      if (window.LohasUpload && window.LohasUpload.openModalForEdit && post) {
+        window.LohasUpload.openModalForEdit(post);
+      } else if (window.LohasUpload && window.LohasUpload.openModal) {
         window.LohasUpload.openModal();
       } else {
         window.alert('上傳模組未載入');
@@ -1602,12 +1605,16 @@
         }
         const reader = new FileReader();
         reader.onload = function (ev) {
-          if (preview) {
-            preview.innerHTML = `<img src="${ev.target.result}" alt="會員頭像">`;
-          }
-          localStorage.setItem('lohasMemberAvatar', ev.target.result);
+          // 1:1 裁切
+          openCropModal(ev.target.result, 1, (croppedDataUrl) => {
+            if (preview) {
+              preview.innerHTML = `<img src="${croppedDataUrl}" alt="會員頭像">`;
+            }
+            localStorage.setItem('lohasMemberAvatar', croppedDataUrl);
+          });
         };
         reader.readAsDataURL(file);
+        input.value = '';
       });
     }
   }
@@ -1631,12 +1638,16 @@
         }
         const reader = new FileReader();
         reader.onload = function (ev) {
-          if (preview) {
-            preview.innerHTML = `<img src="${ev.target.result}" alt="創作者頭像">`;
-          }
-          localStorage.setItem('lohasCreatorAvatar', ev.target.result);
+          // 1:1 裁切
+          openCropModal(ev.target.result, 1, (croppedDataUrl) => {
+            if (preview) {
+              preview.innerHTML = `<img src="${croppedDataUrl}" alt="創作者頭像">`;
+            }
+            localStorage.setItem('lohasCreatorAvatar', croppedDataUrl);
+          });
         };
         reader.readAsDataURL(file);
+        input.value = '';
       });
     }
   }

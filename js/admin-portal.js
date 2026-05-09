@@ -1719,17 +1719,32 @@
 
     if (fileInput && !fileInput.dataset.bound) {
       fileInput.dataset.bound = '1';
-      fileInput.addEventListener('change', e => {
+      fileInput.addEventListener('change', async e => {
         const file = e.target.files?.[0];
         if (!file || activeSlot === null) return;
+
+        // 開裁切 (1:1 跟靈感牆統一)
+        let finalFile = file;
+        if (window.LohasCropper) {
+          const cropped = await window.LohasCropper.crop(file, {
+            aspectRatio: 1,
+            title: '裁切照片 · 1:1'
+          });
+          if (!cropped) {
+            // 使用者取消
+            fileInput.value = '';
+            return;
+          }
+          finalFile = cropped;
+        }
 
         const reader = new FileReader();
         reader.onload = ev => {
           AdminUploadState.images[activeSlot] = ev.target.result;
-          AdminUploadState.files[activeSlot] = file;
+          AdminUploadState.files[activeSlot] = finalFile;
           renderAdminUploadSlot(activeSlot);
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(finalFile);
         fileInput.value = '';
       });
     }

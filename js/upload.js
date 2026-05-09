@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
   const Supabase = window.LohasSupabase;
-  const Auth = window.LohasAuth;
   const supabaseClient = Supabase?.getClient?.() || null;
 
   const SUPABASE_BUCKET = Supabase?.CONFIG?.STORAGE_BUCKET || "gallery-uploads";
@@ -12,7 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     images: [null, null, null],
     files: [null, null, null],
     isPreviewMode: false,
-    selectedTags: new Set()
+    editId: null,                  // 編輯模式: 已存在的 post id (null = 新建)
+    existingImageUrls: [null, null, null]  // 編輯模式: 原本已上傳的 URL (沒換才用)
   };
 
   const openUploadBtns = document.querySelectorAll(".js-open-upload");
@@ -30,10 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const carrierCategory = document.getElementById("carrierCategory");
   const previewBtn = document.getElementById("previewBtn");
   const submitBtn = document.getElementById("submitBtn");
-
-  // 細部標籤相關 DOM
-  const tagChipCloud = document.getElementById("tagChipCloud");
-  const tagCountEl = document.getElementById("tagCount");
 
   let cropper = null;
   let cropTargetSlot = null;
@@ -69,42 +65,6 @@ document.addEventListener("DOMContentLoaded", () => {
         : cleanName.slice(-1);
 
     return `${first}＊${suffix}`;
-  }
-
-  // 渲染細部標籤 chip 雲
-  function renderTagChips(category) {
-    if (!tagChipCloud) return;
-
-    const tags = (window.LohasSubcategories || {})[category] || [];
-
-    state.selectedTags.clear();
-    tagChipCloud.innerHTML = "";
-    updateTagCount();
-
-    tags.forEach(tag => {
-      const chip = document.createElement("button");
-      chip.type = "button";
-      chip.className = "tag-chip";
-      chip.dataset.tag = tag;
-      chip.textContent = tag;
-
-      chip.addEventListener("click", () => {
-        if (state.selectedTags.has(tag)) {
-          state.selectedTags.delete(tag);
-          chip.classList.remove("is-active");
-        } else {
-          state.selectedTags.add(tag);
-          chip.classList.add("is-active");
-        }
-        updateTagCount();
-      });
-
-      tagChipCloud.appendChild(chip);
-    });
-  }
-
-  function updateTagCount() {
-    if (tagCountEl) tagCountEl.textContent = String(state.selectedTags.size);
   }
 
   function openModal() {
@@ -160,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="upload-placeholder">
         <i class="fa-regular fa-image"></i>
         <p>新增圖片</p>
-        <span class="upload-hint">${isMain ? "點擊選擇,或拖曳圖片到這裡" : "副圖"}</span>
+        <span class="upload-hint">${isMain ? "點擊選擇，或拖曳圖片到這裡" : "副圖"}</span>
       </div>
     `;
   }
@@ -223,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (cropper) cropper.destroy();
 
       cropper = new Cropper(cropImage, {
-        aspectRatio: 1,
+        aspectRatio: 1,          // 1:1 正方 (跟卡片瀑布流統一)
         viewMode: 1,
         dragMode: "move",
         autoCropArea: 1,
@@ -331,15 +291,40 @@ document.addEventListener("DOMContentLoaded", () => {
       throw new Error("Supabase 尚未設定");
     }
 
-    // === [auth] === 用 LohasAuth 取代 localStorage 直讀
-    const member = Auth?.getStoredMember?.() || null;
+    const member = JSON.parse(localStorage.getItem("lohasMember") || "null");
 
     if (!member || !member.erpid) {
       throw new Error("請先登入會員後再分享照片");
     }
 
-    const imageUrls = await uploadImagesToSupabase();
+    // 編輯模式: 只上傳「換新的」, 沒換的圖用 existingImageUrls
+    let imageUrls;
+    if (state.editId) {
+      const newUploaded = [];
+      // 上傳每個 slot, 換新的就上傳, 沒換的用 existing
+      for (let i = 0; i < 3; i++) {
+        if (state.files[i]) {
+          // 有新檔, 上傳
+          const file = state.files[i];
+          const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+          const filePath = `public/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+          const { error: uploadError } = await supabaseClient.storage
+            .from(SUPABASE_BUCKET)
+            .upload(filePath, file, { cacheControl: "3600", upsert: false });
+          if (uploadError) throw uploadError;
+          const { data } = supabaseClient.storage.from(SUPABASE_BUCKET).getPublicUrl(filePath);
+          newUploaded.push(data.publicUrl);
+        } else if (state.existingImageUrls[i]) {
+          // 沒換, 用原本的
+          newUploaded.push(state.existingImageUrls[i]);
+        }
+      }
+      imageUrls = newUploaded.filter(Boolean);
+    } else {
+      imageUrls = await uploadImagesToSupabase();
+    }
 
+    // 自動分流: 故事文字 >= 50 字 = story 卡, 否則 = photo 卡
     const storyText = shareText.value.trim();
     const cardType = storyText.length >= 50 ? "story" : "photo";
 
@@ -353,15 +338,28 @@ document.addEventListener("DOMContentLoaded", () => {
       member_id: member.erpid,
       image_urls: imageUrls,
       main_image_url: imageUrls[0],
-      subcategories: Array.from(state.selectedTags),
       is_public: true,
-      status: "pending"
+      status: "pending"   // 重新送審
     };
 
+    if (state.editId) {
+      // 編輯模式: update (重新送審, 清掉 reject_reason)
+      postPayload.reject_reason = null;
+      const { data, error } = await supabaseClient
+        .from(SUPABASE_TABLE)
+        .update(postPayload)
+        .eq("id", state.editId)
+        .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at,is_public,status")
+        .single();
+      if (error) throw error;
+      return data;
+    }
+
+    // 新建模式
     const { data, error } = await supabaseClient
       .from(SUPABASE_TABLE)
       .insert(postPayload)
-      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,subcategories,created_at,is_public,status")
+      .select("id,title,topic,carrier,story,type,customer_name,member_id,image_urls,main_image_url,created_at,is_public,status")
       .single();
 
     if (error) throw error;
@@ -372,17 +370,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function clearForm() {
     state.images = [null, null, null];
     state.files = [null, null, null];
+    state.editId = null;
+    state.existingImageUrls = [null, null, null];
 
     uploadBoxes.forEach(box => resetBox(Number(box.dataset.slot)));
+
+    // 還原 modal 標題與按鈕文字
+    const titleEl = document.getElementById('uploadModalTitle');
+    if (titleEl) titleEl.firstChild.textContent = '分享你的照片 ';
+    if (submitBtn) submitBtn.textContent = '送出分享';
 
     if (workTitle) workTitle.value = "";
     if (shareText) shareText.value = "";
     if (currentChar) currentChar.textContent = "0";
     if (workCategory) workCategory.selectedIndex = 0;
     if (carrierCategory) carrierCategory.selectedIndex = 0;
-
-    state.selectedTags.clear();
-    if (workCategory) renderTagChips(workCategory.value);
   }
 
   function bindUploadEvents() {
@@ -390,17 +392,12 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener("click", event => {
         event.preventDefault();
 
-        // === [auth] === 用 LohasAuth.requireLogin 統一處理
-        if (Auth?.requireLogin) {
-          if (!Auth.requireLogin("gallery.html#upload-area")) return;
-        } else {
-          // fallback: 萬一 LohasAuth 沒載入
-          const member = JSON.parse(localStorage.getItem("lohasMember") || "null");
-          if (!member || !member.erpid) {
-            localStorage.setItem("redirectAfterLogin", "gallery.html#upload-area");
-            window.location.href = "login.html";
-            return;
-          }
+        const member = JSON.parse(localStorage.getItem("lohasMember") || "null");
+
+        if (!member || !member.erpid) {
+          localStorage.setItem("redirectAfterLogin", "gallery.html#upload-area");
+          window.location.href = "login.html";
+          return;
         }
 
         openModal();
@@ -408,6 +405,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     closeUpload?.addEventListener("click", closeModal);
+
+    uploadModal?.addEventListener("click", event => {
+      if (event.target === uploadModal) closeModal();
+    });
 
     fileInput?.addEventListener("change", event => {
       const file = event.target.files[0];
@@ -462,6 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
           item.style.opacity = "";
         });
 
+        // 內部拖曳 (盒子之間互換) 優先處理 - 不再走裁切流程
         if (state.draggedSlot !== null) {
           if (state.draggedSlot !== slot) {
             swapImages(state.draggedSlot, slot);
@@ -470,6 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
+        // 外部拖入新檔案才開啟裁切
         const file = event.dataTransfer.files[0];
         if (file) {
           readImageFile(file, slot);
@@ -501,6 +504,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const len = shareText.value.length;
       currentChar.textContent = len;
 
+      // 達 50 字 → 視覺提示這篇會被收進故事牆
       const counter = document.querySelector(".char-counter");
       if (counter) {
         counter.classList.toggle("is-story", len >= 50);
@@ -514,29 +518,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 主類切換 → 重渲染 chip 雲
-    workCategory?.addEventListener("change", () => {
-      renderTagChips(workCategory.value);
-    });
-
-    // 開啟 modal 時, 第一次渲染 chip 雲
-    if (workCategory) renderTagChips(workCategory.value);
-
     previewBtn?.addEventListener("click", () => {
       if (!validateForm()) return;
 
-      // === [auth] === 預覽時也用 LohasAuth
-      const member = Auth?.getStoredMember?.() || null;
+      const member = JSON.parse(localStorage.getItem("lohasMember") || "null");
       const previewName = maskName(member?.name || "顧客");
       const images = state.images.filter(Boolean);
       const mainImage = images[0];
       const subImages = images.slice(1, 3);
-
-      const tagsHTML = state.selectedTags.size
-        ? `<div class="detail-tags">${Array.from(state.selectedTags)
-            .map(t => `<span class="detail-tag">${t}</span>`)
-            .join("")}</div>`
-        : "";
 
       detailBody.innerHTML = `
         <div class="detail-gallery">
@@ -563,8 +552,6 @@ document.addEventListener("DOMContentLoaded", () => {
           <span class="detail-chip">${carrierCategory.value}</span>
         </div>
 
-        ${tagsHTML}
-
         <p class="detail-story">
           ${shareText.value.trim() || "這是一份來自顧客的真實刻圖照片分享。"}
         </p>
@@ -588,6 +575,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const newPost = await submitPostToSupabase();
 
+        // 待審核中的貼文不立刻插進 grid (防止用戶以為已公開)
+        // window.LohasGallery?.renderGalleryCard?.(newPost, true);
+        // window.LohasGallery?.applyFilters?.();
+        // window.LohasGallery?.loadMyFavoriteStates?.();
+
+        // 如果在會員平台 (有 LohasMember), 重新載入該頁清單
         if (window.LohasMember?.reloadAfterUpload) {
           window.LohasMember.reloadAfterUpload(newPost);
         }
@@ -598,7 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showToast("已送出 · 審核通過後將會顯示在靈感牆");
       } catch (error) {
         console.error(error);
-        showToast(error.message || "上傳失敗,請檢查 Supabase 權限設定");
+        showToast(error.message || "上傳失敗，請檢查 Supabase 權限設定");
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = "送出分享";
@@ -632,15 +625,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   bindUploadEvents();
 
-  // === [auth] === maybeAutoOpenUpload 也改用 LohasAuth
+  // 登入後從 login.html 帶回來的: hash = #upload-area 或 #open-upload → 自動開 modal
   function maybeAutoOpenUpload() {
     const hash = window.location.hash;
     if (hash === "#upload-area" || hash === "#open-upload") {
-      const isLoggedIn = Auth?.isLogin?.()
-        ?? !!JSON.parse(localStorage.getItem("lohasMember") || "null")?.erpid;
-
-      if (isLoggedIn) {
+      const member = JSON.parse(localStorage.getItem("lohasMember") || "null");
+      if (member && member.erpid) {
         openModal();
+        // 清掉 hash 避免重新整理又開一次
         history.replaceState(null, "", window.location.pathname + window.location.search);
       }
     }
@@ -649,6 +641,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.LohasUpload = {
     openModal,
+    openModalForEdit,
     closeModal,
     clearForm,
     isPreviewMode() {
@@ -656,4 +649,75 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     backToUploadModal
   };
+
+  /**
+   * 編輯已上傳的照片 (例如駁回後重新上傳)
+   * @param {Object} post - { id, title, topic, carrier, story, image_urls, main_image_url }
+   */
+  function openModalForEdit(post) {
+    if (!post || !post.id) return openModal();
+
+    // 設定編輯模式
+    state.editId = post.id;
+    state.images = [null, null, null];
+    state.files = [null, null, null];
+    state.existingImageUrls = [null, null, null];
+
+    // 預填欄位
+    if (workTitle) workTitle.value = post.title || '';
+    if (workCategory) workCategory.value = post.topic || '';
+    if (carrierCategory) carrierCategory.value = post.carrier || '';
+    if (shareText) {
+      shareText.value = post.story || '';
+      // 觸發字數計算
+      shareText.dispatchEvent(new Event('input'));
+    }
+
+    // 預填照片 (顯示 + 記下原 URL)
+    const urls = Array.isArray(post.image_urls) ? post.image_urls : [];
+    urls.slice(0, 3).forEach((url, i) => {
+      state.existingImageUrls[i] = url;
+      state.images[i] = url;
+      // 渲染到 upload-box (顯示原圖)
+      const box = document.querySelector(`.upload-box[data-slot="${i}"]`);
+      if (box) {
+        box.classList.add('has-image');
+        box.style.backgroundImage = `url('${url}')`;
+        box.style.backgroundSize = 'cover';
+        box.style.backgroundPosition = 'center';
+        // 換成「移除」按鈕內容
+        const isMain = i === 0;
+        box.innerHTML = `
+          ${isMain ? '<span class="badge-main">首圖</span>' : ''}
+          <button type="button" class="upload-remove-btn" data-remove-slot="${i}" aria-label="移除">
+            <i class="fa-solid fa-xmark"></i>
+          </button>`;
+        box.querySelector('.upload-remove-btn')?.addEventListener('click', e => {
+          e.stopPropagation();
+          state.images[i] = null;
+          state.files[i] = null;
+          state.existingImageUrls[i] = null;
+          box.classList.remove('has-image');
+          box.style.backgroundImage = '';
+          // 還原 placeholder
+          box.innerHTML = `
+            ${isMain ? '<span class="badge-main">首圖</span>' : ''}
+            <div class="upload-placeholder">
+              <i class="fa-regular fa-image"></i>
+              <p>${isMain ? '上傳首圖' : '上傳圖片'}</p>
+              <span class="upload-hint">${isMain ? '點擊或拖曳圖片到這裡' : '副圖（選填）'}</span>
+            </div>`;
+        });
+      }
+    });
+
+    // 換 modal 標題顯示是「編輯」
+    const titleEl = document.getElementById('uploadModalTitle');
+    if (titleEl) titleEl.firstChild.textContent = '重新編輯照片 ';
+
+    // 換送出按鈕文字
+    if (submitBtn) submitBtn.textContent = '重新送出';
+
+    openModal();
+  }
 });
