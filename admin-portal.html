@@ -22,10 +22,10 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1642">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1642">
-  <link rel="stylesheet" href="css/upload.css?v=20260509-1642">
-  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1642">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1704">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1704">
+  <link rel="stylesheet" href="css/upload.css?v=20260509-1704">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1704">
 
 </head>
 <body>
@@ -631,6 +631,18 @@
         </div>
 
         <div class="editor-panel">
+          <h3 class="editor-panel-h">
+            <i class="fa-regular fa-rectangle-list"></i>自訂內容區塊
+            <button class="btn" id="agAddCustomBlockBtn" type="button" style="margin-left:auto;font-size:11px;padding:6px 12px">
+              <i class="fa-solid fa-plus"></i>新增區塊
+            </button>
+          </h3>
+          <div id="agCustomBlocksList">
+            <p class="empty-text" style="padding:30px 20px;font-size:12px">點上方「新增區塊」加入自訂的圖文段落</p>
+          </div>
+        </div>
+
+        <div class="editor-panel">
           <h3 class="editor-panel-h"><i class="fa-brands fa-youtube"></i>創作者影片 (選填)</h3>
           <div class="editor-row">
             <div class="editor-label">YouTube URL</div>
@@ -716,13 +728,13 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js?v=20260509-1642"></script>
-<script src="js/auth.js?v=20260509-1642"></script>
-<script src="js/supabase.js?v=20260509-1642"></script>
-<script src="js/cropper-helper.js?v=20260509-1642"></script>
+<script src="js/utils.js?v=20260509-1704"></script>
+<script src="js/auth.js?v=20260509-1704"></script>
+<script src="js/supabase.js?v=20260509-1704"></script>
+<script src="js/cropper-helper.js?v=20260509-1704"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js?v=20260509-1642"></script>
+<script src="js/admin-portal.js?v=20260509-1704"></script>
 
 </body>
 </html>
