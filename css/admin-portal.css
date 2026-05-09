@@ -1408,3 +1408,55 @@
   .ad .form-hint,
   .ad .form-row > .form-hint{ grid-column:1 }
 }
+
+/* 樂活官方上傳 - dropzone */
+.ad .admin-upload-dropzone{
+  position:relative;
+  width:100%;
+  max-width:400px;
+  aspect-ratio:4/3;
+  background:var(--lohas-soft);
+  border:2px dashed var(--lohas-line);
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  overflow:hidden;
+  transition:all .2s;
+}
+.ad .admin-upload-dropzone:hover{
+  border-color:var(--lohas-brown);
+  background:var(--lohas-tip);
+}
+.ad .admin-upload-dropzone.has-image{
+  border-style:solid;
+  background:#000;
+  cursor:default;
+}
+.ad .admin-upload-preview{
+  width:100%;
+  height:100%;
+  background-size:cover;
+  background-position:center;
+  display:none;
+}
+.ad .admin-upload-dropzone.has-image .admin-upload-preview{ display:block }
+.ad .admin-upload-dropzone.has-image .admin-upload-empty{ display:none }
+.ad .admin-upload-empty{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  color:var(--lohas-mute);
+  font-size:13px;
+  letter-spacing:0.3px;
+  pointer-events:none;
+}
+.ad .admin-upload-empty i{ font-size:32px; opacity:0.5 }
+.ad .admin-upload-empty-hint{
+  font-size:11px;
+  color:var(--lohas-mute);
+  letter-spacing:0.3px;
+  margin-top:2px;
+}
