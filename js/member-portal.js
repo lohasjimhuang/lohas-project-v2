@@ -180,6 +180,10 @@
       else roleText = 'Member';
       roleTag.textContent = '會員中心';
       roleTag.classList.toggle('creator', State.isCreator && !State.isAdmin);
+      // 新版 #4 head-title 用相同 id
+      if (roleTag.classList.contains('head-title')) {
+        // 已是新版, 沒事做
+      }
       if (mobileRoleTag) {
         mobileRoleTag.textContent = '會員中心';
         mobileRoleTag.classList.toggle('creator', State.isCreator && !State.isAdmin);
