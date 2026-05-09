@@ -36,7 +36,7 @@
     // 抓創作者資料 (creator_info 是主要來源, members 表不在 Supabase 內)
     const { data: creatorInfo } = await sb
       .from('creator_info')
-      .select('display_name, bio, avatar_url, social_links, joining_story, joining_photo_url, video_url, video_title, tagline')
+      .select('display_name, bio, avatar_url, social_links, joining_story, joining_photo_url, video_url, video_title, tagline, custom_blocks')
       .eq('member_id', erpid)
       .maybeSingle();
 
@@ -100,6 +100,7 @@
     const joiningPhoto = creatorInfo.joining_photo_url || '';
     const videoUrl = creatorInfo.video_url || '';
     const videoTitle = creatorInfo.video_title || '';
+    const customBlocks = Array.isArray(creatorInfo.custom_blocks) ? creatorInfo.custom_blocks : [];
 
     const avatarHtml = creatorInfo.avatar_url
       ? `<img src="${escapeHtml(creatorInfo.avatar_url)}" alt="${escapeHtml(dn)}">`
@@ -153,7 +154,7 @@
     const videoSection = videoUrl ? renderVideoSection(videoUrl, videoTitle) : '';
 
     // 緣分區 (joining story)
-    const joiningSection = joiningStory ? `
+    const joiningSection = (joiningStory || joiningPhoto) ? `
       <div class="pf-section" id="sec-joining">
         <div class="pf-section-eb">STORY OF JOINING</div>
         <h2 class="pf-section-h">與樂活的緣分</h2>
@@ -166,6 +167,20 @@
         </div>
       </div>
     ` : '';
+
+    // 自訂區塊
+    const customBlocksHtml = customBlocks.length > 0
+      ? customBlocks.map((b, i) => `
+          <div class="pf-section">
+            <div class="pf-section-eb">SECTION · 0${i + 1}</div>
+            <h2 class="pf-section-h">${escapeHtml(b.title || '自訂區塊')}</h2>
+            <div class="joining-content">
+              ${b.image ? `<div class="joining-photo" style="background-image:url('${escapeHtml(b.image)}')"></div>` : '<div></div>'}
+              <div class="joining-text">${escapeHtml(b.text || '')}</div>
+            </div>
+          </div>
+        `).join('')
+      : '';
 
     document.getElementById('cpLoading').style.display = 'none';
     const cp = document.getElementById('cp');
@@ -213,6 +228,7 @@
       </div>
 
       ${joiningSection}
+      ${customBlocksHtml}
       ${videoSection}
 
       <div class="pf-section" id="sec-designs">
@@ -271,16 +287,32 @@
 
   function renderVideoSection(url, title) {
     const videoId = extractYoutubeId(url);
-    if (!videoId) return '';
+    if (videoId) {
+      // 是真實影片 - 嵌入 YouTube
+      return `
+        <div class="video-section">
+          <div class="video-eb">— V I D E O</div>
+          <h2 class="video-h">${escapeHtml(title || '創作者影片')}</h2>
+          <div class="video-frame-wrap">
+            <div class="yt-frame">
+              <iframe src="https://www.youtube.com/embed/${videoId}" title="${escapeHtml(title || '')}" allowfullscreen></iframe>
+            </div>
+            <div class="video-caption"><i class="fa-brands fa-youtube"></i>創作者影片</div>
+          </div>
+        </div>`;
+    }
+
+    // 不是影片網址 (例如 YouTube 頻道) - 顯示連結卡片
     return `
       <div class="video-section">
         <div class="video-eb">— V I D E O</div>
-        <h2 class="video-h">${escapeHtml(title || '創作者影片')}</h2>
-        <div class="video-frame-wrap">
-          <div class="yt-frame">
-            <iframe src="https://www.youtube.com/embed/${videoId}" title="${escapeHtml(title || '')}" allowfullscreen></iframe>
-          </div>
-          <div class="video-caption"><i class="fa-brands fa-youtube"></i>創作者影片</div>
+        <h2 class="video-h">${escapeHtml(title || '創作者頻道')}</h2>
+        <div class="video-frame-wrap" style="text-align:center">
+          <a href="${escapeHtml(url)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:10px;padding:16px 28px;background:#fff;border:1px solid var(--lohas-line);border-radius:999px;color:var(--lohas-brown);text-decoration:none;font-size:13px;letter-spacing:1px;font-weight:600;transition:all .2s">
+            <i class="fa-brands fa-youtube" style="color:#FF0000;font-size:18px"></i>
+            前往 YouTube 頻道
+            <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:10px;opacity:0.5"></i>
+          </a>
         </div>
       </div>`;
   }
