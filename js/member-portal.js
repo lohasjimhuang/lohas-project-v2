@@ -1402,7 +1402,7 @@
       // Badge: 未設定 (橘色)
       if (bankStatusBadge) {
         bankStatusBadge.className = 'bank-status-pill unset';
-        bankStatusBadge.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>未 設 定';
+        bankStatusBadge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>未 設 定';
         bankStatusBadge.style.display = 'inline-flex';
       }
     }
