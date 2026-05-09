@@ -159,6 +159,13 @@
   };
 
   function goTo(page) {
+    // 離開「新增/編輯創作者個人頁」時自動清空表單
+    const currentActive = root.querySelector('.content-page.on');
+    const currentPage = currentActive?.dataset?.page;
+    if (currentPage === 'admin-grant-creator' && page !== 'admin-grant-creator') {
+      try { agReset(); } catch (e) {}
+    }
+
     root.querySelectorAll('.nav-link').forEach(x => x.classList.remove('on'));
     const navLink = root.querySelector(`.nav-link[data-page="${page}"]`);
     if (navLink) navLink.classList.add('on');
@@ -2283,6 +2290,12 @@
       // 顯示成功訊息 + 創作者網址
       const creatorUrl = `${window.location.origin}${window.location.pathname.replace('admin-portal.html', 'creator-public.html')}?id=${finalId}`;
       const successPrefix = isEdit ? '✓ 已儲存「' : '✓ 已建立創作者「';
+
+      // 跳出 alert 提示
+      const alertMsg = isEdit
+        ? `已儲存對「${display_name}」的變更`
+        : `已建立創作者「${display_name}」\n\n網址:\n${creatorUrl}`;
+      alert(alertMsg);
       hint.innerHTML = `
         ${successPrefix}<b>${escapeHtml(display_name)}</b>」<br>
         <div class="ag-success-card">
@@ -2461,11 +2474,21 @@
     const sb = getSb();
     if (!sb) return;
 
-    const { error } = await sb.from('creator_info')
+    // 加 select() 才能拿到刪除後的 rows
+    const { data, error } = await sb.from('creator_info')
       .delete()
-      .eq('member_id', memberId);
+      .eq('member_id', memberId)
+      .select();
 
     if (error) return alert('刪除失敗: ' + error.message);
+
+    // RLS 擋了會 silently 回 0 rows
+    if (!data || data.length === 0) {
+      alert('刪除失敗: 沒有任何資料被刪除\n\n可能原因: Supabase RLS policy 沒給 DELETE 權限\n請聯繫管理員');
+      return;
+    }
+
+    alert(`已刪除創作者「${name || memberId}」`);
 
     // 動畫消失
     const card = document.querySelector(`.creator-card[data-id="${memberId}"]`);
@@ -2497,20 +2520,39 @@
     const sb = getSb();
     if (!sb) return;
 
-    // 取完整資料
-    const { data, error } = await sb
-      .from('creator_info')
-      .select('*')
-      .eq('member_id', memberId)
-      .single();
+    try {
+      // 取完整資料
+      const { data, error } = await sb
+        .from('creator_info')
+        .select('*')
+        .eq('member_id', memberId)
+        .single();
 
-    if (error || !data) return alert('載入失敗: ' + (error?.message || '找不到資料'));
+      if (error || !data) {
+        alert('載入失敗: ' + (error?.message || '找不到資料'));
+        return;
+      }
 
-    // 跳到「新增創作者個人頁」並進入編輯模式
-    goTo('admin-grant-creator');
+      // 跳到「新增創作者個人頁」並進入編輯模式
+      goTo('admin-grant-creator');
 
-    // 等頁面渲染好後再預填
-    setTimeout(() => prefillCreatorForm(data), 100);
+      // 等頁面渲染好後再預填 (先 reset 再 prefill 避免殘留)
+      setTimeout(() => {
+        try {
+          agReset();
+          prefillCreatorForm(data);
+          // 滾到頂端讓使用者看到變化
+          root.querySelector('.main')?.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+          console.error('[預填表單失敗]', err);
+          alert('預填表單時發生錯誤: ' + (err.message || err));
+        }
+      }, 150);
+
+    } catch (err) {
+      console.error('[編輯創作者失敗]', err);
+      alert('載入失敗: ' + (err.message || err));
+    }
   }
 
   function prefillCreatorForm(c) {
