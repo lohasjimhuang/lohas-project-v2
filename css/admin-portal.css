@@ -1242,3 +1242,169 @@
 .ad .btn-load-more i{
   font-size:10px;
 }
+
+
+/* =============================================================
+   表單卡片 (官方上傳 / 開通創作者)
+   ============================================================= */
+
+.ad .form-card{
+  background:#fff;
+  border:1px solid var(--lohas-line);
+  border-radius:12px;
+  padding:24px 28px;
+}
+.ad .form-row{
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:14px 16px;
+  align-items:flex-start;
+  padding:10px 0;
+}
+.ad .form-row > label{
+  font-size:12px;
+  color:var(--lohas-mute);
+  letter-spacing:1px;
+  font-weight:600;
+  padding-top:10px;
+}
+.ad .form-row .editor-input{
+  width:100%;
+  padding:9px 12px;
+  border:1px solid var(--lohas-line);
+  border-radius:8px;
+  font-family:inherit;
+  font-size:13px;
+  color:var(--lohas-text);
+  background:#fff;
+}
+.ad .form-row .editor-input:focus{
+  outline:0;
+  border-color:var(--lohas-brown);
+}
+.ad .form-row textarea.editor-input{
+  resize:vertical;
+  min-height:80px;
+  line-height:1.6;
+}
+.ad .form-hint{
+  font-size:11px;
+  color:var(--lohas-mute);
+  letter-spacing:0.3px;
+  grid-column:2;
+  margin-top:-6px;
+}
+.ad .form-row > .form-hint{
+  grid-column:2;
+  margin-top:0;
+}
+.ad .btn.primary{
+  background:var(--lohas-brown);
+  color:#fff;
+  border-color:var(--lohas-brown);
+}
+.ad .btn.primary:hover{
+  background:var(--lohas-hover);
+  border-color:var(--lohas-hover);
+}
+
+/* 會員搜尋結果列表 */
+.ad .grant-result-item{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  background:#fff;
+  border:1px solid var(--lohas-line);
+  border-radius:8px;
+  margin-bottom:6px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.ad .grant-result-item:hover{
+  background:var(--lohas-tip);
+  border-color:var(--lohas-brown);
+}
+.ad .grant-result-avatar{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--lohas-light-brown),var(--lohas-brown));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:600;
+  flex-shrink:0;
+}
+.ad .grant-result-info{ flex:1; min-width:0 }
+.ad .grant-result-name{
+  font-size:13px;
+  font-weight:600;
+  color:var(--lohas-text);
+}
+.ad .grant-result-meta{
+  font-size:11px;
+  color:var(--lohas-mute);
+  margin-top:2px;
+}
+.ad .grant-result-creator-badge{
+  font-size:10px;
+  color:var(--c-text);
+  background:var(--c-bg);
+  padding:2px 8px;
+  border-radius:999px;
+  font-weight:600;
+}
+
+/* 已選會員卡 */
+.ad .grant-selected-card{
+  background:var(--lohas-tip);
+  border:1px solid var(--lohas-line);
+  border-radius:8px;
+  padding:12px 14px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+/* 最近上傳 list */
+.ad .admin-upload-row{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px 0;
+  border-bottom:1px dashed var(--lohas-line);
+}
+.ad .admin-upload-row:last-child{ border-bottom:0 }
+.ad .admin-upload-thumb{
+  width:48px;
+  height:48px;
+  border-radius:8px;
+  background:var(--lohas-line);
+  background-size:cover;
+  background-position:center;
+  flex-shrink:0;
+}
+.ad .admin-upload-info{ flex:1; min-width:0 }
+.ad .admin-upload-title{
+  font-size:13px;
+  color:var(--lohas-text);
+  font-weight:600;
+}
+.ad .admin-upload-meta{
+  font-size:10.5px;
+  color:var(--lohas-mute);
+  margin-top:2px;
+}
+
+@media (max-width:768px){
+  .ad .form-row{
+    grid-template-columns:1fr;
+    gap:6px;
+  }
+  .ad .form-row > label{ padding-top:0 }
+  .ad .form-hint,
+  .ad .form-row > .form-hint{ grid-column:1 }
+}
