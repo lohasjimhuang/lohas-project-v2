@@ -1452,23 +1452,23 @@ body {
   display:inline-flex;
   align-items:center;
   gap:5px;
-  font-size:10px;
-  padding:3px 9px;
-  border-radius:999px;
+  font-size:12.5px;
   font-weight:600;
   letter-spacing:0.3px;
   margin-left:auto;
   margin-right:8px;
+  padding:0;
+  background:transparent;
+  border:0;
+  border-radius:0;
 }
 .mp .bank-status-pill.unset{
-  background:var(--status-pending-bg);
-  color:var(--status-pending);
+  color:var(--status-rejected);
 }
 .mp .bank-status-pill.set{
-  background:var(--status-approved-bg);
   color:var(--status-approved);
 }
-.mp .bank-status-pill i{ font-size:9px }
+.mp .bank-status-pill i{ font-size:13px }
 
 /* 未設定卡片 (Stripe 風 + 虛線) */
 .mp .bank-empty-card{
@@ -2065,9 +2065,42 @@ body {
   .mp.is-creator .shortcuts{
     grid-template-columns:repeat(3,1fr);
   }
-  .mp .creator-stats,
+  .mp .creator-stats{
+    grid-template-columns:1fr;
+  }
+
+  /* 手機板分潤小卡 - 改橫長條 (label 左, 數值右), 砍卡框, 砍虛線 */
   .mp .royalty-summary{
     grid-template-columns:1fr;
+    background:transparent;
+    border:0;
+    padding:0;
+    gap:8px;
+  }
+  .mp .royalty-block{
+    background:#fff;
+    border:1px solid var(--lohas-line);
+    border-radius:12px;
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    text-align:left;
+  }
+  .mp .royalty-block:not(:last-child){
+    border-right:1px solid var(--lohas-line);
+  }
+  .mp .royalty-block-label{
+    font-size:11px;
+    color:var(--lohas-mute);
+    letter-spacing:1.5px;
+    margin:0;
+    order:1;
+  }
+  .mp .royalty-num{
+    font-size:22px;
+    margin:0;
+    order:2;
   }
 
   /* 手機板 stat-card 橫長條布局 (label 在左, 數值在右) */
