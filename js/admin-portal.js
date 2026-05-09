@@ -580,16 +580,27 @@
       <button data-act="suspend" data-erpid="${escapeHtml(user.erpid)}" data-name="${escapeHtml(user.name)}"><i class="fa-regular fa-circle-pause"></i>停權</button>`;
   }
 
+  // 分頁狀態
+  const PAGE_SIZE = 5;
+  let UsersDisplayCount = PAGE_SIZE;
+  let UsersFiltered = [];
+
   function renderUsers(users) {
     const tbody = document.getElementById('usersTbody');
     if (!tbody) return;
 
-    if (!users || users.length === 0) {
+    UsersFiltered = users || [];
+
+    if (UsersFiltered.length === 0) {
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--lohas-mute)">查無會員</td></tr>';
+      updateUsersKPI();
       return;
     }
 
-    tbody.innerHTML = users.map(u => {
+    // 切片: 只顯示前 N 位 (PAGE_SIZE 倍數)
+    const visible = UsersFiltered.slice(0, UsersDisplayCount);
+
+    tbody.innerHTML = visible.map(u => {
       const meta = [];
       if (u.erpid) meta.push(u.erpid);
       if (u.email) meta.push(u.email);
@@ -613,6 +624,41 @@
           <td><div class="row-actions">${actionsHtml(u)}</div></td>
         </tr>`;
     }).join('');
+
+    // 加「顯示更多」row
+    const remaining = UsersFiltered.length - UsersDisplayCount;
+    if (remaining > 0) {
+      tbody.innerHTML += `
+        <tr class="users-load-more-row">
+          <td colspan="5" style="text-align:center;padding:18px;background:var(--lohas-soft)">
+            <button class="btn-load-more" id="usersLoadMoreBtn" type="button">
+              <i class="fa-solid fa-chevron-down"></i>
+              <span>顯示更多 (還有 ${remaining} 位)</span>
+            </button>
+          </td>
+        </tr>`;
+      document.getElementById('usersLoadMoreBtn')?.addEventListener('click', () => {
+        UsersDisplayCount += PAGE_SIZE;
+        renderUsers(UsersFiltered);
+      });
+    } else if (UsersFiltered.length > PAGE_SIZE) {
+      // 已全部顯示, 顯示「收合」按鈕
+      tbody.innerHTML += `
+        <tr class="users-load-more-row">
+          <td colspan="5" style="text-align:center;padding:18px;background:var(--lohas-soft)">
+            <button class="btn-load-more" id="usersCollapseBtn" type="button">
+              <i class="fa-solid fa-chevron-up"></i>
+              <span>收合到前 ${PAGE_SIZE} 位</span>
+            </button>
+          </td>
+        </tr>`;
+      document.getElementById('usersCollapseBtn')?.addEventListener('click', () => {
+        UsersDisplayCount = PAGE_SIZE;
+        renderUsers(UsersFiltered);
+        // 滾回會員列表頂部
+        document.querySelector('.content-page[data-page="users"]')?.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
 
     tbody.querySelectorAll('button[data-act]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -656,6 +702,8 @@
     if (roleFilter) filtered = filtered.filter(u => u.role === roleFilter);
     if (statusFilter) filtered = filtered.filter(u => u.status === statusFilter);
 
+    // filter 變動時重置分頁回前 5 位
+    UsersDisplayCount = PAGE_SIZE;
     renderUsers(filtered);
   }
 
