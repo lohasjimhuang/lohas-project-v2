@@ -1383,7 +1383,7 @@
             <i class="fa-solid fa-circle-exclamation" style="color:var(--status-pending);font-size:22px"></i>
             <div class="empty-title" style="margin-top:8px">尚未設定匯款資料</div>
             <div style="font-size:11px;color:var(--lohas-mute);margin:8px 0 14px">完成設定後才能領取分潤</div>
-            <button class="action-btn" id="bankCreateBtn"><span>建立匯款資料</span></button>
+            <button class="action-btn" id="bankCreateBtn"><i class="fa-solid fa-plus"></i><span>建立匯款資料</span></button>
           </div>`;
         bankInfo.style.display = '';
         document.getElementById('bankCreateBtn')?.addEventListener('click', () => showBankForm(null));
