@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const desktopCarrierFilter = document.getElementById("desktopCarrierFilter");
   const desktopSearchInput = document.getElementById("desktopSearchInput");
   const mobileSearchInput = document.getElementById("mobileSearchInput");
-  const resultMeta = document.querySelector(".result-meta");
 
   // === [subtag] === 子類 chip 容器 (主類聯動)
   const subtagBar = document.getElementById("subtagBar");
@@ -34,8 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
     topic: "全部作品",
     carrier: "全部位置",
     keyword: "",
-    storyOnly: false,
-    subtag: "" // === [subtag] === 已選的子類 (空字串 = 全部)
+    cardType: "all", // "all" | "photo" | "story"
+    subtag: ""
   };
 
   function getMember() {
@@ -294,19 +293,20 @@ document.addEventListener("DOMContentLoaded", () => {
         carrier === normalizedCarrier;
 
       const matchKeyword = !keyword || tags.includes(keyword);
-      const matchStoryOnly = !filterState.storyOnly || card.dataset.type === "story";
+
+      const matchCardType =
+        filterState.cardType === "all" ||
+        card.dataset.type === filterState.cardType;
 
       // === [subtag] === 子類比對 (有選才比對, 沒選 = 全部)
       const cardSubtags = (card.dataset.subcategories || "").split(",").map(s => s.trim());
       const matchSubtag = !filterState.subtag || cardSubtags.includes(filterState.subtag);
 
-      const shouldShow = matchTopic && matchCarrier && matchKeyword && matchStoryOnly && matchSubtag;
+      const shouldShow = matchTopic && matchCarrier && matchKeyword && matchCardType && matchSubtag;
 
       card.style.display = shouldShow ? "block" : "none";
       if (shouldShow) visibleCount += 1;
     });
-
-    if (resultMeta) resultMeta.textContent = `共 ${visibleCount} 件照片`;
   }
 
   function syncDesktopFilters() {
@@ -538,24 +538,23 @@ document.addEventListener("DOMContentLoaded", () => {
     applyFilters();
   });
 
-  // 「只看有故事的」toggle (桌機 + 手機同步)
-  const toggleStoryBtn = document.getElementById("toggleStoryBtn");
-  const mobileToggleStoryBtn = document.getElementById("mobileToggleStoryBtn");
+  // 三 tab 切換 (照片 / 故事 / 全部, 桌機 + 手機同步)
+  const allCardTabs = document.querySelectorAll(".card-tab");
 
-  function syncStoryToggle() {
-    const v = String(filterState.storyOnly);
-    toggleStoryBtn?.setAttribute("aria-pressed", v);
-    mobileToggleStoryBtn?.setAttribute("aria-pressed", v);
-  }
+  allCardTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      const type = tab.dataset.cardType || "all";
+      filterState.cardType = type;
 
-  function handleStoryToggle() {
-    filterState.storyOnly = !filterState.storyOnly;
-    syncStoryToggle();
-    applyFilters();
-  }
+      allCardTabs.forEach(t => {
+        const active = t.dataset.cardType === type;
+        t.classList.toggle("is-active", active);
+        t.setAttribute("aria-selected", String(active));
+      });
 
-  toggleStoryBtn?.addEventListener("click", handleStoryToggle);
-  mobileToggleStoryBtn?.addEventListener("click", handleStoryToggle);
+      applyFilters();
+    });
+  });
 
   [desktopSearchInput, mobileSearchInput].forEach(input => {
     if (!input) return;
