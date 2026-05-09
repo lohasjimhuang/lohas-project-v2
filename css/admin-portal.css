@@ -1869,3 +1869,42 @@
   background:rgba(176,80,80,0.9);
   transform:scale(1.05);
 }
+
+/* 編輯創作者狀態視覺 */
+.ad .page-head.is-editing{
+  position:relative;
+  padding-left:14px;
+  border-left:3px solid var(--lohas-brown);
+  margin-left:0;
+  background:linear-gradient(90deg, var(--lohas-tip), transparent);
+  padding-top:14px;
+  padding-bottom:14px;
+}
+.ad .page-head.is-editing .page-title{
+  color:var(--lohas-brown);
+}
+.ad .page-head.is-editing .page-title::before{
+  content:'';
+  display:inline-block;
+  width:8px;
+  height:8px;
+  background:var(--lohas-brown);
+  border-radius:50%;
+  margin-right:10px;
+  vertical-align:middle;
+  animation:pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1 }
+  50% { opacity: 0.4 }
+}
+.ad .ag-back-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.ad .ag-back-btn:hover{
+  background:var(--lohas-brown);
+  color:#fff;
+  border-color:var(--lohas-brown);
+}
