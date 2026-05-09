@@ -18,9 +18,9 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1459">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1459">
-  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1459">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1510">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1510">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1510">
 
 </head>
 <body>
@@ -468,30 +468,57 @@
 
         <div class="form-row">
           <label>標題</label>
-          <input class="editor-input" id="adminUploadTitle" placeholder="例如:春季新品開箱"/>
+          <input class="editor-input" id="adminUploadTitle" maxlength="24" placeholder="例如：陪伴我10年的狗狗"/>
         </div>
 
         <div class="form-row">
-          <label>主題分類</label>
+          <label>靈感主題</label>
           <select class="editor-input" id="adminUploadTopic">
-            <option value="">不分類</option>
-            <option>新品速報</option>
-            <option>品牌活動</option>
-            <option>店家紀錄</option>
-            <option>幕後花絮</option>
-            <option>客戶見證</option>
+            <option value="愛情紀念">愛情紀念</option>
+            <option value="家人親情">家人親情</option>
+            <option value="寵物回憶">寵物回憶</option>
+            <option value="心靈寄託">心靈寄託</option>
+            <option value="個人簽名">個人簽名</option>
+            <option value="生日節慶">生日節慶</option>
+            <option value="企業團體">企業團體</option>
+            <option value="開運祝福">開運祝福</option>
+            <option value="客製圖案">客製圖案</option>
           </select>
         </div>
 
         <div class="form-row">
-          <label>圖片 URL</label>
-          <input class="editor-input" id="adminUploadImageUrl" placeholder="貼上完整圖片網址 https://..."/>
-          <div class="form-hint">建議使用 Supabase Storage 或 CDN 網址</div>
+          <label>刻圖位置</label>
+          <select class="editor-input" id="adminUploadCarrier">
+            <option value="鏡片">鏡片</option>
+            <option value="鏡腳">鏡腳</option>
+            <option value="眼鏡布">眼鏡布</option>
+            <option value="眼鏡盒">眼鏡盒</option>
+            <option value="鼻墊">鼻墊</option>
+            <option value="其他周邊配件">其他周邊配件</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>圖片</label>
+          <div>
+            <input type="file" id="adminUploadFileInput" accept="image/*" style="display:none"/>
+            <div class="admin-upload-dropzone" id="adminUploadDropzone">
+              <div class="admin-upload-preview" id="adminUploadPreview"></div>
+              <div class="admin-upload-empty" id="adminUploadEmpty">
+                <i class="fa-regular fa-image"></i>
+                <div>點此選擇圖片</div>
+                <div class="admin-upload-empty-hint">支援 JPG / PNG / WebP · 建議 1MB 以下</div>
+              </div>
+            </div>
+            <button type="button" class="btn" id="adminUploadClearImg" style="display:none;margin-top:8px">
+              <i class="fa-regular fa-trash-can"></i>移除圖片
+            </button>
+          </div>
         </div>
 
         <div class="form-row">
           <label>故事內容</label>
-          <textarea class="editor-input" id="adminUploadStory" rows="4" placeholder="(可選) 分享背後故事 · 50 字以上會自動歸類為「故事」"></textarea>
+          <textarea class="editor-input" id="adminUploadStory" rows="4" maxlength="100" placeholder="(可選) 分享背後故事 · 50 字以上會自動歸類為「故事」"></textarea>
         </div>
 
         <div class="form-row">
@@ -526,7 +553,7 @@
       <div class="form-card">
         <div class="form-row">
           <label>創作者名稱</label>
-          <input class="editor-input" id="grantDisplayName" placeholder="例如:LOHAS 設計工作室"/>
+          <input class="editor-input" id="grantDisplayName" value="LOHAS 企劃部" placeholder="LOHAS 企劃部"/>
           <div class="form-hint">在創作者市集 / 個人頁顯示的名字</div>
         </div>
 
@@ -555,13 +582,6 @@
             <button class="btn" id="grantCancel">清空</button>
           </div>
           <div class="form-hint" id="grantHint" style="margin-top:10px"></div>
-        </div>
-      </div>
-
-      <div class="panel" style="margin-top:24px">
-        <h3 class="panel-h"><span><i class="fa-solid fa-clock-rotate-left"></i>最近 5 筆官方建立</span></h3>
-        <div id="grantHistory">
-          <p class="empty-text">載入中...</p>
         </div>
       </div>
     </div>
@@ -608,12 +628,12 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js?v=20260509-1459"></script>
-<script src="js/auth.js?v=20260509-1459"></script>
-<script src="js/supabase.js?v=20260509-1459"></script>
+<script src="js/utils.js?v=20260509-1510"></script>
+<script src="js/auth.js?v=20260509-1510"></script>
+<script src="js/supabase.js?v=20260509-1510"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js?v=20260509-1459"></script>
+<script src="js/admin-portal.js?v=20260509-1510"></script>
 
 </body>
 </html>
