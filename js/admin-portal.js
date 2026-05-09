@@ -177,6 +177,7 @@
     if (page === 'cm-news') loadNews();
     if (page === 'admin-upload') { initAdminUpload(); loadAdminUploadHistory(); }
     if (page === 'admin-grant-creator') initGrantCreator();
+    if (page === 'creators') loadCreatorsList();
 
     root.querySelector('.main').scrollTop = 0;
   }
@@ -1963,7 +1964,10 @@
     avatarBase64: null,         // 頭像預覽 (base64)
     avatarFile: null,           // 頭像檔
     joiningPhotoBase64: null,   // 緣分照片預覽
-    joiningPhotoFile: null      // 緣分照片檔
+    joiningPhotoFile: null,     // 緣分照片檔
+    editMemberId: null,         // 編輯模式: 既有的 member_id
+    existingAvatarUrl: null,    // 編輯模式: 原有頭像 URL (沒換才用)
+    existingJoiningPhotoUrl: null  // 編輯模式: 原有緣分照片 URL
   };
 
   function initGrantCreator() {
@@ -2102,6 +2106,9 @@
     // 重置頭像
     AGState.avatarBase64 = null;
     AGState.avatarFile = null;
+    AGState.editMemberId = null;
+    AGState.existingAvatarUrl = null;
+    AGState.existingJoiningPhotoUrl = null;
     const ed = document.getElementById('agAvatar');
     if (ed) ed.textContent = 'LO';
 
@@ -2122,6 +2129,15 @@
     if (cbList) {
       cbList.innerHTML = '<p class="empty-text" style="padding:30px 20px;font-size:12px">點上方「新增區塊」加入自訂的圖文段落</p>';
     }
+
+    // 還原 page 標題與按鈕文字
+    const pageTitle = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-title');
+    const pageSub = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-sub');
+    if (pageTitle) pageTitle.textContent = '新增創作者個人頁';
+    if (pageSub) pageSub.textContent = '建立獨立的創作者個人頁 · 預設名稱「LOHAS 企劃部」 · 可重複新增';
+
+    const saveBtn = document.getElementById('agSaveBtn');
+    if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i><span>建立創作者</span>';
 
     const hint = document.getElementById('agHint');
     if (hint) hint.textContent = '';
@@ -2150,17 +2166,21 @@
       return;
     }
 
-    if (!confirm(`確定建立創作者「${display_name}」?`)) return;
+    const isEdit = !!AGState.editMemberId;
+    const confirmMsg = isEdit
+      ? `確定要儲存對「${display_name}」的變更?`
+      : `確定建立創作者「${display_name}」?`;
+    if (!confirm(confirmMsg)) return;
 
     hint.style.color = 'var(--lohas-mute)';
     hint.textContent = '處理中...';
 
     try {
       const SUPABASE_BUCKET = window.LohasSupabase?.CONFIG?.STORAGE_BUCKET || 'gallery-uploads';
-      let avatar_url = null;
-      let joining_photo_url = null;
+      let avatar_url = AGState.existingAvatarUrl || null;          // 編輯模式: 沒換則保留
+      let joining_photo_url = AGState.existingJoiningPhotoUrl || null;
 
-      // 上傳頭像
+      // 上傳頭像 (有新檔才上傳)
       if (AGState.avatarFile) {
         hint.textContent = '上傳頭像中...';
         const ext = getExt(AGState.avatarFile);
@@ -2171,7 +2191,7 @@
         avatar_url = data.publicUrl;
       }
 
-      // 上傳緣分照片
+      // 上傳緣分照片 (有新檔才上傳)
       if (AGState.joiningPhotoFile) {
         hint.textContent = '上傳緣分照片中...';
         const ext = getExt(AGState.joiningPhotoFile);
@@ -2181,11 +2201,6 @@
         const { data } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(filePath);
         joining_photo_url = data.publicUrl;
       }
-
-      // 虛擬 member_id
-      const virtId = 'virt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
-
-      hint.textContent = '寫入資料庫中...';
 
       // 對齊會員平台 saveCreatorInfo 的欄位 (social_links 是 JSONB)
       const social_links = {};
@@ -2198,36 +2213,54 @@
       hint.textContent = '處理自訂區塊圖片...';
       const customBlocks = await agCollectCustomBlocks(sb, SUPABASE_BUCKET);
 
+      const memberId = isEdit ? AGState.editMemberId : ('virt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8));
+
       const payload = {
-        member_id: virtId,
         display_name,
         tagline: tagline || null,
         bio: bio || null,
-        avatar_url: avatar_url,                      // 頭像 (可能為 null)
-        joining_photo_url: joining_photo_url,        // 已是 URL (上面上傳完得到)
+        avatar_url: avatar_url,
+        joining_photo_url: joining_photo_url,
         joining_story: joining_story || null,
         video_url: video_url || null,
         video_title: video_title || null,
         social_links: social_links,
-        custom_blocks: customBlocks,                 // 自訂圖文區塊 (JSONB array)
+        custom_blocks: customBlocks,
         status: 'active'
       };
 
       hint.textContent = '寫入資料庫中...';
-      const { error } = await sb.from('creator_info').insert(payload);
+
+      let error;
+      if (isEdit) {
+        // 編輯模式: UPDATE
+        const res = await sb.from('creator_info')
+          .update(payload)
+          .eq('member_id', AGState.editMemberId);
+        error = res.error;
+      } else {
+        // 新建模式: INSERT (補 member_id)
+        payload.member_id = memberId;
+        const res = await sb.from('creator_info').insert(payload);
+        error = res.error;
+      }
 
       if (error) {
         hint.style.color = 'var(--status-rejected)';
-        hint.textContent = '建立失敗: ' + error.message;
-        console.error('[建立創作者失敗]', error);
+        hint.textContent = (isEdit ? '儲存失敗: ' : '建立失敗: ') + error.message;
+        console.error('[建立/編輯創作者失敗]', error);
         return;
       }
 
+      // 用 memberId (新建) 或 AGState.editMemberId (編輯)
+      const finalId = isEdit ? AGState.editMemberId : memberId;
+
       hint.style.color = 'var(--status-approved)';
       // 顯示成功訊息 + 創作者網址
-      const creatorUrl = `${window.location.origin}${window.location.pathname.replace('admin-portal.html', 'creator-public.html')}?id=${virtId}`;
+      const creatorUrl = `${window.location.origin}${window.location.pathname.replace('admin-portal.html', 'creator-public.html')}?id=${finalId}`;
+      const successPrefix = isEdit ? '✓ 已儲存「' : '✓ 已建立創作者「';
       hint.innerHTML = `
-        ✓ 已建立創作者「<b>${escapeHtml(display_name)}</b>」<br>
+        ${successPrefix}<b>${escapeHtml(display_name)}</b>」<br>
         <div class="ag-success-card">
           <div class="ag-success-label">創作者個人頁網址</div>
           <div class="ag-success-url-row">
@@ -2239,7 +2272,7 @@
               <i class="fa-solid fa-arrow-up-right-from-square"></i>開啟
             </a>
           </div>
-          <div class="ag-success-hint">創作者 ID: <code>${escapeHtml(virtId)}</code></div>
+          <div class="ag-success-hint">創作者 ID: <code>${escapeHtml(finalId)}</code></div>
         </div>`;
 
       // 綁定「複製」按鈕
@@ -2271,7 +2304,252 @@
     }
   }
 
-  /* === 自訂內容區塊 (跟會員平台 creator-page 一致) === */
+  /* =============================================================
+     創作者管理 · 列表 + 編輯 + 刪除
+     ============================================================= */
+
+  let CreatorsState = { items: [], filtered: [] };
+
+  async function loadCreatorsList() {
+    const sb = getSb();
+    if (!sb) return;
+    const list = document.getElementById('creatorsList');
+    if (!list) return;
+
+    list.innerHTML = '<p class="empty-text" style="text-align:center;padding:60px;color:var(--lohas-mute)">載入中...</p>';
+
+    // 綁 filter (一次)
+    const page = root.querySelector('.content-page[data-page="creators"]');
+    if (page && !page.dataset.bound) {
+      page.dataset.bound = '1';
+      document.getElementById('creatorsSearchInput')?.addEventListener('input', applyCreatorsFilter);
+      document.getElementById('creatorsFilterType')?.addEventListener('change', applyCreatorsFilter);
+      document.getElementById('creatorsFilterStatus')?.addEventListener('change', applyCreatorsFilter);
+      document.getElementById('creatorsRefresh')?.addEventListener('click', loadCreatorsList);
+    }
+
+    const { data, error } = await sb
+      .from('creator_info')
+      .select('member_id, display_name, tagline, bio, avatar_url, status, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      list.innerHTML = `<p class="empty-text" style="padding:40px">載入失敗: ${escapeHtml(error.message)}</p>`;
+      return;
+    }
+
+    CreatorsState.items = data || [];
+    applyCreatorsFilter();
+  }
+
+  function applyCreatorsFilter() {
+    const list = document.getElementById('creatorsList');
+    const sub = document.getElementById('creatorsListSub');
+    if (!list) return;
+
+    const q = (document.getElementById('creatorsSearchInput')?.value || '').trim().toLowerCase();
+    const typeF = document.getElementById('creatorsFilterType')?.value || 'all';
+    const statusF = document.getElementById('creatorsFilterStatus')?.value || 'all';
+
+    let filtered = CreatorsState.items;
+
+    if (q) {
+      filtered = filtered.filter(c =>
+        (c.display_name || '').toLowerCase().includes(q) ||
+        (c.member_id || '').toLowerCase().includes(q)
+      );
+    }
+    if (typeF === 'virt') {
+      filtered = filtered.filter(c => (c.member_id || '').startsWith('virt-'));
+    } else if (typeF === 'member') {
+      filtered = filtered.filter(c => !(c.member_id || '').startsWith('virt-'));
+    }
+    if (statusF !== 'all') {
+      filtered = filtered.filter(c => c.status === statusF);
+    }
+
+    CreatorsState.filtered = filtered;
+
+    if (sub) sub.textContent = `共 ${filtered.length} 位${q || typeF !== 'all' || statusF !== 'all' ? ` (篩選自 ${CreatorsState.items.length} 位)` : '創作者'}`;
+
+    if (filtered.length === 0) {
+      list.innerHTML = '<p class="empty-text" style="text-align:center;padding:60px;color:var(--lohas-mute)">沒有符合的創作者</p>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(c => {
+      const isVirt = (c.member_id || '').startsWith('virt-');
+      const initials = (c.display_name || '?').slice(0, 2);
+      const avatarHtml = c.avatar_url
+        ? `<div class="creator-card-avatar" style="background-image:url('${escapeHtml(c.avatar_url)}')"></div>`
+        : `<div class="creator-card-avatar">${escapeHtml(initials)}</div>`;
+      const isSuspended = c.status !== 'active';
+
+      const publicUrl = `${window.location.origin}${window.location.pathname.replace('admin-portal.html', 'creator-public.html')}?id=${c.member_id}`;
+
+      return `
+        <div class="creator-card" data-id="${escapeHtml(c.member_id)}">
+          ${avatarHtml}
+          <div class="creator-card-body">
+            <div class="creator-card-name-row">
+              <span class="creator-card-name">${escapeHtml(c.display_name || '未命名')}</span>
+              ${isVirt ? '<span class="creator-card-tag virt">獨立創作者</span>' : '<span class="creator-card-tag">會員</span>'}
+              ${isSuspended ? '<span class="creator-card-tag suspended">停用</span>' : ''}
+            </div>
+            <div class="creator-card-meta">
+              <code>${escapeHtml(c.member_id)}</code>
+              ${c.tagline ? ` · ${escapeHtml(c.tagline)}` : ''}
+              ${c.created_at ? ` · 建立 ${formatTime(c.created_at)}` : ''}
+            </div>
+          </div>
+          <div class="creator-card-actions">
+            <a class="btn" href="${publicUrl}" target="_blank" rel="noopener" title="開啟個人頁">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>查看
+            </a>
+            <button class="btn" data-act="edit" data-id="${escapeHtml(c.member_id)}">
+              <i class="fa-regular fa-pen-to-square"></i>編輯
+            </button>
+            <button class="btn ${isSuspended ? '' : 'warn'}" data-act="toggle-status" data-id="${escapeHtml(c.member_id)}" data-current="${c.status}">
+              <i class="fa-solid ${isSuspended ? 'fa-circle-check' : 'fa-pause'}"></i>${isSuspended ? '啟用' : '停用'}
+            </button>
+            <button class="btn danger" data-act="delete" data-id="${escapeHtml(c.member_id)}" data-name="${escapeHtml(c.display_name || '')}">
+              <i class="fa-regular fa-trash-can"></i>刪除
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+
+    // 綁按鈕
+    list.querySelectorAll('[data-act="edit"]').forEach(b => {
+      b.addEventListener('click', () => editCreator(b.dataset.id));
+    });
+    list.querySelectorAll('[data-act="delete"]').forEach(b => {
+      b.addEventListener('click', () => deleteCreator(b.dataset.id, b.dataset.name));
+    });
+    list.querySelectorAll('[data-act="toggle-status"]').forEach(b => {
+      b.addEventListener('click', () => toggleCreatorStatus(b.dataset.id, b.dataset.current));
+    });
+  }
+
+  async function deleteCreator(memberId, name) {
+    if (!confirm(`確定要刪除創作者「${name || memberId}」?\n\n此操作無法復原。`)) return;
+
+    const sb = getSb();
+    if (!sb) return;
+
+    const { error } = await sb.from('creator_info')
+      .delete()
+      .eq('member_id', memberId);
+
+    if (error) return alert('刪除失敗: ' + error.message);
+
+    // 動畫消失
+    const card = document.querySelector(`.creator-card[data-id="${memberId}"]`);
+    if (card) {
+      card.style.transition = 'opacity .2s, transform .2s';
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.95)';
+      setTimeout(() => loadCreatorsList(), 250);
+    } else {
+      loadCreatorsList();
+    }
+  }
+
+  async function toggleCreatorStatus(memberId, current) {
+    const newStatus = current === 'active' ? 'inactive' : 'active';
+    const sb = getSb();
+    if (!sb) return;
+
+    const { error } = await sb.from('creator_info')
+      .update({ status: newStatus })
+      .eq('member_id', memberId);
+
+    if (error) return alert('更新失敗: ' + error.message);
+
+    loadCreatorsList();
+  }
+
+  async function editCreator(memberId) {
+    const sb = getSb();
+    if (!sb) return;
+
+    // 取完整資料
+    const { data, error } = await sb
+      .from('creator_info')
+      .select('*')
+      .eq('member_id', memberId)
+      .single();
+
+    if (error || !data) return alert('載入失敗: ' + (error?.message || '找不到資料'));
+
+    // 跳到「新增創作者個人頁」並進入編輯模式
+    goTo('admin-grant-creator');
+
+    // 等頁面渲染好後再預填
+    setTimeout(() => prefillCreatorForm(data), 100);
+  }
+
+  function prefillCreatorForm(c) {
+    // 切換成編輯模式 (state)
+    AGState.editMemberId = c.member_id;
+
+    // 預填基本欄位
+    document.getElementById('agDisplayName').value = c.display_name || '';
+    document.getElementById('agTagline').value = c.tagline || '';
+    document.getElementById('agBio').value = c.bio || '';
+    document.getElementById('agJoiningStory').value = c.joining_story || '';
+    document.getElementById('agVideoUrl').value = c.video_url || '';
+    document.getElementById('agVideoTitle').value = c.video_title || '';
+
+    // 社群連結
+    const sl = c.social_links || {};
+    document.getElementById('agIg').value = sl.instagram || '';
+    document.getElementById('agFb').value = sl.facebook || '';
+    document.getElementById('agLine').value = sl.line || '';
+    document.getElementById('agEmail').value = sl.email || '';
+
+    // 頭像
+    if (c.avatar_url) {
+      const ed = document.getElementById('agAvatar');
+      if (ed) ed.innerHTML = `<img src="${escapeHtml(c.avatar_url)}" alt="">`;
+      AGState.avatarBase64 = c.avatar_url;
+      AGState.existingAvatarUrl = c.avatar_url;
+    }
+
+    // 緣分照片
+    if (c.joining_photo_url) {
+      const preview = document.getElementById('agJoiningPhotoPreview');
+      if (preview) {
+        preview.style.backgroundImage = `url('${escapeHtml(c.joining_photo_url)}')`;
+        preview.classList.add('has-image');
+      }
+      AGState.existingJoiningPhotoUrl = c.joining_photo_url;
+    }
+
+    // 自訂區塊
+    const cbList = document.getElementById('agCustomBlocksList');
+    if (cbList && Array.isArray(c.custom_blocks) && c.custom_blocks.length > 0) {
+      cbList.innerHTML = '';
+      c.custom_blocks.forEach((data, i) => {
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = agRenderCustomBlock(i, data);
+        const blockEl = wrapper.firstElementChild;
+        cbList.appendChild(blockEl);
+        agBindCustomBlockEvents(blockEl);
+      });
+    }
+
+    // 改 page 標題提示
+    const pageTitle = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-title');
+    const pageSub = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-sub');
+    if (pageTitle) pageTitle.textContent = '編輯創作者個人頁';
+    if (pageSub) pageSub.textContent = `編輯中: ${c.display_name || c.member_id}`;
+
+    // 改按鈕文字
+    const saveBtn = document.getElementById('agSaveBtn');
+    if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i><span>儲存變更</span>';
+  }
+
 
   function agAddCustomBlock() {
     const list = document.getElementById('agCustomBlocksList');
