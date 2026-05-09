@@ -2045,6 +2045,9 @@
             preview.style.backgroundImage = `url('${ev.target.result}')`;
             preview.classList.add('has-image');
           }
+          // 顯示 ✕ 按鈕
+          const clearBtn = document.getElementById('agJoiningPhotoClear');
+          if (clearBtn) clearBtn.style.display = 'flex';
         };
         reader.readAsDataURL(finalFile);
         joiningInput.value = '';
@@ -2056,6 +2059,25 @@
     if (joiningPreview && !joiningPreview.dataset.bound) {
       joiningPreview.dataset.bound = '1';
       joiningPreview.addEventListener('click', () => joiningInput?.click());
+    }
+
+    // 緣分照片 ✕ 移除按鈕
+    const joiningClear = document.getElementById('agJoiningPhotoClear');
+    if (joiningClear && !joiningClear.dataset.bound) {
+      joiningClear.dataset.bound = '1';
+      joiningClear.addEventListener('click', e => {
+        e.stopPropagation();
+        AGState.joiningPhotoFile = null;
+        AGState.joiningPhotoBase64 = null;
+        AGState.existingJoiningPhotoUrl = null;  // 清掉編輯模式的原圖
+        const preview = document.getElementById('agJoiningPhotoPreview');
+        if (preview) {
+          preview.style.backgroundImage = '';
+          preview.classList.remove('has-image');
+        }
+        joiningClear.style.display = 'none';
+        if (joiningInput) joiningInput.value = '';
+      });
     }
 
     // 顯示名稱變動時更新頭像 fallback initials
@@ -2120,6 +2142,8 @@
       preview.style.backgroundImage = '';
       preview.classList.remove('has-image');
     }
+    const joiningClear = document.getElementById('agJoiningPhotoClear');
+    if (joiningClear) joiningClear.style.display = 'none';
 
     document.getElementById('agAvatarInput').value = '';
     document.getElementById('agJoiningPhotoInput').value = '';
@@ -2523,6 +2547,8 @@
         preview.style.backgroundImage = `url('${escapeHtml(c.joining_photo_url)}')`;
         preview.classList.add('has-image');
       }
+      const clearBtn = document.getElementById('agJoiningPhotoClear');
+      if (clearBtn) clearBtn.style.display = 'flex';
       AGState.existingJoiningPhotoUrl = c.joining_photo_url;
     }
 
@@ -2567,6 +2593,7 @@
 
   function agRenderCustomBlock(index, data) {
     data = data || {};
+    const hasImage = !!data.image;
     return `
       <div class="custom-block" data-index="${index}">
         <div class="custom-block-h">
@@ -2583,10 +2610,13 @@
           <div class="editor-label">圖片</div>
           <div>
             <div class="creator-photo-wrap">
-              <div class="creator-photo-preview cb-photo-preview ${data.image ? 'has-image' : ''}" ${data.image ? `style="background-image:url('${escapeHtml(data.image)}')"` : ''}>
+              <div class="creator-photo-preview cb-photo-preview ${hasImage ? 'has-image' : ''}" ${hasImage ? `style="background-image:url('${escapeHtml(data.image)}')"` : ''}>
                 <i class="fa-regular fa-image"></i>
                 <span>選填 3:4</span>
               </div>
+              <button class="creator-photo-clear cb-photo-clear" type="button" aria-label="移除圖片" style="${hasImage ? 'display:flex' : 'display:none'}">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
               <input type="file" class="visually-hidden cb-photo-input" accept="image/*">
               <input type="hidden" class="cb-image" value="${escapeHtml(data.image || '')}"/>
               <input type="hidden" class="cb-image-base64" value=""/>
@@ -2602,7 +2632,7 @@
   }
 
   function agBindCustomBlockEvents(blockEl) {
-    // 刪除
+    // 刪除整個區塊
     blockEl.querySelector('.custom-block-remove')?.addEventListener('click', () => {
       if (confirm('確定要刪除此區塊?')) {
         blockEl.remove();
@@ -2615,6 +2645,7 @@
     const photoInput = blockEl.querySelector('.cb-photo-input');
     const photoHidden = blockEl.querySelector('.cb-image');
     const photoBase64Hidden = blockEl.querySelector('.cb-image-base64');
+    const photoClear = blockEl.querySelector('.cb-photo-clear');
 
     if (photoPreview && photoInput) {
       photoPreview.addEventListener('click', () => photoInput.click());
@@ -2633,19 +2664,33 @@
           finalFile = cropped;
         }
 
-        // 把裁切後的 Blob 暫存在 hidden (用 dataset 存 File ref)
         const reader = new FileReader();
         reader.onload = ev => {
           photoPreview.style.backgroundImage = `url('${ev.target.result}')`;
           photoPreview.classList.add('has-image');
-          if (photoBase64Hidden) {
-            photoBase64Hidden.value = ev.target.result;
-          }
-          // 暫存原始 File 物件 (送出時上傳)
+          if (photoBase64Hidden) photoBase64Hidden.value = ev.target.result;
+          // 顯示 ✕
+          if (photoClear) photoClear.style.display = 'flex';
           photoInput._cbFile = finalFile;
         };
         reader.readAsDataURL(finalFile);
         photoInput.value = '';
+      });
+    }
+
+    // ✕ 移除圖片 (但區塊保留)
+    if (photoClear) {
+      photoClear.addEventListener('click', e => {
+        e.stopPropagation();
+        photoPreview.style.backgroundImage = '';
+        photoPreview.classList.remove('has-image');
+        if (photoHidden) photoHidden.value = '';
+        if (photoBase64Hidden) photoBase64Hidden.value = '';
+        if (photoInput) {
+          photoInput.value = '';
+          photoInput._cbFile = null;
+        }
+        photoClear.style.display = 'none';
       });
     }
   }

@@ -249,9 +249,11 @@
       if (joiningPhoto) joiningPhoto.value = ci.joining_photo_url || '';
       // 同步圖片到預覽框
       const joiningPhotoPreview = document.getElementById('creatorJoiningPhotoPreview');
+      const joiningPhotoClear = document.getElementById('creatorJoiningPhotoClear');
       if (joiningPhotoPreview && ci.joining_photo_url) {
         joiningPhotoPreview.style.backgroundImage = `url('${ci.joining_photo_url}')`;
         joiningPhotoPreview.classList.add('has-image');
+        if (joiningPhotoClear) joiningPhotoClear.style.display = 'flex';
       }
       if (joiningStory) joiningStory.value = ci.joining_story || '';
       if (videoUrl) videoUrl.value = ci.video_url || '';
@@ -1657,9 +1659,24 @@
     const preview = document.getElementById('creatorJoiningPhotoPreview');
     const input = document.getElementById('creatorJoiningPhotoInput');
     const hidden = document.getElementById('creatorJoiningPhoto');
+    const clearBtn = document.getElementById('creatorJoiningPhotoClear');
 
     if (preview && input) preview.addEventListener('click', () => input.click());
     if (btn && input) btn.addEventListener('click', () => input.click());
+
+    // ✕ 移除按鈕
+    if (clearBtn) {
+      clearBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        if (preview) {
+          preview.style.backgroundImage = '';
+          preview.classList.remove('has-image');
+        }
+        if (hidden) hidden.value = '';
+        if (input) input.value = '';
+        clearBtn.style.display = 'none';
+      });
+    }
 
     if (input) {
       input.addEventListener('change', e => {
@@ -1678,6 +1695,8 @@
               preview.classList.add('has-image');
             }
             if (hidden) hidden.value = croppedDataUrl;
+            // 顯示 ✕
+            if (clearBtn) clearBtn.style.display = 'flex';
           });
         };
         reader.readAsDataURL(file);
@@ -1749,6 +1768,7 @@
 
   function renderCustomBlock(index, data = {}) {
     const id = `cb_${index}`;
+    const hasImage = !!data.image;
     return `
       <div class="custom-block" data-index="${index}" id="${id}">
         <div class="custom-block-h">
@@ -1765,10 +1785,13 @@
           <div class="editor-label">圖片</div>
           <div>
             <div class="creator-photo-wrap">
-              <div class="creator-photo-preview cb-photo-preview ${data.image ? 'has-image' : ''}" ${data.image ? `style="background-image:url('${escapeHtml(data.image)}')"` : ''}>
+              <div class="creator-photo-preview cb-photo-preview ${hasImage ? 'has-image' : ''}" ${hasImage ? `style="background-image:url('${escapeHtml(data.image)}')"` : ''}>
                 <i class="fa-regular fa-image"></i>
                 <span>選填</span>
               </div>
+              <button class="creator-photo-clear cb-photo-clear" type="button" aria-label="移除圖片" style="${hasImage ? 'display:flex' : 'display:none'}">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
               <input type="file" class="visually-hidden cb-photo-input" accept="image/*">
               <input type="hidden" class="cb-image" value="${escapeHtml(data.image || '')}"/>
             </div>
@@ -1794,6 +1817,7 @@
     const photoPreview = blockEl.querySelector('.cb-photo-preview');
     const photoInput = blockEl.querySelector('.cb-photo-input');
     const photoHidden = blockEl.querySelector('.cb-image');
+    const photoClear = blockEl.querySelector('.cb-photo-clear');
     if (photoPreview && photoInput) {
       photoPreview.addEventListener('click', () => photoInput.click());
       photoInput.addEventListener('change', e => {
@@ -1806,10 +1830,24 @@
             photoPreview.style.backgroundImage = `url('${croppedDataUrl}')`;
             photoPreview.classList.add('has-image');
             if (photoHidden) photoHidden.value = croppedDataUrl;
+            if (photoClear) photoClear.style.display = 'flex';
           });
         };
         reader.readAsDataURL(file);
         photoInput.value = '';
+      });
+    }
+    // ✕ 移除圖片
+    if (photoClear) {
+      photoClear.addEventListener('click', e => {
+        e.stopPropagation();
+        if (photoPreview) {
+          photoPreview.style.backgroundImage = '';
+          photoPreview.classList.remove('has-image');
+        }
+        if (photoHidden) photoHidden.value = '';
+        if (photoInput) photoInput.value = '';
+        photoClear.style.display = 'none';
       });
     }
   }
