@@ -65,24 +65,32 @@
   padding:24px 0;
 }
 .ad .sidebar-head{
-  padding:0 22px 22px;
+  padding:24px 22px 18px;
   border-bottom:1px solid var(--lohas-line);
-  margin-bottom:18px;
+  margin-bottom:0;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:24px;
 }
 .ad .logo{
-  font-size:14px; font-weight:700;
-  color:var(--lohas-brown);
-  letter-spacing:3px; margin-bottom:6px;
+  display:block;
+  height:30px;
+  width:auto;
 }
 .ad .role-tag{
-  font-size:10px;
-  letter-spacing:2px; font-weight:500;
-  display:inline-flex; align-items:center; gap:5px;
-  padding:3px 9px;
-  background:var(--admin-dark); color:#fff;
-  border-radius:999px;
+  font-size:16px;
+  color:var(--lohas-text);
+  letter-spacing:2.5px;
+  font-weight:600;
+  margin-top:0;
+  display:block;
+  background:transparent;
+  color:var(--lohas-text);
+  padding:0;
+  border-radius:0;
 }
-.ad .role-tag i{ font-size:9px }
+.ad .role-tag i{ display:none }
 
 .ad .nav-section{ padding:0 12px; margin-bottom:12px }
 .ad .nav-section-label{
@@ -640,29 +648,38 @@
 }
 .ad .rcard-meta i{ font-size:9px }
 
-.ad .rcard-actions{ display:flex; gap:6px }
+.ad .rcard-actions{ display:flex; gap:8px }
 .ad .rcard-actions button{
-  flex:1; padding:9px;
-  border-radius:7px;
-  font-family:inherit; font-size:11px;
+  flex:1;
+  padding:10px 14px;
+  border-radius:999px;
+  font-family:inherit; font-size:12px;
   letter-spacing:1px; font-weight:600;
   cursor:pointer;
   display:inline-flex; align-items:center; justify-content:center;
-  gap:5px;
+  gap:6px;
+  transition:all .2s;
 }
 .ad .rcard-actions .approve{
-  background:var(--status-approved);
-  color:#fff; border:0;
+  background:#fff;
+  color:var(--lohas-brand);
+  border:1.5px solid var(--lohas-brand);
 }
-.ad .rcard-actions .approve:hover{ background:#4a7a4a }
+.ad .rcard-actions .approve:hover{
+  background:var(--lohas-hover);
+  border-color:var(--lohas-hover);
+  color:#fff;
+  transform:translateY(-1px);
+}
 .ad .rcard-actions .reject{
   background:#fff;
-  color:var(--status-rejected);
-  border:1px solid var(--status-rejected);
+  color:#A85A4A;
+  border:1.5px solid #A85A4A;
 }
 .ad .rcard-actions .reject:hover{
-  background:var(--status-rejected);
+  background:#A85A4A;
   color:#fff;
+  transform:translateY(-1px);
 }
 .ad .rcard-actions .more{
   background:#fff; color:var(--lohas-sub);
@@ -1183,4 +1200,35 @@
 /* 桌面板隱藏漢堡 */
 @media (min-width:769px){
   .ad .mobile-menu-btn{ display:none }
+}
+
+
+/* =============================================================
+   會員列表 · 分頁「顯示更多」按鈕
+   ============================================================= */
+
+.ad .btn-load-more{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 20px;
+  background:#fff;
+  color:var(--lohas-brown);
+  border:1px solid var(--lohas-line);
+  border-radius:999px;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.ad .btn-load-more:hover{
+  background:var(--lohas-brown);
+  color:#fff;
+  border-color:var(--lohas-brown);
+  transform:translateY(-1px);
+}
+.ad .btn-load-more i{
+  font-size:10px;
 }

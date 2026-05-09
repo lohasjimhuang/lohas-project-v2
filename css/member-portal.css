@@ -2052,9 +2052,13 @@ body {
   .mp .content-page.on .shortcuts{ order:1 }
   .mp .content-page.on .creator-only-section{ order:2; margin-top:20px }
   .mp .content-page.on .creator-stats{ order:2; margin-top:20px }
-  .mp .content-page.on .section-title{ order:3 }
-  /* shortcuts-title 必須在 section-title 之後才能覆蓋 (specificity 相同, 後者贏) */
+  /* 手機板: 內容頁的 section-title 永遠在最上 (order:-1) */
+  .mp .content-page.on .section-title{ order:-1 }
+  /* 首頁: shortcuts-title 例外, 排在累計數據之後 */
   .mp .content-page.on .section-title.shortcuts-title{ order:0 }
+  /* 駁回 banner / share-tabs / 其他元素 排在 title 之後 */
+  .mp .content-page.on .rejected-banner{ order:0 }
+  .mp .content-page.on .share-tabs{ order:1 }
   .mp .content-page.on .profile-card{ order:4 }
   .mp .content-page.on .inspo-list,
   .mp .content-page.on .wish-list,
@@ -2200,8 +2204,12 @@ body {
   .mp .content-page.on .shortcuts{ order:2 }
   .mp .content-page.on .creator-only-section{ order:3; margin-top:20px }
   .mp .content-page.on .creator-stats{ order:3; margin-top:20px }
-  .mp .content-page.on .section-title{ order:4 }
+  /* 手機板: 內容頁的 section-title 永遠在最上 (order:-1) */
+  .mp .content-page.on .section-title{ order:-1 }
   .mp .content-page.on .section-title.shortcuts-title{ order:1 }
+  /* 駁回 banner / share-tabs / 其他元素 排在 title 之後 */
+  .mp .content-page.on .rejected-banner{ order:0 }
+  .mp .content-page.on .share-tabs{ order:1 }
   .mp .content-page.on .profile-card{ order:5 }
 
   /* 內容頁切換時 (data-page != home): 隱藏個人卡跟快捷區 */
