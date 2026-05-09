@@ -108,11 +108,11 @@ body {
 .mp .sidebar{
   background:#fff;
   border-right:1px solid var(--lohas-line);
-  padding:16px 0 24px;
+  padding:0 0 24px;
   display:flex; flex-direction:column;
 }
 .mp .sidebar-head{
-  padding:26px 22px 22px;
+  padding:22px 22px;
   margin-bottom:0;
   border-bottom:1px solid var(--lohas-line);
   display:flex;
@@ -2346,8 +2346,8 @@ body {
 
 @media (min-width: 901px) {
   .mp .sidebar-head {
-    padding: 0 24px 18px;
-    margin-bottom: 12px;
+    padding: 22px 22px;
+    margin-bottom: 0;
   }
 
   .mp .nav-section:first-of-type {
