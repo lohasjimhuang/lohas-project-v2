@@ -377,21 +377,22 @@
     if (!list) return;
 
     try {
-      const [designsRes, photosRes, storiesRes] = await Promise.all([
-        sb.from('engraving_designs').select('id, name, creator_id, type, created_at').eq('status', 'pending').order('created_at', { ascending: true }).limit(2),
-        sb.from('gallery_posts').select('id, title, member_id, created_at').eq('status', 'pending').order('created_at', { ascending: true }).limit(1),
-        sb.from('member_stories').select('id, title, member_id, created_at').eq('status', 'pending').order('created_at', { ascending: true }).limit(1)
+      const [designsRes, uploadsRes] = await Promise.all([
+        sb.from('engraving_designs').select('id, name, creator_id, type, created_at').eq('status', 'pending').order('created_at', { ascending: true }).limit(3),
+        sb.from('gallery_posts').select('id, title, customer_name, member_id, type, created_at').eq('status', 'pending').order('created_at', { ascending: true }).limit(3)
       ]);
 
       const items = [];
       (designsRes.data || []).forEach(d => items.push({
         type: 'design', id: d.id, title: d.name, by: d.creator_id, role: d.type, time: d.created_at
       }));
-      (photosRes.data || []).forEach(p => items.push({
-        type: 'photo', id: p.id, title: p.title || '未命名', by: p.member_id, role: 'member', time: p.created_at
-      }));
-      (storiesRes.data || []).forEach(s => items.push({
-        type: 'story', id: s.id, title: s.title, by: s.member_id, role: 'member', time: s.created_at
+      (uploadsRes.data || []).forEach(p => items.push({
+        type: p.type === 'story' ? 'story' : 'photo',
+        id: p.id,
+        title: p.title || '未命名',
+        by: p.customer_name || p.member_id,
+        role: 'member',
+        time: p.created_at
       }));
 
       // 按時間升序 (最舊的優先)
@@ -405,7 +406,7 @@
       const typeLabels = { design: '設 計', photo: '照 片', story: '故 事' };
       const grads = ['', 'g2', 'g3'];
 
-      list.innerHTML = items.slice(0, 4).map((it, i) => {
+      list.innerHTML = items.slice(0, 5).map((it, i) => {
         const grad = grads[i % grads.length];
         const rolePill = it.role === 'creator'
           ? '<span class="role-pill creator"><i class="fa-solid fa-star"></i>Creator</span>'
@@ -1640,17 +1641,19 @@
 
 
   /* =============================================================
-     #4 樂活官方上傳照片 (用 Supabase Storage 直傳)
+     #4 樂活官方上傳照片 (用靈感牆 3-slot 模組 + Supabase Storage)
      ============================================================= */
 
-  let AdminUploadFile = null;
+  const AdminUploadState = {
+    images: [null, null, null],   // base64 預覽
+    files: [null, null, null]     // 真檔
+  };
 
   function initAdminUpload() {
     const submitBtn = document.getElementById('adminUploadSubmit');
     const resetBtn = document.getElementById('adminUploadReset');
-    const dropzone = document.getElementById('adminUploadDropzone');
     const fileInput = document.getElementById('adminUploadFileInput');
-    const clearBtn = document.getElementById('adminUploadClearImg');
+    const boxes = root.querySelectorAll('[data-admin-slot]');
 
     if (submitBtn && !submitBtn.dataset.bound) {
       submitBtn.dataset.bound = '1';
@@ -1660,36 +1663,68 @@
       resetBtn.dataset.bound = '1';
       resetBtn.addEventListener('click', adminUploadReset);
     }
-    if (dropzone && !dropzone.dataset.bound) {
-      dropzone.dataset.bound = '1';
-      dropzone.addEventListener('click', () => fileInput?.click());
-    }
+
+    let activeSlot = null;
+
+    boxes.forEach(box => {
+      if (box.dataset.bound) return;
+      box.dataset.bound = '1';
+      box.addEventListener('click', () => {
+        activeSlot = parseInt(box.dataset.adminSlot);
+        fileInput?.click();
+      });
+    });
+
     if (fileInput && !fileInput.dataset.bound) {
       fileInput.dataset.bound = '1';
       fileInput.addEventListener('change', e => {
         const file = e.target.files?.[0];
-        if (!file) return;
-        AdminUploadFile = file;
+        if (!file || activeSlot === null) return;
+
         const reader = new FileReader();
         reader.onload = ev => {
-          const preview = document.getElementById('adminUploadPreview');
-          if (preview) preview.style.backgroundImage = `url('${ev.target.result}')`;
-          dropzone?.classList.add('has-image');
-          if (clearBtn) clearBtn.style.display = 'inline-flex';
+          AdminUploadState.images[activeSlot] = ev.target.result;
+          AdminUploadState.files[activeSlot] = file;
+          renderAdminUploadSlot(activeSlot);
         };
         reader.readAsDataURL(file);
+        fileInput.value = '';
       });
     }
-    if (clearBtn && !clearBtn.dataset.bound) {
-      clearBtn.dataset.bound = '1';
-      clearBtn.addEventListener('click', () => {
-        AdminUploadFile = null;
-        document.getElementById('adminUploadPreview').style.backgroundImage = '';
-        dropzone?.classList.remove('has-image');
-        clearBtn.style.display = 'none';
-        if (fileInput) fileInput.value = '';
-      });
-    }
+  }
+
+  function renderAdminUploadSlot(slot) {
+    const box = root.querySelector(`[data-admin-slot="${slot}"]`);
+    if (!box) return;
+    const dataUrl = AdminUploadState.images[slot];
+    if (!dataUrl) return;
+
+    box.classList.add('has-image');
+    box.style.backgroundImage = `url('${dataUrl}')`;
+    box.style.backgroundSize = 'cover';
+    box.style.backgroundPosition = 'center';
+    // 替換內容為「移除」按鈕
+    box.innerHTML = `
+      ${slot === 0 ? '<span class="badge-main">首圖</span>' : ''}
+      <button type="button" class="upload-remove-btn" data-remove-slot="${slot}" title="移除">
+        <i class="fa-solid fa-xmark"></i>
+      </button>`;
+
+    box.querySelector('.upload-remove-btn')?.addEventListener('click', e => {
+      e.stopPropagation();
+      AdminUploadState.images[slot] = null;
+      AdminUploadState.files[slot] = null;
+      box.classList.remove('has-image');
+      box.style.backgroundImage = '';
+      const isMain = slot === 0;
+      box.innerHTML = `
+        ${isMain ? '<span class="badge-main">首圖</span>' : ''}
+        <div class="upload-placeholder">
+          <i class="fa-regular fa-image"></i>
+          <p>${isMain ? '上傳首圖' : '上傳圖片'}</p>
+          <span class="upload-hint">${isMain ? '點擊或拖曳圖片到這裡' : (slot === 1 ? '副圖二（選填）' : '副圖三（選填）')}</span>
+        </div>`;
+    });
   }
 
   function adminUploadReset() {
@@ -1701,12 +1736,25 @@
     document.getElementById('adminUploadTopic').selectedIndex = 0;
     document.getElementById('adminUploadCarrier').selectedIndex = 0;
     document.getElementById('adminUploadHint').textContent = '';
-    AdminUploadFile = null;
-    document.getElementById('adminUploadPreview').style.backgroundImage = '';
-    document.getElementById('adminUploadDropzone')?.classList.remove('has-image');
-    document.getElementById('adminUploadClearImg').style.display = 'none';
-    const fi = document.getElementById('adminUploadFileInput');
-    if (fi) fi.value = '';
+
+    AdminUploadState.images = [null, null, null];
+    AdminUploadState.files = [null, null, null];
+
+    // 重置 3 個 slot 視覺
+    [0, 1, 2].forEach(slot => {
+      const box = root.querySelector(`[data-admin-slot="${slot}"]`);
+      if (!box) return;
+      box.classList.remove('has-image');
+      box.style.backgroundImage = '';
+      const isMain = slot === 0;
+      box.innerHTML = `
+        ${isMain ? '<span class="badge-main">首圖</span>' : ''}
+        <div class="upload-placeholder">
+          <i class="fa-regular fa-image"></i>
+          <p>${isMain ? '上傳首圖' : '上傳圖片'}</p>
+          <span class="upload-hint">${isMain ? '點擊或拖曳圖片到這裡' : (slot === 1 ? '副圖二（選填）' : '副圖三（選填）')}</span>
+        </div>`;
+    });
   }
 
   async function adminUploadSubmit() {
@@ -1725,31 +1773,36 @@
       hint.textContent = '請填寫標題';
       return;
     }
-    if (!AdminUploadFile) {
+
+    const files = AdminUploadState.files.filter(Boolean);
+    if (files.length === 0) {
       hint.style.color = 'var(--status-rejected)';
-      hint.textContent = '請選擇圖片';
+      hint.textContent = '請至少上傳一張圖片';
       return;
     }
 
-    // 上傳到 Storage
     hint.style.color = 'var(--lohas-mute)';
     hint.textContent = '上傳圖片中...';
 
     try {
-      const ext = AdminUploadFile.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const filePath = `public/${Date.now()}-${crypto.randomUUID()}.${ext}`;
       const SUPABASE_BUCKET = window.LohasSupabase?.CONFIG?.STORAGE_BUCKET || 'gallery-uploads';
+      const uploadedUrls = [];
 
-      const { error: uploadError } = await sb.storage
-        .from(SUPABASE_BUCKET)
-        .upload(filePath, AdminUploadFile, { cacheControl: '3600', upsert: false });
+      for (const file of files) {
+        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const filePath = `public/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
-      if (uploadError) throw uploadError;
+        const { error: uploadError } = await sb.storage
+          .from(SUPABASE_BUCKET)
+          .upload(filePath, file, { cacheControl: '3600', upsert: false });
 
-      const { data } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(filePath);
-      const publicUrl = data.publicUrl;
+        if (uploadError) throw uploadError;
 
-      // 寫入 gallery_posts (status='approved' 自動通過)
+        const { data } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(filePath);
+        uploadedUrls.push(data.publicUrl);
+      }
+
+      // 寫入 gallery_posts
       const type = story.length >= 50 ? 'story' : 'photo';
       const payload = {
         title,
@@ -1759,8 +1812,8 @@
         type,
         customer_name,
         member_id: null,
-        image_urls: [publicUrl],
-        main_image_url: publicUrl,
+        image_urls: uploadedUrls,
+        main_image_url: uploadedUrls[0],
         status: 'approved'
       };
 
@@ -1770,9 +1823,8 @@
       if (insertError) throw insertError;
 
       hint.style.color = 'var(--status-approved)';
-      hint.textContent = `✓ 已上傳並自動通過 (類型: ${type === 'story' ? '故事' : '照片'})`;
+      hint.textContent = `✓ 已上傳並自動通過 (${uploadedUrls.length} 張圖片 · 類型: ${type === 'story' ? '故事' : '照片'})`;
 
-      // 清空表單 + 重新載入歷史
       adminUploadReset();
       loadAdminUploadHistory();
 
@@ -1828,83 +1880,275 @@
 
 
   /* =============================================================
-     #3 新增創作者個人頁 (獨立, 不綁會員)
-        - 用虛擬 member_id 占位 (前綴 virt-)
+     #3 新增創作者個人頁 (整套 copy 自會員平台 creator-page)
+        - 介面跟會員平台 creator-page 一樣 (頭像/名稱/標籤/簡介/緣分/影片/聯絡)
+        - 不綁會員: 用虛擬 member_id (virt-...) 占位
         - 預設名稱 LOHAS 企劃部
-        - 砍歷史區塊, 純表單
+        - 可重複新增, 儲存後表單清空
      ============================================================= */
 
+  const AGState = {
+    avatarBase64: null,         // 頭像預覽 (base64)
+    avatarFile: null,           // 頭像檔
+    joiningPhotoBase64: null,   // 緣分照片預覽
+    joiningPhotoFile: null      // 緣分照片檔
+  };
+
   function initGrantCreator() {
-    const submitBtn = document.getElementById('grantSubmit');
-    const cancelBtn = document.getElementById('grantCancel');
+    const saveBtn = document.getElementById('agSaveBtn');
+    const resetBtn = document.getElementById('agResetBtn');
 
-    if (submitBtn && !submitBtn.dataset.bound) {
-      submitBtn.dataset.bound = '1';
-      submitBtn.addEventListener('click', grantCreatorSubmit);
+    // 頭像上傳
+    const avatarBtn = document.getElementById('agAvatarUploadBtn');
+    const avatarInput = document.getElementById('agAvatarInput');
+
+    if (avatarBtn && !avatarBtn.dataset.bound) {
+      avatarBtn.dataset.bound = '1';
+      avatarBtn.addEventListener('click', () => avatarInput?.click());
     }
-    if (cancelBtn && !cancelBtn.dataset.bound) {
-      cancelBtn.dataset.bound = '1';
-      cancelBtn.addEventListener('click', grantCreatorReset);
+    if (avatarInput && !avatarInput.dataset.bound) {
+      avatarInput.dataset.bound = '1';
+      avatarInput.addEventListener('change', e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        AGState.avatarFile = file;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          AGState.avatarBase64 = ev.target.result;
+          const ed = document.getElementById('agAvatar');
+          if (ed) ed.innerHTML = `<img src="${ev.target.result}" alt="">`;
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
-    grantCreatorReset();
+    // 緣分照片上傳
+    const joiningBtn = document.getElementById('agJoiningPhotoBtn');
+    const joiningInput = document.getElementById('agJoiningPhotoInput');
+
+    if (joiningBtn && !joiningBtn.dataset.bound) {
+      joiningBtn.dataset.bound = '1';
+      joiningBtn.addEventListener('click', () => joiningInput?.click());
+    }
+    if (joiningInput && !joiningInput.dataset.bound) {
+      joiningInput.dataset.bound = '1';
+      joiningInput.addEventListener('change', e => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        AGState.joiningPhotoFile = file;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          AGState.joiningPhotoBase64 = ev.target.result;
+          const preview = document.getElementById('agJoiningPhotoPreview');
+          if (preview) {
+            preview.style.backgroundImage = `url('${ev.target.result}')`;
+            preview.classList.add('has-image');
+          }
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // 緣分照片預覽框點擊也觸發上傳
+    const joiningPreview = document.getElementById('agJoiningPhotoPreview');
+    if (joiningPreview && !joiningPreview.dataset.bound) {
+      joiningPreview.dataset.bound = '1';
+      joiningPreview.addEventListener('click', () => joiningInput?.click());
+    }
+
+    // 顯示名稱變動時更新頭像 fallback initials
+    const displayName = document.getElementById('agDisplayName');
+    if (displayName && !displayName.dataset.bound) {
+      displayName.dataset.bound = '1';
+      displayName.addEventListener('input', () => {
+        if (!AGState.avatarBase64) {
+          const ed = document.getElementById('agAvatar');
+          if (ed) ed.textContent = (displayName.value.trim().slice(0, 2) || 'LO').toUpperCase();
+        }
+      });
+    }
+
+    if (saveBtn && !saveBtn.dataset.bound) {
+      saveBtn.dataset.bound = '1';
+      saveBtn.addEventListener('click', agSubmit);
+    }
+    if (resetBtn && !resetBtn.dataset.bound) {
+      resetBtn.dataset.bound = '1';
+      resetBtn.addEventListener('click', agReset);
+    }
+
+    // 第一次 init 時更新 fallback
+    if (displayName) {
+      const ed = document.getElementById('agAvatar');
+      if (ed && !AGState.avatarBase64) {
+        ed.textContent = (displayName.value.trim().slice(0, 2) || 'LO').toUpperCase();
+      }
+    }
   }
 
-  function grantCreatorReset() {
-    document.getElementById('grantDisplayName').value = 'LOHAS 企劃部';
-    ['grantBio', 'grantAvatarUrl', 'grantContact'].forEach(id => {
+  function agReset() {
+    document.getElementById('agDisplayName').value = 'LOHAS 企劃部';
+    ['agTagline','agBio','agJoiningStory','agVideoUrl','agVideoTitle','agIg','agFb','agLine','agEmail'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
-    const hint = document.getElementById('grantHint');
+    document.getElementById('agJoiningPhoto').value = '';
+
+    // 重置頭像
+    AGState.avatarBase64 = null;
+    AGState.avatarFile = null;
+    const ed = document.getElementById('agAvatar');
+    if (ed) ed.textContent = 'LO';
+
+    // 重置緣分照片
+    AGState.joiningPhotoBase64 = null;
+    AGState.joiningPhotoFile = null;
+    const preview = document.getElementById('agJoiningPhotoPreview');
+    if (preview) {
+      preview.style.backgroundImage = '';
+      preview.classList.remove('has-image');
+    }
+
+    document.getElementById('agAvatarInput').value = '';
+    document.getElementById('agJoiningPhotoInput').value = '';
+
+    const hint = document.getElementById('agHint');
     if (hint) hint.textContent = '';
   }
 
-  async function grantCreatorSubmit() {
+  async function agSubmit() {
     const sb = getSb();
     if (!sb) return alert('Supabase 未連線');
 
-    const display_name = document.getElementById('grantDisplayName').value.trim();
-    const bio = document.getElementById('grantBio').value.trim();
-    const avatarUrl = document.getElementById('grantAvatarUrl').value.trim();
-    const contact = document.getElementById('grantContact').value.trim();
-    const hint = document.getElementById('grantHint');
+    const display_name = document.getElementById('agDisplayName').value.trim();
+    const tagline = document.getElementById('agTagline').value.trim();
+    const bio = document.getElementById('agBio').value.trim();
+    const joining_story = document.getElementById('agJoiningStory').value.trim();
+    const video_url = document.getElementById('agVideoUrl').value.trim();
+    const video_title = document.getElementById('agVideoTitle').value.trim();
+    const ig = document.getElementById('agIg').value.trim();
+    const fb = document.getElementById('agFb').value.trim();
+    const line = document.getElementById('agLine').value.trim();
+    const email = document.getElementById('agEmail').value.trim();
+
+    const hint = document.getElementById('agHint');
 
     if (!display_name) {
       hint.style.color = 'var(--status-rejected)';
-      hint.textContent = '請填寫創作者名稱';
+      hint.textContent = '請填寫顯示名稱';
       return;
     }
 
     if (!confirm(`確定建立創作者「${display_name}」?`)) return;
 
-    const virtId = 'virt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
-
     hint.style.color = 'var(--lohas-mute)';
-    hint.textContent = '建立中...';
+    hint.textContent = '處理中...';
 
-    const payload = {
-      member_id: virtId,
-      display_name,
-      bio: bio || null,
-      avatar_url: avatarUrl || null,
-      contact: contact || null,
-      status: 'active'
-    };
+    try {
+      const SUPABASE_BUCKET = window.LohasSupabase?.CONFIG?.STORAGE_BUCKET || 'gallery-uploads';
+      let avatar_url = null;
+      let joining_photo_url = null;
 
-    const { error } = await sb.from('creator_info').insert(payload);
+      // 上傳頭像
+      if (AGState.avatarFile) {
+        hint.textContent = '上傳頭像中...';
+        const ext = AGState.avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const filePath = `creator-avatars/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        const { error } = await sb.storage.from(SUPABASE_BUCKET).upload(filePath, AGState.avatarFile, { cacheControl: '3600', upsert: false });
+        if (error) throw error;
+        const { data } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(filePath);
+        avatar_url = data.publicUrl;
+      }
 
-    if (error) {
+      // 上傳緣分照片
+      if (AGState.joiningPhotoFile) {
+        hint.textContent = '上傳緣分照片中...';
+        const ext = AGState.joiningPhotoFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const filePath = `creator-joining/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        const { error } = await sb.storage.from(SUPABASE_BUCKET).upload(filePath, AGState.joiningPhotoFile, { cacheControl: '3600', upsert: false });
+        if (error) throw error;
+        const { data } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(filePath);
+        joining_photo_url = data.publicUrl;
+      }
+
+      // 虛擬 member_id
+      const virtId = 'virt-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+
+      hint.textContent = '寫入資料庫中...';
+
+      // 寫入 creator_info (包含所有欄位 - 跟會員平台 saveCreatorInfo 對齊)
+      const payload = {
+        member_id: virtId,
+        display_name,
+        tagline: tagline || null,
+        bio: bio || null,
+        avatar_url,
+        joining_photo_url,
+        joining_story: joining_story || null,
+        video_url: video_url || null,
+        video_title: video_title || null,
+        ig_url: ig || null,
+        fb_url: fb || null,
+        line_id: line || null,
+        email: email || null,
+        status: 'active'
+      };
+
+      const { error } = await sb.from('creator_info').insert(payload);
+
+      if (error) {
+        hint.style.color = 'var(--status-rejected)';
+        hint.textContent = '建立失敗: ' + error.message;
+        console.error('[建立創作者失敗]', error);
+        return;
+      }
+
+      hint.style.color = 'var(--status-approved)';
+      // 顯示成功訊息 + 創作者網址
+      const creatorUrl = `${window.location.origin}${window.location.pathname.replace('admin-portal.html', 'creator-public.html')}?id=${virtId}`;
+      hint.innerHTML = `
+        ✓ 已建立創作者「<b>${escapeHtml(display_name)}</b>」<br>
+        <div class="ag-success-card">
+          <div class="ag-success-label">創作者個人頁網址</div>
+          <div class="ag-success-url-row">
+            <a class="ag-success-url" href="${creatorUrl}" target="_blank" rel="noopener">${escapeHtml(creatorUrl)}</a>
+            <button type="button" class="ag-copy-btn" data-url="${escapeHtml(creatorUrl)}">
+              <i class="fa-regular fa-copy"></i>複製
+            </button>
+            <a class="ag-copy-btn" href="${creatorUrl}" target="_blank" rel="noopener" style="text-decoration:none">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>開啟
+            </a>
+          </div>
+          <div class="ag-success-hint">創作者 ID: <code>${escapeHtml(virtId)}</code></div>
+        </div>`;
+
+      // 綁定「複製」按鈕
+      hint.querySelector('.ag-copy-btn[data-url]')?.addEventListener('click', function() {
+        const url = this.dataset.url;
+        navigator.clipboard?.writeText(url).then(() => {
+          const orig = this.innerHTML;
+          this.innerHTML = '<i class="fa-solid fa-check"></i>已複製';
+          setTimeout(() => { this.innerHTML = orig; }, 2000);
+        }).catch(() => {
+          // fallback
+          const ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(ta);
+          alert('已複製: ' + url);
+        });
+      });
+
+      // 不再自動清空 (讓使用者看到網址), 改成提示
+      // setTimeout(() => agReset(), 2500);
+
+    } catch (err) {
       hint.style.color = 'var(--status-rejected)';
-      hint.textContent = '建立失敗: ' + error.message;
-      console.error('[建立獨立創作者失敗]', error);
-      return;
+      hint.textContent = '失敗: ' + (err.message || err);
+      console.error('[建立創作者失敗]', err);
     }
-
-    hint.style.color = 'var(--status-approved)';
-    hint.textContent = `✓ 已建立創作者「${display_name}」 (ID: ${virtId})`;
-
-    setTimeout(() => grantCreatorReset(), 2500);
   }
 
 })(window);
