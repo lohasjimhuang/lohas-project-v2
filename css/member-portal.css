@@ -112,41 +112,42 @@ body {
   display:flex; flex-direction:column;
 }
 .mp .sidebar-head{
-  padding:24px 24px 18px;
+  padding:26px 22px 22px;
   margin-bottom:0;
   border-bottom:1px solid var(--lohas-line);
   display:flex;
-  flex-direction:column;
   align-items:flex-start;
-  gap:24px;
+  justify-content:space-between;
+  gap:12px;
+  position:relative;
 }
-.mp .logo{
-  display:block;
-  height:30px;
-  width:auto;
+.mp .head-title-wrap{
+  flex:1;
+  min-width:0;
 }
-.mp .role-tag-wrap{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-}
-.mp .role-tag{
-  font-size:13px;
+.mp .head-title{
+  font-size:22px;
   color:var(--lohas-text);
-  letter-spacing:2px;
-  font-weight:600;
-  margin-top:0;
-  display:block;
-  line-height:1.3;
+  font-weight:700;
+  letter-spacing:1px;
+  margin:0 0 4px;
+  line-height:1.2;
 }
-.mp .role-tag-en{
-  font-size:9px;
+.mp .head-title.creator{ color:var(--c-text) }
+.mp .head-subtitle{
+  font-size:11px;
   color:var(--lohas-mute);
-  letter-spacing:2.5px;
+  letter-spacing:1.5px;
   font-weight:500;
   line-height:1;
 }
-.mp .role-tag.creator{ color:var(--c-text); font-weight:600 }
+.mp .head-logo-corner{
+  height:18px;
+  width:auto;
+  flex-shrink:0;
+  opacity:0.7;
+  margin-top:4px;
+}
 
 .mp .nav-section{ padding:0 14px; margin-bottom:14px; border:0 }
 .mp .nav-section:first-of-type{ padding-top:40px }
