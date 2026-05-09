@@ -339,14 +339,56 @@ main{
   align-items:center;
 }
 
-.mobile-toggle-story{
-  flex-shrink:0;
-  white-space:nowrap;
-  padding:8px 14px;
-  font-size:12px;
+/* =========================
+   Card Type Tabs (照片 / 故事)
+========================= */
+
+.card-tabs{
+  display:flex;
+  gap:6px;
+  align-items:center;
 }
 
-.mobile-toggle-story i{
+.card-tab{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:9px 18px;
+  border:1px solid var(--lohas-light);
+  border-radius:999px;
+  background:#fff;
+  color:var(--text-sub);
+  font-size:13px;
+  letter-spacing:.3px;
+  cursor:pointer;
+  font-family:inherit;
+  font-weight:500;
+  transition:.2s ease;
+}
+
+.card-tab:hover{
+  border-color:var(--lohas-brand);
+  color:var(--lohas-brand);
+}
+
+.card-tab.is-active{
+  background:var(--lohas-brand);
+  border-color:var(--lohas-brand);
+  color:#fff;
+}
+
+.card-tab i{
+  font-size:11px;
+}
+
+.mobile-card-tabs{
+  margin-top:12px;
+  justify-content:flex-start;
+  flex-wrap:wrap;
+}
+
+.mobile-card-tabs .card-tab{
+  padding:7px 14px;
   font-size:12px;
 }
 
