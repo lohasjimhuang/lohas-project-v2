@@ -1168,6 +1168,8 @@
     }
     if (list) list.style.display = 'none';
     if (editBtn) editBtn.style.display = 'none';
+    const deleteBtn = document.getElementById('bankDeleteBtn');
+    if (deleteBtn) deleteBtn.style.display = 'none';
   }
 
   async function saveBankForm() {
@@ -1227,6 +1229,32 @@
         .maybeSingle();
       showBankForm(account);
     });
+    document.getElementById('bankDeleteBtn')?.addEventListener('click', deleteBankAccount);
+  }
+
+  async function deleteBankAccount() {
+    if (!State.member) return;
+    if (!confirm('確定要刪除匯款資料?\n\n刪除後將無法領取分潤,需重新建立匯款資料才能繼續領取。')) return;
+
+    const sb = getSupabase();
+    if (!sb) {
+      alert('Supabase 連線失敗');
+      return;
+    }
+
+    const { error } = await sb
+      .from('payout_accounts')
+      .delete()
+      .eq('member_id', State.member.erpid);
+
+    if (error) {
+      console.error('[刪除匯款失敗]', error);
+      alert('刪除失敗: ' + error.message);
+      return;
+    }
+
+    alert('匯款資料已刪除');
+    loadEarnings();
   }
 
 
@@ -1362,6 +1390,7 @@
     const bankInfo = document.getElementById('bankInfoList');
     const bankForm = document.getElementById('bankForm');
     const bankEditBtn = document.getElementById('bankEditBtn');
+    const bankDeleteBtn = document.getElementById('bankDeleteBtn');
     const bankStatusBadge = document.getElementById('bankStatusBadge');
 
     if (account) {
@@ -1376,10 +1405,11 @@
       }
       if (bankForm) bankForm.style.display = 'none';
       if (bankEditBtn) bankEditBtn.style.display = '';
+      if (bankDeleteBtn) bankDeleteBtn.style.display = '';
       // Badge: 已設定 (綠勾)
       if (bankStatusBadge) {
         bankStatusBadge.className = 'bank-status-pill set';
-        bankStatusBadge.innerHTML = '<i class="fa-solid fa-shield-halved"></i>已 設 定';
+        bankStatusBadge.innerHTML = '<i class="fa-solid fa-circle-check"></i>已 設 定';
         bankStatusBadge.style.display = 'inline-flex';
       }
     } else {
@@ -1399,6 +1429,7 @@
       }
       if (bankForm) bankForm.style.display = 'none';
       if (bankEditBtn) bankEditBtn.style.display = 'none';
+      if (bankDeleteBtn) bankDeleteBtn.style.display = 'none';
       // Badge: 未設定 (橘色)
       if (bankStatusBadge) {
         bankStatusBadge.className = 'bank-status-pill unset';
