@@ -1883,7 +1883,7 @@
         story: story || null,
         type,
         customer_name,
-        member_id: null,
+        member_id: 'OFFICIAL',     // 官方標記 (gallery_posts.member_id NOT NULL)
         image_urls: uploadedUrls,
         main_image_url: uploadedUrls[0],
         status: 'approved'
@@ -1917,7 +1917,7 @@
     const { data, error } = await sb
       .from('gallery_posts')
       .select('id, title, customer_name, type, main_image_url, image_urls, created_at')
-      .is('member_id', null)
+      .eq('member_id', 'OFFICIAL')
       .order('created_at', { ascending: false })
       .limit(5);
 
@@ -1980,17 +1980,30 @@
     }
     if (avatarInput && !avatarInput.dataset.bound) {
       avatarInput.dataset.bound = '1';
-      avatarInput.addEventListener('change', e => {
+      avatarInput.addEventListener('change', async e => {
         const file = e.target.files?.[0];
         if (!file) return;
-        AGState.avatarFile = file;
+
+        // 1:1 裁切
+        let finalFile = file;
+        if (window.LohasCropper) {
+          const cropped = await window.LohasCropper.crop(file, {
+            aspectRatio: 1,
+            title: '裁切頭像 · 1:1'
+          });
+          if (!cropped) { avatarInput.value = ''; return; }
+          finalFile = cropped;
+        }
+
+        AGState.avatarFile = finalFile;
         const reader = new FileReader();
         reader.onload = ev => {
           AGState.avatarBase64 = ev.target.result;
           const ed = document.getElementById('agAvatar');
           if (ed) ed.innerHTML = `<img src="${ev.target.result}" alt="">`;
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(finalFile);
+        avatarInput.value = '';
       });
     }
 
@@ -2004,10 +2017,22 @@
     }
     if (joiningInput && !joiningInput.dataset.bound) {
       joiningInput.dataset.bound = '1';
-      joiningInput.addEventListener('change', e => {
+      joiningInput.addEventListener('change', async e => {
         const file = e.target.files?.[0];
         if (!file) return;
-        AGState.joiningPhotoFile = file;
+
+        // 3:4 裁切
+        let finalFile = file;
+        if (window.LohasCropper) {
+          const cropped = await window.LohasCropper.crop(file, {
+            aspectRatio: 3 / 4,
+            title: '裁切緣分照片 · 3:4 直式'
+          });
+          if (!cropped) { joiningInput.value = ''; return; }
+          finalFile = cropped;
+        }
+
+        AGState.joiningPhotoFile = finalFile;
         const reader = new FileReader();
         reader.onload = ev => {
           AGState.joiningPhotoBase64 = ev.target.result;
@@ -2017,7 +2042,8 @@
             preview.classList.add('has-image');
           }
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(finalFile);
+        joiningInput.value = '';
       });
     }
 
@@ -2047,6 +2073,13 @@
     if (resetBtn && !resetBtn.dataset.bound) {
       resetBtn.dataset.bound = '1';
       resetBtn.addEventListener('click', agReset);
+    }
+
+    // 自訂區塊「新增區塊」按鈕
+    const addCbBtn = document.getElementById('agAddCustomBlockBtn');
+    if (addCbBtn && !addCbBtn.dataset.bound) {
+      addCbBtn.dataset.bound = '1';
+      addCbBtn.addEventListener('click', agAddCustomBlock);
     }
 
     // 第一次 init 時更新 fallback
@@ -2083,6 +2116,12 @@
 
     document.getElementById('agAvatarInput').value = '';
     document.getElementById('agJoiningPhotoInput').value = '';
+
+    // 清自訂區塊
+    const cbList = document.getElementById('agCustomBlocksList');
+    if (cbList) {
+      cbList.innerHTML = '<p class="empty-text" style="padding:30px 20px;font-size:12px">點上方「新增區塊」加入自訂的圖文段落</p>';
+    }
 
     const hint = document.getElementById('agHint');
     if (hint) hint.textContent = '';
@@ -2155,24 +2194,26 @@
       if (line) social_links.line = line;
       if (email) social_links.email = email;
 
+      // 收集自訂區塊 (內含上傳圖片到 Storage)
+      hint.textContent = '處理自訂區塊圖片...';
+      const customBlocks = await agCollectCustomBlocks(sb, SUPABASE_BUCKET);
+
       const payload = {
         member_id: virtId,
         display_name,
         tagline: tagline || null,
         bio: bio || null,
-        joining_photo_url: joining_photo_url,    // 已是 URL (上面上傳完得到)
+        avatar_url: avatar_url,                      // 頭像 (可能為 null)
+        joining_photo_url: joining_photo_url,        // 已是 URL (上面上傳完得到)
         joining_story: joining_story || null,
         video_url: video_url || null,
         video_title: video_title || null,
         social_links: social_links,
+        custom_blocks: customBlocks,                 // 自訂圖文區塊 (JSONB array)
         status: 'active'
       };
 
-      // 頭像有上傳的話,塞進 social_links 或單獨欄位 (依 schema)
-      // 注意: creator_info 沒有 avatar_url 欄位 - 頭像用會員自己的 LINE/Avatar URL
-      // 如果你的 schema 有 avatar_url, 取消下行註解
-      // if (avatar_url) payload.avatar_url = avatar_url;
-
+      hint.textContent = '寫入資料庫中...';
       const { error } = await sb.from('creator_info').insert(payload);
 
       if (error) {
@@ -2228,6 +2269,144 @@
       hint.textContent = '失敗: ' + (err.message || err);
       console.error('[建立創作者失敗]', err);
     }
+  }
+
+  /* === 自訂內容區塊 (跟會員平台 creator-page 一致) === */
+
+  function agAddCustomBlock() {
+    const list = document.getElementById('agCustomBlocksList');
+    if (!list) return;
+    const empty = list.querySelector('.empty-text');
+    if (empty) empty.remove();
+
+    const idx = list.querySelectorAll('.custom-block').length;
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = agRenderCustomBlock(idx);
+    const blockEl = wrapper.firstElementChild;
+    list.appendChild(blockEl);
+    agBindCustomBlockEvents(blockEl);
+  }
+
+  function agRenderCustomBlock(index, data) {
+    data = data || {};
+    return `
+      <div class="custom-block" data-index="${index}">
+        <div class="custom-block-h">
+          <span class="custom-block-num">區塊 ${index + 1}</span>
+          <button class="custom-block-remove" type="button" title="刪除此區塊">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+        <div class="editor-row">
+          <div class="editor-label">標題</div>
+          <div><input class="editor-input cb-title" placeholder="例如:創作風格" value="${escapeHtml(data.title || '')}"/></div>
+        </div>
+        <div class="editor-row">
+          <div class="editor-label">圖片</div>
+          <div>
+            <div class="creator-photo-wrap">
+              <div class="creator-photo-preview cb-photo-preview ${data.image ? 'has-image' : ''}" ${data.image ? `style="background-image:url('${escapeHtml(data.image)}')"` : ''}>
+                <i class="fa-regular fa-image"></i>
+                <span>選填 3:4</span>
+              </div>
+              <input type="file" class="visually-hidden cb-photo-input" accept="image/*">
+              <input type="hidden" class="cb-image" value="${escapeHtml(data.image || '')}"/>
+              <input type="hidden" class="cb-image-base64" value=""/>
+            </div>
+          </div>
+        </div>
+        <div class="editor-row">
+          <div class="editor-label">內文</div>
+          <div><textarea class="editor-area cb-text" placeholder="輸入內文...">${escapeHtml(data.text || '')}</textarea></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function agBindCustomBlockEvents(blockEl) {
+    // 刪除
+    blockEl.querySelector('.custom-block-remove')?.addEventListener('click', () => {
+      if (confirm('確定要刪除此區塊?')) {
+        blockEl.remove();
+        agRenumberBlocks();
+      }
+    });
+
+    // 圖片上傳 (3:4 裁切)
+    const photoPreview = blockEl.querySelector('.cb-photo-preview');
+    const photoInput = blockEl.querySelector('.cb-photo-input');
+    const photoHidden = blockEl.querySelector('.cb-image');
+    const photoBase64Hidden = blockEl.querySelector('.cb-image-base64');
+
+    if (photoPreview && photoInput) {
+      photoPreview.addEventListener('click', () => photoInput.click());
+      photoInput.addEventListener('change', async e => {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+
+        // 3:4 裁切
+        let finalFile = file;
+        if (window.LohasCropper) {
+          const cropped = await window.LohasCropper.crop(file, {
+            aspectRatio: 3 / 4,
+            title: '裁切自訂區塊圖 · 3:4'
+          });
+          if (!cropped) { photoInput.value = ''; return; }
+          finalFile = cropped;
+        }
+
+        // 把裁切後的 Blob 暫存在 hidden (用 dataset 存 File ref)
+        const reader = new FileReader();
+        reader.onload = ev => {
+          photoPreview.style.backgroundImage = `url('${ev.target.result}')`;
+          photoPreview.classList.add('has-image');
+          if (photoBase64Hidden) {
+            photoBase64Hidden.value = ev.target.result;
+          }
+          // 暫存原始 File 物件 (送出時上傳)
+          photoInput._cbFile = finalFile;
+        };
+        reader.readAsDataURL(finalFile);
+        photoInput.value = '';
+      });
+    }
+  }
+
+  function agRenumberBlocks() {
+    document.querySelectorAll('#agCustomBlocksList .custom-block').forEach((el, i) => {
+      const num = el.querySelector('.custom-block-num');
+      if (num) num.textContent = `區塊 ${i + 1}`;
+    });
+  }
+
+  // 收集自訂區塊資料 (含上傳圖片到 Storage)
+  async function agCollectCustomBlocks(sb, SUPABASE_BUCKET) {
+    const blocks = [];
+    const els = document.querySelectorAll('#agCustomBlocksList .custom-block');
+
+    for (const el of els) {
+      const title = el.querySelector('.cb-title')?.value || '';
+      const text = el.querySelector('.cb-text')?.value || '';
+      const photoInput = el.querySelector('.cb-photo-input');
+      let image = el.querySelector('.cb-image')?.value || '';
+
+      // 有新圖檔, 上傳到 Storage
+      if (photoInput && photoInput._cbFile) {
+        const file = photoInput._cbFile;
+        const ext = getExt(file);
+        const filePath = `creator-blocks/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+        const { error } = await sb.storage.from(SUPABASE_BUCKET).upload(filePath, file, { cacheControl: '3600', upsert: false });
+        if (error) throw error;
+        const { data } = sb.storage.from(SUPABASE_BUCKET).getPublicUrl(filePath);
+        image = data.publicUrl;
+      }
+
+      if (title || text || image) {
+        blocks.push({ title, image, text });
+      }
+    }
+
+    return blocks;
   }
 
 })(window);
