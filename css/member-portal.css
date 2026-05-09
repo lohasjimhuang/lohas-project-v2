@@ -1447,6 +1447,101 @@ body {
    15. 分潤紀錄
    ============================================================= */
 
+/* ============================================================
+   分潤頁 Hero (Shopify 風 - 下次匯款金額置頂)
+   ============================================================ */
+.mp .payout-hero{
+  background:linear-gradient(135deg,#FFFAF0,#FFF7E5);
+  border:1px solid #E8D8A8;
+  border-radius:14px;
+  padding:24px 28px;
+  margin-bottom:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+}
+.mp .payout-hero-info{ flex:1; min-width:0 }
+.mp .payout-hero-label{
+  font-size:10.5px;
+  color:var(--lohas-mute);
+  letter-spacing:2px;
+  font-weight:600;
+  margin-bottom:6px;
+}
+.mp .payout-hero-amt{
+  font-size:32px;
+  color:#9D7E3F;
+  font-weight:700;
+  line-height:1;
+  letter-spacing:0.5px;
+  margin-bottom:6px;
+}
+.mp .payout-hero-date{
+  font-size:11px;
+  color:var(--lohas-sub);
+  letter-spacing:0.3px;
+}
+
+/* 匯款狀態 badge (panel-h 旁邊) */
+.mp .bank-status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  font-size:10px;
+  padding:3px 9px;
+  border-radius:999px;
+  font-weight:600;
+  letter-spacing:0.3px;
+  margin-left:auto;
+  margin-right:8px;
+}
+.mp .bank-status-pill.unset{
+  background:var(--status-pending-bg);
+  color:var(--status-pending);
+}
+.mp .bank-status-pill.set{
+  background:var(--status-approved-bg);
+  color:var(--status-approved);
+}
+.mp .bank-status-pill i{ font-size:9px }
+
+/* 未設定卡片 (Stripe 風 + 虛線) */
+.mp .bank-empty-card{
+  border:1.5px dashed var(--lohas-mute);
+  border-radius:10px;
+  padding:22px 18px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:var(--lohas-soft);
+}
+.mp .bank-empty-icon{
+  width:40px; height:40px;
+  border-radius:50%;
+  background:var(--lohas-tip);
+  color:#9D7E3F;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  flex-shrink:0;
+}
+.mp .bank-empty-info{ flex:1; min-width:0 }
+.mp .bank-empty-title{
+  font-size:13px;
+  color:var(--lohas-brown);
+  font-weight:600;
+  margin-bottom:3px;
+  letter-spacing:0.3px;
+}
+.mp .bank-empty-desc{
+  font-size:11px;
+  color:var(--lohas-sub);
+  letter-spacing:0.3px;
+  line-height:1.6;
+}
+
 .mp .royalty-summary{
   background:#FFFAF0;
   border:1px solid #E8D8A8;
@@ -2251,5 +2346,21 @@ body {
 
   .mp .nav-divider:first-of-type {
     margin: 12px 14px;
+  }
+}
+
+
+/* 分潤頁 hero 手機板適應 */
+@media (max-width: 600px) {
+  .mp .payout-hero{
+    flex-direction:column;
+    align-items:flex-start;
+    padding:20px 22px;
+  }
+  .mp .payout-hero-amt{ font-size:28px }
+  .mp .bank-empty-card{
+    flex-direction:column;
+    align-items:flex-start;
+    text-align:left;
   }
 }
