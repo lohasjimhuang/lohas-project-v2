@@ -158,7 +158,8 @@
     'ip': 'IP 合作'
   };
 
-  function goTo(page) {
+  function goTo(page, opts) {
+    opts = opts || {};
     // 離開「新增/編輯創作者個人頁」時自動清空表單
     const currentActive = root.querySelector('.content-page.on');
     const currentPage = currentActive?.dataset?.page;
@@ -167,14 +168,26 @@
     }
 
     root.querySelectorAll('.nav-link').forEach(x => x.classList.remove('on'));
-    const navLink = root.querySelector(`.nav-link[data-page="${page}"]`);
-    if (navLink) navLink.classList.add('on');
+
+    // 編輯模式下不點亮「新增」, 反而點亮「創作者管理」
+    if (opts.editMode && page === 'admin-grant-creator') {
+      const creatorsNav = root.querySelector('.nav-link[data-page="creators"]');
+      if (creatorsNav) creatorsNav.classList.add('on');
+    } else {
+      const navLink = root.querySelector(`.nav-link[data-page="${page}"]`);
+      if (navLink) navLink.classList.add('on');
+    }
 
     root.querySelectorAll('.content-page').forEach(p => {
       p.classList.toggle('on', p.dataset.page === page);
     });
 
-    Utils.setText('#breadcrumbCurrent', pageTitles[page] || '');
+    // breadcrumb
+    if (opts.editMode && opts.editName) {
+      Utils.setText('#breadcrumbCurrent', `創作者管理 › 編輯：${opts.editName}`);
+    } else {
+      Utils.setText('#breadcrumbCurrent', pageTitles[page] || '');
+    }
 
     // 進入頁面時觸發載入
     if (page === 'dashboard') { loadDashboard(); refreshReviewCounts(); }
@@ -2167,6 +2180,13 @@
     if (pageTitle) pageTitle.textContent = '新增創作者個人頁';
     if (pageSub) pageSub.textContent = '建立獨立的創作者個人頁 · 預設名稱「LOHAS 企劃部」 · 可重複新增';
 
+    // 移除返回按鈕 + 編輯徽章
+    const pageHead = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-head');
+    if (pageHead) {
+      pageHead.classList.remove('is-editing');
+      pageHead.querySelector('.ag-back-btn')?.remove();
+    }
+
     const saveBtn = document.getElementById('agSaveBtn');
     if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i><span>建立創作者</span>';
 
@@ -2534,7 +2554,7 @@
       }
 
       // 跳到「新增創作者個人頁」並進入編輯模式
-      goTo('admin-grant-creator');
+      goTo('admin-grant-creator', { editMode: true, editName: data.display_name || data.member_id });
 
       // 等頁面渲染好後再預填 (先 reset 再 prefill 避免殘留)
       setTimeout(() => {
@@ -2610,8 +2630,22 @@
     // 改 page 標題提示
     const pageTitle = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-title');
     const pageSub = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-sub');
-    if (pageTitle) pageTitle.textContent = '編輯創作者個人頁';
-    if (pageSub) pageSub.textContent = `編輯中: ${c.display_name || c.member_id}`;
+    if (pageTitle) pageTitle.textContent = `編輯創作者:${c.display_name || c.member_id}`;
+    if (pageSub) pageSub.textContent = `${c.member_id}`;
+
+    // 在 page-head 上方加一個明顯的「返回創作者管理」按鈕
+    const pageHead = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-head');
+    if (pageHead && !pageHead.querySelector('.ag-back-btn')) {
+      const backBtn = document.createElement('button');
+      backBtn.className = 'btn ag-back-btn';
+      backBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> 返回創作者管理';
+      backBtn.style.cssText = 'margin-bottom:12px;font-size:12px';
+      backBtn.addEventListener('click', () => goTo('creators'));
+      pageHead.insertBefore(backBtn, pageHead.firstChild);
+    }
+
+    // 加編輯模式徽章 (背景色變化)
+    pageHead?.classList.add('is-editing');
 
     // 改按鈕文字
     const saveBtn = document.getElementById('agSaveBtn');
