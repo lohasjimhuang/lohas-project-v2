@@ -1507,8 +1507,8 @@ body {
 }
 
 .mp .royalty-summary{
-  background:#FFFAF0;
-  border:1px solid #E8D8A8;
+  background:#fff;
+  border:1px solid var(--lohas-line);
   border-radius:14px;
   padding:24px;
   margin-bottom:14px;
@@ -1516,7 +1516,7 @@ body {
   gap:14px;
 }
 .mp .royalty-block{ text-align:center; padding:8px }
-.mp .royalty-block:not(:last-child){ border-right:1px dashed #E8D8A8 }
+.mp .royalty-block:not(:last-child){ border-right:1px dashed var(--lohas-line) }
 .mp .royalty-num{
   font-size:26px; color:#9D7E3F;
   font-weight:700; letter-spacing:0.5px;
