@@ -109,14 +109,17 @@
   <aside class="sidebar">
     <div class="sidebar-head">
       <img class="logo" src="images/lohas-logo.svg" alt="LOHAS">
-      <div class="role-tag" id="roleTag">會員中心</div>
+      <div class="role-tag-wrap">
+        <div class="role-tag" id="roleTag">會員中心</div>
+        <div class="role-tag-en">MEMBER PORTAL</div>
+      </div>
     </div>
 
     <!-- 基本(只有首頁) -->
     <div class="nav-section">
       <button class="nav-link on" data-page="home"><i class="fa-solid fa-house"></i><span>首頁</span></button>
     </div>
-    <div class="nav-divider"></div>
+
 
     <!-- 雷刻服務專區 + 創作者區 -->
     <div class="nav-section">
@@ -144,7 +147,7 @@
       <div class="bc-desc">上傳一個刻圖設計通過審核,即可開通創作者功能、享分潤</div>
     </button>
 
-    <div class="nav-divider"></div>
+
     <div class="nav-section">
       <button class="nav-link" data-page="profile"><i class="fa-regular fa-user"></i><span>會員資料</span></button>
       <a class="nav-link" id="sidebarAdminLink" href="admin-portal.html" style="display:none"><i class="fa-solid fa-shield-halved"></i><span>進入管理後台</span></a>
