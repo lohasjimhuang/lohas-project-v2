@@ -1465,10 +1465,19 @@ body {
 .mp .bank-status-pill.unset{
   color:var(--status-rejected);
 }
+.mp .bank-status-pill.unset i{
+  color:var(--status-rejected);
+}
 .mp .bank-status-pill.set{
   color:var(--status-approved);
 }
-.mp .bank-status-pill i{ font-size:13px }
+.mp .bank-status-pill.set i{
+  color:var(--status-approved);
+}
+.mp .bank-status-pill i{
+  font-size:13px;
+  margin:0;
+}
 
 /* 未設定卡片 (Stripe 風 + 虛線) */
 .mp .bank-empty-card{
