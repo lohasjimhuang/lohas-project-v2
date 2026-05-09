@@ -258,6 +258,20 @@ document.addEventListener("DOMContentLoaded", () => {
     return true;
   }
 
+  // 從 File / Blob 拿副檔名 (Cropper.js 回傳的 Blob 沒有 name 屬性)
+  function getExt(fileOrBlob) {
+    if (!fileOrBlob) return 'jpg';
+    if (fileOrBlob.name) {
+      const e = fileOrBlob.name.split('.').pop()?.toLowerCase();
+      if (e) return e;
+    }
+    const mime = fileOrBlob.type || '';
+    if (mime.includes('png')) return 'png';
+    if (mime.includes('webp')) return 'webp';
+    if (mime.includes('gif')) return 'gif';
+    return 'jpg';
+  }
+
   async function uploadImagesToSupabase() {
     if (!supabaseClient) {
       throw new Error("Supabase 尚未設定");
@@ -267,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const files = state.files.filter(Boolean);
 
     for (const file of files) {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const ext = getExt(file);
       const filePath = `public/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
       const { error: uploadError } = await supabaseClient.storage
@@ -306,7 +320,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (state.files[i]) {
           // 有新檔, 上傳
           const file = state.files[i];
-          const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+          const ext = getExt(file);
           const filePath = `public/${Date.now()}-${crypto.randomUUID()}.${ext}`;
           const { error: uploadError } = await supabaseClient.storage
             .from(SUPABASE_BUCKET)

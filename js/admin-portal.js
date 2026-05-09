@@ -50,6 +50,21 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  // 從 File / Blob 拿副檔名 (Cropper.js 回傳的 Blob 沒有 name 屬性)
+  function getExt(fileOrBlob) {
+    if (!fileOrBlob) return 'jpg';
+    if (fileOrBlob.name) {
+      const e = fileOrBlob.name.split('.').pop()?.toLowerCase();
+      if (e) return e;
+    }
+    // 從 mime type 取
+    const mime = fileOrBlob.type || '';
+    if (mime.includes('png')) return 'png';
+    if (mime.includes('webp')) return 'webp';
+    if (mime.includes('gif')) return 'gif';
+    return 'jpg';
+  }
+
 
   /* =============================================================
      1. Admin 身份檢查
@@ -1846,7 +1861,7 @@
       const uploadedUrls = [];
 
       for (const file of files) {
-        const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const ext = getExt(file);
         const filePath = `public/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
         const { error: uploadError } = await sb.storage
@@ -2109,7 +2124,7 @@
       // 上傳頭像
       if (AGState.avatarFile) {
         hint.textContent = '上傳頭像中...';
-        const ext = AGState.avatarFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const ext = getExt(AGState.avatarFile);
         const filePath = `creator-avatars/${Date.now()}-${crypto.randomUUID()}.${ext}`;
         const { error } = await sb.storage.from(SUPABASE_BUCKET).upload(filePath, AGState.avatarFile, { cacheControl: '3600', upsert: false });
         if (error) throw error;
@@ -2120,7 +2135,7 @@
       // 上傳緣分照片
       if (AGState.joiningPhotoFile) {
         hint.textContent = '上傳緣分照片中...';
-        const ext = AGState.joiningPhotoFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+        const ext = getExt(AGState.joiningPhotoFile);
         const filePath = `creator-joining/${Date.now()}-${crypto.randomUUID()}.${ext}`;
         const { error } = await sb.storage.from(SUPABASE_BUCKET).upload(filePath, AGState.joiningPhotoFile, { cacheControl: '3600', upsert: false });
         if (error) throw error;
@@ -2133,23 +2148,30 @@
 
       hint.textContent = '寫入資料庫中...';
 
-      // 寫入 creator_info (包含所有欄位 - 跟會員平台 saveCreatorInfo 對齊)
+      // 對齊會員平台 saveCreatorInfo 的欄位 (social_links 是 JSONB)
+      const social_links = {};
+      if (ig) social_links.instagram = ig;
+      if (fb) social_links.facebook = fb;
+      if (line) social_links.line = line;
+      if (email) social_links.email = email;
+
       const payload = {
         member_id: virtId,
         display_name,
         tagline: tagline || null,
         bio: bio || null,
-        avatar_url,
-        joining_photo_url,
+        joining_photo_url: joining_photo_url,    // 已是 URL (上面上傳完得到)
         joining_story: joining_story || null,
         video_url: video_url || null,
         video_title: video_title || null,
-        ig_url: ig || null,
-        fb_url: fb || null,
-        line_id: line || null,
-        email: email || null,
+        social_links: social_links,
         status: 'active'
       };
+
+      // 頭像有上傳的話,塞進 social_links 或單獨欄位 (依 schema)
+      // 注意: creator_info 沒有 avatar_url 欄位 - 頭像用會員自己的 LINE/Avatar URL
+      // 如果你的 schema 有 avatar_url, 取消下行註解
+      // if (avatar_url) payload.avatar_url = avatar_url;
 
       const { error } = await sb.from('creator_info').insert(payload);
 
