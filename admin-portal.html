@@ -18,9 +18,9 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1335">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1335">
-  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1335">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1459">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1459">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1459">
 
 </head>
 <body>
@@ -49,13 +49,9 @@
       <i class="fa-regular fa-pen-to-square"></i><span>刻圖審核</span>
       <span class="badge" id="badgeDesigns">0</span>
     </button>
-    <button class="nav-link" data-page="review-photos">
-      <i class="fa-regular fa-image"></i><span>照片審核</span>
-      <span class="badge" id="badgePhotos">0</span>
-    </button>
-    <button class="nav-link" data-page="review-stories">
-      <i class="fa-regular fa-comment"></i><span>故事審核</span>
-      <span class="badge" id="badgeStories">0</span>
+    <button class="nav-link" data-page="review-uploads">
+      <i class="fa-regular fa-image"></i><span>上傳審核</span>
+      <span class="badge" id="badgeUploads">0</span>
     </button>
   </div>
 
@@ -67,6 +63,9 @@
     <button class="nav-link" data-page="cm-news">
       <i class="fa-regular fa-newspaper"></i><span>最新消息</span>
     </button>
+    <button class="nav-link" data-page="admin-upload">
+      <i class="fa-solid fa-camera-retro"></i><span>樂活官方上傳</span>
+    </button>
   </div>
 
   <div class="nav-section">
@@ -76,6 +75,9 @@
     </button>
     <button class="nav-link" data-page="creators">
       <i class="fa-solid fa-star"></i><span>創作者管理</span>
+    </button>
+    <button class="nav-link" data-page="admin-grant-creator">
+      <i class="fa-solid fa-user-plus"></i><span>新增創作者個人頁</span>
     </button>
     <button class="nav-link" data-page="ip">
       <i class="fa-solid fa-copyright"></i><span>IP 合作</span>
@@ -168,44 +170,9 @@
         <div class="dash-panel">
           <div class="dash-panel-head">
             <h3 class="dash-panel-h">最近活動</h3>
-            <a class="dash-panel-link">查看全部 →</a>
           </div>
-          <div class="activity-list">
-            <div class="activity-item">
-              <div class="activity-icon upload"><i class="fa-solid fa-upload"></i></div>
-              <div class="activity-body">
-                <div class="activity-text"><b>EMO Bonnie</b> 上傳了新刻圖設計</div>
-                <div class="activity-time">2 分鐘前</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon approve"><i class="fa-solid fa-check"></i></div>
-              <div class="activity-body">
-                <div class="activity-text"><b>王*姐</b> 的照片通過審核</div>
-                <div class="activity-time">15 分鐘前</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon signup"><i class="fa-solid fa-user-plus"></i></div>
-              <div class="activity-body">
-                <div class="activity-text"><b>3 位新會員</b> 完成註冊</div>
-                <div class="activity-time">1 小時前</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon reject"><i class="fa-solid fa-xmark"></i></div>
-              <div class="activity-body">
-                <div class="activity-text"><b>小*白</b> 的照片被駁回 · 肖像權</div>
-                <div class="activity-time">3 小時前</div>
-              </div>
-            </div>
-            <div class="activity-item">
-              <div class="activity-icon upload"><i class="fa-solid fa-star"></i></div>
-              <div class="activity-body">
-                <div class="activity-text"><b>陳*生</b> 自動升級為 Creator</div>
-                <div class="activity-time">昨天 16:24</div>
-              </div>
-            </div>
+          <div class="activity-list" id="activityList">
+            <p class="empty-text" style="text-align:center;padding:40px 0;color:var(--lohas-mute);font-size:12px">載入中...</p>
           </div>
         </div>
       </div>
@@ -446,55 +413,35 @@
     </div>
 
     <!-- ============= 其他頁 placeholder ============= -->
-    <div class="content-page" data-page="review-photos">
+    <!-- ============= 照片審核 (合併: photo + story) ============= -->
+    <div class="content-page" data-page="review-uploads">
       <div class="page-head">
         <div>
-          <h1 class="page-title">照片審核</h1>
-          <div class="page-sub" id="reviewPhotosSub">— 件待審核 · 通過後將出現在靈感牆</div>
+          <h1 class="page-title">上傳審核</h1>
+          <div class="page-sub" id="reviewUploadsSub">— 件待審核 · 通過後將出現在靈感牆</div>
         </div>
       </div>
 
       <div class="filter-row">
         <label>狀態</label>
-        <select id="reviewPhotosStatus">
+        <select id="reviewUploadsStatus">
           <option value="pending">待審核</option>
           <option value="approved">已通過</option>
           <option value="rejected">已駁回</option>
         </select>
+        <label style="margin-left:14px">類型</label>
+        <select id="reviewUploadsType">
+          <option value="all">全部</option>
+          <option value="photo">只有照片</option>
+          <option value="story">有故事 (≥50字)</option>
+        </select>
         <div class="spacer"></div>
-        <button class="rtab" id="reviewPhotosRefresh"><i class="fa-solid fa-rotate"></i> 重新整理</button>
+        <button class="rtab" id="reviewUploadsRefresh"><i class="fa-solid fa-rotate"></i> 重新整理</button>
       </div>
 
-      <div class="review-grid" id="reviewPhotosGrid">
+      <div class="review-grid" id="reviewUploadsGrid">
         <div class="empty-page" style="grid-column:1/-1">
           <i class="fa-regular fa-image"></i>
-          <div class="empty-page-title">載入中...</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="content-page" data-page="review-stories">
-      <div class="page-head">
-        <div>
-          <h1 class="page-title">故事審核</h1>
-          <div class="page-sub" id="reviewStoriesSub">— 件待審核 · 故事 ≥ 50 字會自動歸類</div>
-        </div>
-      </div>
-
-      <div class="filter-row">
-        <label>狀態</label>
-        <select id="reviewStoriesStatus">
-          <option value="pending">待審核</option>
-          <option value="approved">已通過</option>
-          <option value="rejected">已駁回</option>
-        </select>
-        <div class="spacer"></div>
-        <button class="rtab" id="reviewStoriesRefresh"><i class="fa-solid fa-rotate"></i> 重新整理</button>
-      </div>
-
-      <div class="review-grid" id="reviewStoriesGrid">
-        <div class="empty-page" style="grid-column:1/-1">
-          <i class="fa-regular fa-comment"></i>
           <div class="empty-page-title">載入中...</div>
         </div>
       </div>
@@ -502,6 +449,122 @@
     <div class="content-page" data-page="cm-banner"><div class="page-head"><h1 class="page-title">首頁與分頁 Banner</h1></div><div class="empty-page"><i class="fa-regular fa-images"></i><div class="empty-page-title">Banner 管理介面</div></div></div>
     <div class="content-page" data-page="creators"><div class="page-head"><h1 class="page-title">創作者管理</h1></div><div class="empty-page"><i class="fa-solid fa-star"></i><div class="empty-page-title">創作者管理介面</div></div></div>
     <div class="content-page" data-page="ip"><div class="page-head"><h1 class="page-title">IP 合作</h1></div><div class="empty-page"><i class="fa-solid fa-copyright"></i><div class="empty-page-title">IP 授權與聯名管理</div></div></div>
+
+    <!-- ============= #4 樂活官方上傳照片 ============= -->
+    <div class="content-page" data-page="admin-upload">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">樂活官方上傳</h1>
+          <div class="page-sub">代表「樂活企劃部」上傳照片到靈感牆 · 自動通過審核</div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-row">
+          <label>顯示名稱</label>
+          <input class="editor-input" id="adminUploadName" value="LOHAS 企劃部" placeholder="LOHAS 企劃部"/>
+          <div class="form-hint">此名稱會顯示在靈感牆每張照片下方</div>
+        </div>
+
+        <div class="form-row">
+          <label>標題</label>
+          <input class="editor-input" id="adminUploadTitle" placeholder="例如:春季新品開箱"/>
+        </div>
+
+        <div class="form-row">
+          <label>主題分類</label>
+          <select class="editor-input" id="adminUploadTopic">
+            <option value="">不分類</option>
+            <option>新品速報</option>
+            <option>品牌活動</option>
+            <option>店家紀錄</option>
+            <option>幕後花絮</option>
+            <option>客戶見證</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label>圖片 URL</label>
+          <input class="editor-input" id="adminUploadImageUrl" placeholder="貼上完整圖片網址 https://..."/>
+          <div class="form-hint">建議使用 Supabase Storage 或 CDN 網址</div>
+        </div>
+
+        <div class="form-row">
+          <label>故事內容</label>
+          <textarea class="editor-input" id="adminUploadStory" rows="4" placeholder="(可選) 分享背後故事 · 50 字以上會自動歸類為「故事」"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label></label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn primary" id="adminUploadSubmit">
+              <i class="fa-solid fa-upload"></i>上傳並自動通過
+            </button>
+            <button class="btn" id="adminUploadReset">清空</button>
+          </div>
+          <div class="form-hint" id="adminUploadHint" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:24px">
+        <h3 class="panel-h"><span><i class="fa-solid fa-clock-rotate-left"></i>最近 5 筆官方上傳</span></h3>
+        <div id="adminUploadHistory">
+          <p class="empty-text">載入中...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============= #3 新增創作者個人頁 (獨立, 不綁會員) ============= -->
+    <div class="content-page" data-page="admin-grant-creator">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">新增創作者個人頁</h1>
+          <div class="page-sub">建立獨立的創作者個人頁 · 名稱完全自訂 · 不綁定真實會員</div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-row">
+          <label>創作者名稱</label>
+          <input class="editor-input" id="grantDisplayName" placeholder="例如:LOHAS 設計工作室"/>
+          <div class="form-hint">在創作者市集 / 個人頁顯示的名字</div>
+        </div>
+
+        <div class="form-row">
+          <label>個人簡介</label>
+          <textarea class="editor-input" id="grantBio" rows="4" placeholder="(可選) 創作風格、背景介紹..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>頭像 URL</label>
+          <input class="editor-input" id="grantAvatarUrl" placeholder="(可選) 貼上頭像圖片網址 https://..."/>
+          <div class="form-hint">不填會用預設頭像 (取名字第一字)</div>
+        </div>
+
+        <div class="form-row">
+          <label>聯絡資訊</label>
+          <input class="editor-input" id="grantContact" placeholder="(可選) IG / 信箱 / 官網"/>
+        </div>
+
+        <div class="form-row">
+          <label></label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn primary" id="grantSubmit">
+              <i class="fa-solid fa-user-plus"></i>建立創作者
+            </button>
+            <button class="btn" id="grantCancel">清空</button>
+          </div>
+          <div class="form-hint" id="grantHint" style="margin-top:10px"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:24px">
+        <h3 class="panel-h"><span><i class="fa-solid fa-clock-rotate-left"></i>最近 5 筆官方建立</span></h3>
+        <div id="grantHistory">
+          <p class="empty-text">載入中...</p>
+        </div>
+      </div>
+    </div>
 
   </div>
 </main>
@@ -545,12 +608,12 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js?v=20260509-1335"></script>
-<script src="js/auth.js?v=20260509-1335"></script>
-<script src="js/supabase.js?v=20260509-1335"></script>
+<script src="js/utils.js?v=20260509-1459"></script>
+<script src="js/auth.js?v=20260509-1459"></script>
+<script src="js/supabase.js?v=20260509-1459"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js?v=20260509-1335"></script>
+<script src="js/admin-portal.js?v=20260509-1459"></script>
 
 </body>
 </html>
