@@ -1120,17 +1120,18 @@
     min-height:100vh;
   }
 
-  /* sidebar 收成漢堡選單抽屜 */
+  /* sidebar 收成漢堡選單抽屜 (右側滑出) */
   .ad .sidebar{
     position:fixed;
-    top:0; left:0;
+    top:0; right:0;
     width:280px;
     height:100vh;
     z-index:1000;
-    transform:translateX(-100%);
+    transform:translateX(100%);
     transition:transform .25s ease;
     box-shadow:0 0 0 100vmax rgba(0,0,0,0);
     pointer-events:none;
+    overflow-y:auto;
   }
   .ad .sidebar.is-open{
     transform:translateX(0);
@@ -1138,7 +1139,7 @@
     pointer-events:auto;
   }
 
-  /* 漢堡按鈕 (在 topbar 左側) */
+  /* 漢堡按鈕 (在 topbar 右側) */
   .ad .mobile-menu-btn{
     display:flex;
     align-items:center;
