@@ -18,9 +18,9 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css">
-  <link rel="stylesheet" href="css/lohas-components.css">
-  <link rel="stylesheet" href="css/admin-portal.css">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1325">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1325">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1325">
 
 </head>
 <body>
@@ -30,8 +30,8 @@
 <!-- ====== Sidebar ====== -->
 <aside class="sidebar">
   <div class="sidebar-head">
-    <div class="logo">L O H A S</div>
-    <div class="role-tag"><i class="fa-solid fa-shield-halved"></i>管理後台</div>
+    <img class="logo" src="images/lohas-logo.svg" alt="LOHAS">
+    <div class="role-tag">管理後台</div>
   </div>
 
   <div class="nav-section">
@@ -348,12 +348,6 @@
         </div>
       </div>
 
-      <!-- 會員列表規則 banner (放這頁專用) -->
-      <div class="rule-banner" style="margin:-24px -28px 18px;border-radius:0;padding-left:28px;padding-right:28px">
-        <i class="fa-solid fa-circle-info"></i>
-        <span><b>自動升級規則:</b>會員首次通過刻圖審核後,系統自動升級為「Creator」,設計每被使用一次,Creator 獲得 <span class="price">$500</span> 分潤</span>
-      </div>
-
       <div class="kpi-grid">
         <div class="kpi-card">
           <div class="kpi-label">總 會 員 數</div>
@@ -548,12 +542,12 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/supabase.js"></script>
+<script src="js/utils.js?v=20260509-1325"></script>
+<script src="js/auth.js?v=20260509-1325"></script>
+<script src="js/supabase.js?v=20260509-1325"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js"></script>
+<script src="js/admin-portal.js?v=20260509-1325"></script>
 
 </body>
 </html>
