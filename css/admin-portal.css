@@ -1494,7 +1494,8 @@
    ============================================================= */
 
 .ad .creator-edit-wrap{
-  max-width:760px;
+  max-width:none;
+  width:100%;
 }
 
 .ad .editor-panel{
