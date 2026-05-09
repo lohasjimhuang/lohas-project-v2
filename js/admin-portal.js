@@ -1277,8 +1277,12 @@
 
     if (error) return alert('通過失敗: ' + error.message);
 
-    loadReviewUploads();
-    loadDashboard?.(); refreshReviewCounts?.();
+    // 立刻從 DOM 移除這張卡
+    removeReviewCardFromDOM(id);
+    setTimeout(() => {
+      loadReviewUploads();
+      loadDashboard?.(); refreshReviewCounts?.();
+    }, 250);
   }
 
   async function rejectGalleryPost(id, typeFilter, info) {
@@ -1297,8 +1301,27 @@
 
     if (error) return alert('取消失敗: ' + error.message);
 
-    loadReviewUploads();
-    loadDashboard?.(); refreshReviewCounts?.();
+    removeReviewCardFromDOM(id);
+    setTimeout(() => {
+      loadReviewUploads();
+      loadDashboard?.(); refreshReviewCounts?.();
+    }, 250);
+  }
+
+  // 從 DOM 立刻移除卡片 (動畫消失) - 避免使用者按完按鈕還看到
+  function removeReviewCardFromDOM(id) {
+    const sels = [
+      `.rcard[data-id="${id}"]`,
+      `.review-item[data-id="${id}"]`
+    ];
+    sels.forEach(sel => {
+      root.querySelectorAll(sel).forEach(el => {
+        el.style.transition = 'opacity .2s, transform .2s';
+        el.style.opacity = '0';
+        el.style.transform = 'scale(0.95)';
+        setTimeout(() => el.remove(), 200);
+      });
+    });
   }
 
   function maskName(name) {
@@ -1362,13 +1385,17 @@
     const sb = getSb();
     if (!sb) return;
 
+    // photo 跟 story 都寫到 gallery_posts (不是 member_stories)
     const tableMap = {
       design: 'engraving_designs',
       photo: 'gallery_posts',
-      story: 'member_stories'
+      story: 'gallery_posts'
     };
     const table = tableMap[currentRejectTarget.type];
     if (!table) return;
+
+    const targetId = currentRejectTarget.id;
+    const targetType = currentRejectTarget.type;
 
     const { error } = await sb.from(table)
       .update({
@@ -1376,17 +1403,32 @@
         reject_reason: reason,
         reviewed_at: new Date().toISOString()
       })
-      .eq('id', currentRejectTarget.id);
+      .eq('id', targetId);
 
     if (error) return alert('駁回失敗: ' + error.message);
 
-    closeReject();
-    alert('已駁回');
+    // 立刻從 DOM 移除這張卡 (避免使用者覺得駁回沒反應)
+    const cardSelectors = [
+      `.rcard[data-id="${targetId}"]`,
+      `.review-item[data-id="${targetId}"]`
+    ];
+    cardSelectors.forEach(sel => {
+      root.querySelectorAll(sel).forEach(el => {
+        el.style.transition = 'opacity .2s, transform .2s';
+        el.style.opacity = '0';
+        el.style.transform = 'scale(0.95)';
+        setTimeout(() => el.remove(), 200);
+      });
+    });
 
-    // 重新載入當前頁
-    if (currentRejectTarget?.type === 'design') loadDesignReview();
-    if (currentRejectTarget?.type === 'photo' || currentRejectTarget?.type === 'story') loadReviewUploads();
-    loadDashboard(); refreshReviewCounts?.();
+    closeReject();
+
+    // 後台重新整理 (補完整資料)
+    setTimeout(() => {
+      if (targetType === 'design') loadDesignReview();
+      if (targetType === 'photo' || targetType === 'story') loadReviewUploads();
+      loadDashboard(); refreshReviewCounts?.();
+    }, 250);
   }
 
 
