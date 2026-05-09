@@ -22,10 +22,10 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1704">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1704">
-  <link rel="stylesheet" href="css/upload.css?v=20260509-1704">
-  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1704">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1727">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1727">
+  <link rel="stylesheet" href="css/upload.css?v=20260509-1727">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1727">
 
 </head>
 <body>
@@ -452,7 +452,37 @@
       </div>
     </div>
     <div class="content-page" data-page="cm-banner"><div class="page-head"><h1 class="page-title">首頁與分頁 Banner</h1></div><div class="empty-page"><i class="fa-regular fa-images"></i><div class="empty-page-title">Banner 管理介面</div></div></div>
-    <div class="content-page" data-page="creators"><div class="page-head"><h1 class="page-title">創作者管理</h1></div><div class="empty-page"><i class="fa-solid fa-star"></i><div class="empty-page-title">創作者管理介面</div></div></div>
+    <!-- ============= 創作者管理 (列表 + 編輯/刪除) ============= -->
+    <div class="content-page" data-page="creators">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">創作者管理</h1>
+          <div class="page-sub" id="creatorsListSub">— 位創作者</div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <input class="editor-input" id="creatorsSearchInput" placeholder="搜尋名稱 / member_id..." style="max-width:280px"/>
+        <label style="margin-left:14px">類型</label>
+        <select id="creatorsFilterType">
+          <option value="all">全部</option>
+          <option value="member">真實會員</option>
+          <option value="virt">獨立創作者 (virt-)</option>
+        </select>
+        <label style="margin-left:14px">狀態</label>
+        <select id="creatorsFilterStatus">
+          <option value="all">全部</option>
+          <option value="active">啟用</option>
+          <option value="inactive">停用</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="rtab" id="creatorsRefresh"><i class="fa-solid fa-rotate"></i> 重新整理</button>
+      </div>
+
+      <div id="creatorsList">
+        <p class="empty-text" style="text-align:center;padding:60px;color:var(--lohas-mute)">載入中...</p>
+      </div>
+    </div>
     <div class="content-page" data-page="ip"><div class="page-head"><h1 class="page-title">IP 合作</h1></div><div class="empty-page"><i class="fa-solid fa-copyright"></i><div class="empty-page-title">IP 授權與聯名管理</div></div></div>
 
     <!-- ============= #4 樂活官方上傳照片 ============= -->
@@ -728,13 +758,13 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js?v=20260509-1704"></script>
-<script src="js/auth.js?v=20260509-1704"></script>
-<script src="js/supabase.js?v=20260509-1704"></script>
-<script src="js/cropper-helper.js?v=20260509-1704"></script>
+<script src="js/utils.js?v=20260509-1727"></script>
+<script src="js/auth.js?v=20260509-1727"></script>
+<script src="js/supabase.js?v=20260509-1727"></script>
+<script src="js/cropper-helper.js?v=20260509-1727"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js?v=20260509-1704"></script>
+<script src="js/admin-portal.js?v=20260509-1727"></script>
 
 </body>
 </html>
