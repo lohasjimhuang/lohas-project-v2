@@ -2180,9 +2180,10 @@
     if (pageTitle) pageTitle.textContent = '新增創作者個人頁';
     if (pageSub) pageSub.textContent = '建立獨立的創作者個人頁 · 預設名稱「LOHAS 企劃部」 · 可重複新增';
 
-    // 移除返回按鈕 + 編輯徽章
+    // 還原 page-head 顯示 (編輯模式時被藏起來)
     const pageHead = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-head');
     if (pageHead) {
+      pageHead.style.display = '';
       pageHead.classList.remove('is-editing');
       pageHead.querySelector('.ag-back-btn')?.remove();
     }
@@ -2351,8 +2352,11 @@
         });
       });
 
-      // 不再自動清空 (讓使用者看到網址), 改成提示
-      // setTimeout(() => agReset(), 2500);
+      // 編輯模式儲存後自動清空 (回到新增模式)
+      // 新增模式保留網址卡讓使用者複製
+      if (isEdit) {
+        setTimeout(() => agReset(), 100);
+      }
 
     } catch (err) {
       hint.style.color = 'var(--status-rejected)';
@@ -2627,25 +2631,11 @@
       });
     }
 
-    // 改 page 標題提示
-    const pageTitle = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-title');
-    const pageSub = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-sub');
-    if (pageTitle) pageTitle.textContent = `編輯創作者:${c.display_name || c.member_id}`;
-    if (pageSub) pageSub.textContent = `${c.member_id}`;
-
-    // 在 page-head 上方加一個明顯的「返回創作者管理」按鈕
+    // 編輯模式: 整個 page-head 隱藏 (返回按鈕 + 標題 + ID 都不要)
     const pageHead = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-head');
-    if (pageHead && !pageHead.querySelector('.ag-back-btn')) {
-      const backBtn = document.createElement('button');
-      backBtn.className = 'btn ag-back-btn';
-      backBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> 返回創作者管理';
-      backBtn.style.cssText = 'margin-bottom:12px;font-size:12px';
-      backBtn.addEventListener('click', () => goTo('creators'));
-      pageHead.insertBefore(backBtn, pageHead.firstChild);
+    if (pageHead) {
+      pageHead.style.display = 'none';
     }
-
-    // 加編輯模式徽章 (背景色變化)
-    pageHead?.classList.add('is-editing');
 
     // 改按鈕文字
     const saveBtn = document.getElementById('agSaveBtn');
