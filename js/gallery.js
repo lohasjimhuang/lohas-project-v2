@@ -538,12 +538,24 @@ document.addEventListener("DOMContentLoaded", () => {
     applyFilters();
   });
 
+  // 「只看有故事的」toggle (桌機 + 手機同步)
   const toggleStoryBtn = document.getElementById("toggleStoryBtn");
-  toggleStoryBtn?.addEventListener("click", () => {
+  const mobileToggleStoryBtn = document.getElementById("mobileToggleStoryBtn");
+
+  function syncStoryToggle() {
+    const v = String(filterState.storyOnly);
+    toggleStoryBtn?.setAttribute("aria-pressed", v);
+    mobileToggleStoryBtn?.setAttribute("aria-pressed", v);
+  }
+
+  function handleStoryToggle() {
     filterState.storyOnly = !filterState.storyOnly;
-    toggleStoryBtn.setAttribute("aria-pressed", String(filterState.storyOnly));
+    syncStoryToggle();
     applyFilters();
-  });
+  }
+
+  toggleStoryBtn?.addEventListener("click", handleStoryToggle);
+  mobileToggleStoryBtn?.addEventListener("click", handleStoryToggle);
 
   [desktopSearchInput, mobileSearchInput].forEach(input => {
     if (!input) return;
