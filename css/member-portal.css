@@ -1447,42 +1447,6 @@ body {
    15. 分潤紀錄
    ============================================================= */
 
-/* ============================================================
-   分潤頁 Hero (Shopify 風 - 下次匯款金額置頂)
-   ============================================================ */
-.mp .payout-hero{
-  background:linear-gradient(135deg,#FFFAF0,#FFF7E5);
-  border:1px solid #E8D8A8;
-  border-radius:14px;
-  padding:24px 28px;
-  margin-bottom:14px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-}
-.mp .payout-hero-info{ flex:1; min-width:0 }
-.mp .payout-hero-label{
-  font-size:10.5px;
-  color:var(--lohas-mute);
-  letter-spacing:2px;
-  font-weight:600;
-  margin-bottom:6px;
-}
-.mp .payout-hero-amt{
-  font-size:32px;
-  color:#9D7E3F;
-  font-weight:700;
-  line-height:1;
-  letter-spacing:0.5px;
-  margin-bottom:6px;
-}
-.mp .payout-hero-date{
-  font-size:11px;
-  color:var(--lohas-sub);
-  letter-spacing:0.3px;
-}
-
 /* 匯款狀態 badge (panel-h 旁邊) */
 .mp .bank-status-pill{
   display:inline-flex;
@@ -2350,14 +2314,8 @@ body {
 }
 
 
-/* 分潤頁 hero 手機板適應 */
+/* 分潤頁 bank-empty-card 手機板適應 */
 @media (max-width: 600px) {
-  .mp .payout-hero{
-    flex-direction:column;
-    align-items:flex-start;
-    padding:20px 22px;
-  }
-  .mp .payout-hero-amt{ font-size:28px }
   .mp .bank-empty-card{
     flex-direction:column;
     align-items:flex-start;
