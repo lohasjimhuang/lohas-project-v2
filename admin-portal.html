@@ -18,9 +18,10 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1510">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1510">
-  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1510">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260509-1534">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260509-1534">
+  <link rel="stylesheet" href="css/upload.css?v=20260509-1534">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260509-1534">
 
 </head>
 <body>
@@ -501,18 +502,33 @@
         <div class="form-row">
           <label>圖片</label>
           <div>
-            <input type="file" id="adminUploadFileInput" accept="image/*" style="display:none"/>
-            <div class="admin-upload-dropzone" id="adminUploadDropzone">
-              <div class="admin-upload-preview" id="adminUploadPreview"></div>
-              <div class="admin-upload-empty" id="adminUploadEmpty">
-                <i class="fa-regular fa-image"></i>
-                <div>點此選擇圖片</div>
-                <div class="admin-upload-empty-hint">支援 JPG / PNG / WebP · 建議 1MB 以下</div>
+            <input type="file" id="adminUploadFileInput" class="hidden-file-input" accept="image/*"/>
+            <div class="upload-grid admin-upload-grid">
+              <div class="upload-box main-upload" data-admin-slot="0" tabindex="0" role="button">
+                <span class="badge-main">首圖</span>
+                <div class="upload-placeholder">
+                  <i class="fa-regular fa-image"></i>
+                  <p>上傳首圖</p>
+                  <span class="upload-hint">點擊或拖曳圖片到這裡</span>
+                </div>
+              </div>
+              <div class="sub-upload-container">
+                <div class="upload-box sub-upload" data-admin-slot="1" tabindex="0" role="button">
+                  <div class="upload-placeholder">
+                    <i class="fa-regular fa-image"></i>
+                    <p>上傳圖片</p>
+                    <span class="upload-hint">副圖二（選填）</span>
+                  </div>
+                </div>
+                <div class="upload-box sub-upload" data-admin-slot="2" tabindex="0" role="button">
+                  <div class="upload-placeholder">
+                    <i class="fa-regular fa-image"></i>
+                    <p>上傳圖片</p>
+                    <span class="upload-hint">副圖三（選填）</span>
+                  </div>
+                </div>
               </div>
             </div>
-            <button type="button" class="btn" id="adminUploadClearImg" style="display:none;margin-top:8px">
-              <i class="fa-regular fa-trash-can"></i>移除圖片
-            </button>
           </div>
         </div>
 
@@ -541,47 +557,115 @@
       </div>
     </div>
 
-    <!-- ============= #3 新增創作者個人頁 (獨立, 不綁會員) ============= -->
+    <!-- ============= #3 新增創作者個人頁 (整個介面 copy 自會員平台 creator-page) ============= -->
     <div class="content-page" data-page="admin-grant-creator">
       <div class="page-head">
         <div>
           <h1 class="page-title">新增創作者個人頁</h1>
-          <div class="page-sub">建立獨立的創作者個人頁 · 名稱完全自訂 · 不綁定真實會員</div>
+          <div class="page-sub">建立獨立的創作者個人頁 · 預設名稱「LOHAS 企劃部」 · 可重複新增</div>
         </div>
       </div>
 
-      <div class="form-card">
-        <div class="form-row">
-          <label>創作者名稱</label>
-          <input class="editor-input" id="grantDisplayName" value="LOHAS 企劃部" placeholder="LOHAS 企劃部"/>
-          <div class="form-hint">在創作者市集 / 個人頁顯示的名字</div>
-        </div>
-
-        <div class="form-row">
-          <label>個人簡介</label>
-          <textarea class="editor-input" id="grantBio" rows="4" placeholder="(可選) 創作風格、背景介紹..."></textarea>
-        </div>
-
-        <div class="form-row">
-          <label>頭像 URL</label>
-          <input class="editor-input" id="grantAvatarUrl" placeholder="(可選) 貼上頭像圖片網址 https://..."/>
-          <div class="form-hint">不填會用預設頭像 (取名字第一字)</div>
-        </div>
-
-        <div class="form-row">
-          <label>聯絡資訊</label>
-          <input class="editor-input" id="grantContact" placeholder="(可選) IG / 信箱 / 官網"/>
-        </div>
-
-        <div class="form-row">
-          <label></label>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn primary" id="grantSubmit">
-              <i class="fa-solid fa-user-plus"></i>建立創作者
-            </button>
-            <button class="btn" id="grantCancel">清空</button>
+      <div class="creator-edit-wrap">
+        <div class="editor-panel">
+          <h3 class="editor-panel-h"><i class="fa-regular fa-id-badge"></i>基本資訊</h3>
+          <div class="editor-row">
+            <div class="editor-label">頭像</div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div class="creator-avatar-wrap">
+                <div class="ed-avatar" id="agAvatar">LO</div>
+                <button class="ed-avatar-camera" id="agAvatarUploadBtn" type="button" aria-label="更換頭像">
+                  <i class="fa-solid fa-camera"></i>
+                </button>
+                <input type="file" id="agAvatarInput" class="visually-hidden" accept="image/*">
+              </div>
+            </div>
           </div>
-          <div class="form-hint" id="grantHint" style="margin-top:10px"></div>
+          <div class="editor-row">
+            <div class="editor-label">顯示名稱</div>
+            <div><input class="editor-input" id="agDisplayName" value="LOHAS 企劃部" placeholder="LOHAS 企劃部"/></div>
+          </div>
+          <div class="editor-row">
+            <div class="editor-label">短標籤</div>
+            <div>
+              <input class="editor-input" id="agTagline" placeholder="例如:官方品牌"/>
+              <div style="font-size:11px;color:var(--lohas-mute);margin-top:4px;letter-spacing:0.3px">顯示在名字下方</div>
+            </div>
+          </div>
+          <div class="editor-row">
+            <div class="editor-label">自我介紹</div>
+            <div><textarea class="editor-area" id="agBio" placeholder="說說這位創作者..."></textarea></div>
+          </div>
+        </div>
+
+        <div class="editor-panel">
+          <h3 class="editor-panel-h"><i class="fa-regular fa-heart"></i>與樂活的緣分</h3>
+          <div class="editor-row">
+            <div class="editor-label">圖片</div>
+            <div>
+              <div class="creator-photo-wrap">
+                <div class="creator-photo-preview" id="agJoiningPhotoPreview">
+                  <i class="fa-regular fa-image"></i>
+                  <span>3:4 直式</span>
+                </div>
+                <button class="creator-photo-upload-btn" id="agJoiningPhotoBtn" type="button">
+                  <i class="fa-solid fa-camera"></i>更換圖片
+                </button>
+                <input type="file" id="agJoiningPhotoInput" class="visually-hidden" accept="image/*">
+                <input type="hidden" id="agJoiningPhoto"/>
+              </div>
+              <div style="font-size:11px;color:var(--lohas-mute);margin-top:6px;letter-spacing:0.3px">3:4 直式照片,顯示在文字左側</div>
+            </div>
+          </div>
+          <div class="editor-row">
+            <div class="editor-label">緣分故事</div>
+            <div>
+              <textarea class="editor-area" id="agJoiningStory" placeholder="說說這位創作者跟樂活的緣分..." style="min-height:140px"></textarea>
+              <div style="font-size:11px;color:var(--lohas-mute);margin-top:4px;letter-spacing:0.3px">空一行 = 段落分隔</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="editor-panel">
+          <h3 class="editor-panel-h"><i class="fa-brands fa-youtube"></i>創作者影片 (選填)</h3>
+          <div class="editor-row">
+            <div class="editor-label">YouTube URL</div>
+            <div>
+              <input class="editor-input" id="agVideoUrl" placeholder="https://www.youtube.com/watch?v=..."/>
+            </div>
+          </div>
+          <div class="editor-row">
+            <div class="editor-label">影片標題</div>
+            <div><input class="editor-input" id="agVideoTitle" placeholder="例如:LOHAS 品牌故事"/></div>
+          </div>
+        </div>
+
+        <div class="editor-panel">
+          <h3 class="editor-panel-h"><i class="fa-regular fa-comment-dots"></i>聯絡方式 / 社群連結</h3>
+          <div class="editor-row">
+            <div class="editor-label">Instagram</div>
+            <div><input class="editor-input" id="agIg" placeholder="https://instagram.com/yourname"/></div>
+          </div>
+          <div class="editor-row">
+            <div class="editor-label">Facebook</div>
+            <div><input class="editor-input" id="agFb" placeholder="https://facebook.com/yourname"/></div>
+          </div>
+          <div class="editor-row">
+            <div class="editor-label">LINE ID</div>
+            <div><input class="editor-input" id="agLine" placeholder="yourname"/></div>
+          </div>
+          <div class="editor-row">
+            <div class="editor-label">Email</div>
+            <div><input class="editor-input" id="agEmail" placeholder="hello@example.com"/></div>
+          </div>
+          <div class="editor-row">
+            <div class="editor-label"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="action-btn-solid" id="agSaveBtn"><i class="fa-solid fa-floppy-disk"></i><span>建立創作者</span></button>
+              <button class="btn" id="agResetBtn">清空表單</button>
+            </div>
+            <div class="form-hint" id="agHint" style="margin-top:10px"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -628,12 +712,12 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js?v=20260509-1510"></script>
-<script src="js/auth.js?v=20260509-1510"></script>
-<script src="js/supabase.js?v=20260509-1510"></script>
+<script src="js/utils.js?v=20260509-1534"></script>
+<script src="js/auth.js?v=20260509-1534"></script>
+<script src="js/supabase.js?v=20260509-1534"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js?v=20260509-1510"></script>
+<script src="js/admin-portal.js?v=20260509-1534"></script>
 
 </body>
 </html>
