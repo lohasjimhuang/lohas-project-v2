@@ -1719,3 +1719,127 @@
   font-size:10.5px;
   color:var(--lohas-text);
 }
+
+/* 自訂內容區塊 (從會員平台 copy 過來) */
+.ad .custom-block{
+  background:var(--lohas-soft);
+  border:1px solid var(--lohas-line);
+  border-radius:10px;
+  padding:18px;
+  margin-bottom:14px;
+}
+.ad .custom-block:last-child{ margin-bottom:0 }
+.ad .custom-block-h{
+  display:flex; align-items:center; justify-content:space-between;
+  padding-bottom:14px;
+  border-bottom:1px dashed var(--lohas-line);
+  margin-bottom:14px;
+}
+.ad .custom-block-num{
+  font-size:11px; color:var(--lohas-brown);
+  letter-spacing:1.5px; font-weight:600;
+}
+.ad .custom-block-remove{
+  width:32px; height:32px;
+  border-radius:8px;
+  background:#fff;
+  color:var(--status-rejected);
+  border:1px solid #E5C5C5;
+  font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  transition:all .15s;
+}
+.ad .custom-block-remove:hover{
+  background:var(--status-rejected);
+  border-color:var(--status-rejected);
+  color:#fff;
+  transform:scale(1.05);
+}
+
+/* =============================================================
+   創作者管理 · 列表卡片
+   ============================================================= */
+
+.ad .creator-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  padding:16px 20px;
+  background:#fff;
+  border:1px solid var(--lohas-line);
+  border-radius:12px;
+  margin-bottom:10px;
+  transition:all .15s;
+}
+.ad .creator-card:hover{
+  border-color:var(--lohas-light-brown);
+  box-shadow:0 2px 8px rgba(0,0,0,0.04);
+}
+.ad .creator-card-avatar{
+  width:48px; height:48px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--lohas-light-brown),var(--lohas-brown));
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  font-weight:600;
+  flex-shrink:0;
+  background-size:cover;
+  background-position:center;
+}
+.ad .creator-card-body{
+  flex:1; min-width:0;
+}
+.ad .creator-card-name-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:4px;
+}
+.ad .creator-card-name{
+  font-size:14px;
+  font-weight:600;
+  color:var(--lohas-text);
+}
+.ad .creator-card-tag{
+  font-size:10.5px;
+  color:var(--c-text);
+  background:var(--c-bg);
+  padding:2px 8px;
+  border-radius:999px;
+  letter-spacing:0.3px;
+}
+.ad .creator-card-tag.virt{
+  color:var(--status-pending);
+  background:#FFF6E5;
+}
+.ad .creator-card-tag.suspended{
+  color:var(--status-rejected);
+  background:#FCE8E8;
+}
+.ad .creator-card-meta{
+  font-size:11px;
+  color:var(--lohas-mute);
+  letter-spacing:0.3px;
+}
+.ad .creator-card-meta code{
+  font-family:monospace;
+  font-size:10.5px;
+  background:var(--lohas-soft);
+  padding:1px 5px;
+  border-radius:3px;
+  color:var(--lohas-text);
+}
+.ad .creator-card-actions{
+  display:flex;
+  gap:6px;
+  flex-shrink:0;
+}
+.ad .creator-card-actions .btn{
+  padding:7px 11px;
+  font-size:11.5px;
+}
+.ad .creator-card-actions .btn i{ font-size:11px }
