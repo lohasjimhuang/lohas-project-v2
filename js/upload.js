@@ -409,10 +409,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     closeUpload?.addEventListener("click", closeModal);
 
-    uploadModal?.addEventListener("click", event => {
-      if (event.target === uploadModal) closeModal();
-    });
-
     fileInput?.addEventListener("change", event => {
       const file = event.target.files[0];
 
