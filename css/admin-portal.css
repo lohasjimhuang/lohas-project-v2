@@ -1658,7 +1658,9 @@
   font-size:11.5px;
   color:var(--lohas-brown);
   text-decoration:none;
-  word-break:break-all;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
   letter-spacing:0;
 }
 .ad .ag-success-url:hover{
@@ -2346,5 +2348,41 @@
   }
   .ad-drawer-body .drawer-item.drawer-logout > i:first-child{
     color:var(--status-rejected);
+  }
+}
+
+/* 成功卡按鈕群組 (桌面: inline) */
+.ad .ag-success-btn-group{
+  display:flex;
+  gap:8px;
+  flex-shrink:0;
+}
+
+/* 手機板 - 成功網址卡 layout */
+@media (max-width:900px){
+  .ad .ag-success-card{
+    padding:12px;
+  }
+  .ad .ag-success-url-row{
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+  .ad .ag-success-url{
+    width:100%;
+    text-align:center;
+    font-size:11px;
+    padding:10px 12px;
+  }
+  /* 兩個按鈕一行各佔半 */
+  .ad .ag-success-btn-group{
+    display:flex;
+    gap:8px;
+    width:100%;
+  }
+  .ad .ag-success-btn-group > .ag-copy-btn{
+    flex:1;
+    justify-content:center;
+    padding:10px;
   }
 }
