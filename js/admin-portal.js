@@ -557,7 +557,7 @@
       });
 
       events.sort((a, b) => new Date(b.time) - new Date(a.time));
-      const top = events.slice(0, 8);
+      const top = events.slice(0, 5);
 
       if (top.length === 0) {
         list.innerHTML = '<p class="empty-text" style="text-align:center;padding:40px 0;color:var(--lohas-mute);font-size:12px">尚無活動紀錄</p>';
