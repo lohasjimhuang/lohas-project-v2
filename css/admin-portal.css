@@ -1153,7 +1153,8 @@
   }
 
   /* 內容區 padding */
-  .ad .content{ padding:14px 8px }
+  .ad .content{ padding:16px }
+  .ad .topbar-right{ display:none }
 
   /* page-head */
   .ad .page-head{
@@ -1995,13 +1996,13 @@
     align-items:center;
     justify-content:space-between;
     gap:8px;
-    padding:10px 14px;
-    background:#fff;
-    border-bottom:1px solid var(--lohas-line);
-    min-height:54px;
+    padding:14px 12px;
+    background:transparent;
+    border-bottom:0;
+    min-height:60px;
   }
   .ad .ad-mobile-logo{
-    height:36px;
+    height:44px;
     width:auto;
   }
   .ad .ad-mobile-front{
