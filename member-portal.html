@@ -417,7 +417,14 @@
           </div>
           <div class="editor-row">
             <div class="editor-label"></div>
-            <div><button class="action-btn" id="saveCreatorInfo"><i class="fa-solid fa-floppy-disk"></i><span>儲存創作者資料</span></button></div>
+            <div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="action-btn" id="saveCreatorInfo"><i class="fa-solid fa-floppy-disk"></i><span>儲存創作者資料</span></button>
+                <button class="btn" id="creatorResetBtn">清空表單</button>
+                <button class="btn" id="creatorCloseBtn">關閉</button>
+              </div>
+              <div class="form-hint" id="creatorSaveHint" style="margin-top:10px"></div>
+            </div>
           </div>
         </div>
       </div>
