@@ -2071,6 +2071,7 @@ body {
   .mp .content{
     display:flex;
     flex-direction:column;
+    padding:14px 6px;
   }
 
   .mp .content-page.on{
@@ -2350,7 +2351,7 @@ body {
   .mp.is-creator .shortcuts{
     grid-template-columns:repeat(2,1fr);
   }
-  .mp .content{ padding:20px 8px }
+  .mp .content{ padding:14px 6px }
 
   /* 手機板 profile-card padding 縮小 + 改 1 欄 */
   .mp .profile-card{
