@@ -175,6 +175,9 @@
       p.classList.toggle('on', p.dataset.page === page);
     });
 
+    // 同步手機版 drawer active
+    syncDrawerActive(page);
+
     Utils.setText('#breadcrumbCurrent', pageTitles[page] || '');
 
     // 進入頁面時觸發載入
@@ -334,6 +337,8 @@
     } else {
       badge.style.display = 'none';
     }
+    // 同步手機版 drawer
+    syncDrawerBadge(page, count);
   }
 
   // 精準刷新所有審核相關計數 (sidebar badges + page-sub + review-tabs)
@@ -1655,21 +1660,93 @@
   }
 
   function bindMobileMenu() {
-    const btn = document.getElementById('mobileMenuBtn');
+    // 1. 從 sidebar 動態複製 nav 結構到 drawer-body
+    syncDrawerFromSidebar();
+
+    // 2. 綁開關
+    const burger = document.getElementById('adMobileBurger');
+    const closeBtn = document.getElementById('adDrawerClose');
+    const overlay = document.getElementById('adDrawerOverlay');
+    const drawer = document.getElementById('adDrawer');
+
+    if (burger && drawer && overlay) {
+      burger.addEventListener('click', () => {
+        drawer.classList.add('is-open');
+        overlay.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      });
+      const closeIt = () => {
+        drawer.classList.remove('is-open');
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+      };
+      closeBtn?.addEventListener('click', closeIt);
+      overlay.addEventListener('click', closeIt);
+
+      // 點 drawer 內 nav 也關
+      drawer.querySelectorAll('.drawer-item[data-page]').forEach(item => {
+        item.addEventListener('click', () => {
+          goTo(item.dataset.page);
+          closeIt();
+        });
+      });
+    }
+  }
+
+  // 把 sidebar 的 nav-section 動態 mirror 到 drawer-body
+  function syncDrawerFromSidebar() {
+    const drawerBody = document.getElementById('adDrawerBody');
     const sidebar = root.querySelector('.sidebar');
-    if (!btn || !sidebar) return;
-    btn.addEventListener('click', () => {
-      sidebar.classList.toggle('is-open');
+    if (!drawerBody || !sidebar) return;
+
+    let html = '';
+    sidebar.querySelectorAll('.nav-section').forEach(sec => {
+      const label = sec.querySelector('.nav-section-label')?.textContent?.trim() || '';
+      let groupHtml = `<div class="drawer-group">`;
+      if (label) groupHtml += `<div class="drawer-group-label">${escapeHtml(label)}</div>`;
+
+      sec.querySelectorAll('.nav-link[data-page]').forEach(link => {
+        const page = link.dataset.page;
+        const isOn = link.classList.contains('on');
+        const iconEl = link.querySelector('i');
+        const iconCls = iconEl?.className || 'fa-regular fa-circle';
+        const text = link.querySelector('span')?.textContent?.trim() || '';
+        const badge = link.querySelector('.badge');
+        const badgeHtml = badge
+          ? `<span class="drawer-badge" data-page-badge="${page}" data-count="${badge.textContent || '0'}">${escapeHtml(badge.textContent || '0')}</span>`
+          : '';
+
+        groupHtml += `
+          <button class="drawer-item ${isOn ? 'on' : ''}" data-page="${page}">
+            <i class="${iconCls}"></i>
+            <span>${escapeHtml(text)}</span>
+            ${badgeHtml}
+            <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+          </button>`;
+      });
+
+      groupHtml += '</div>';
+      html += groupHtml;
     });
-    // 點 sidebar 外部關閉
-    sidebar.addEventListener('click', (e) => {
-      // 點到 sidebar 自己 (不是內容) 關閉
-      if (e.target === sidebar) sidebar.classList.remove('is-open');
+
+    drawerBody.innerHTML = html;
+  }
+
+  // 同步 active 狀態 (goTo 時呼叫)
+  function syncDrawerActive(page) {
+    const drawer = document.getElementById('adDrawer');
+    if (!drawer) return;
+    drawer.querySelectorAll('.drawer-item').forEach(item => {
+      item.classList.toggle('on', item.dataset.page === page);
     });
-    // 點 nav-link 關閉
-    sidebar.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', () => sidebar.classList.remove('is-open'));
-    });
+  }
+
+  // 同步 badge 數字 (refreshReviewCounts 後呼叫)
+  function syncDrawerBadge(page, count) {
+    const el = document.querySelector(`[data-page-badge="${page}"]`);
+    if (!el) return;
+    el.textContent = String(count);
+    el.dataset.count = String(count);
   }
 
   function fillDashboardDate() {
