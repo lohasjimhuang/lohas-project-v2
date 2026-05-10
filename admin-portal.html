@@ -22,10 +22,10 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260510-1044">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260510-1044">
-  <link rel="stylesheet" href="css/upload.css?v=20260510-1044">
-  <link rel="stylesheet" href="css/admin-portal.css?v=20260510-1044">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260510-1101">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260510-1101">
+  <link rel="stylesheet" href="css/upload.css?v=20260510-1101">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260510-1101">
 
 </head>
 <body>
@@ -468,8 +468,8 @@
         <label style="margin-left:14px">狀態</label>
         <select id="creatorsFilterStatus">
           <option value="all">全部</option>
-          <option value="active">啟用</option>
-          <option value="inactive">停用</option>
+          <option value="active">顯示中</option>
+          <option value="inactive">已隱藏</option>
         </select>
         <div class="spacer"></div>
         <button class="action-btn-solid" id="creatorsAddBtn"><i class="fa-solid fa-plus"></i>新增創作者</button>
@@ -760,13 +760,13 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js?v=20260510-1044"></script>
-<script src="js/auth.js?v=20260510-1044"></script>
-<script src="js/supabase.js?v=20260510-1044"></script>
-<script src="js/cropper-helper.js?v=20260510-1044"></script>
+<script src="js/utils.js?v=20260510-1101"></script>
+<script src="js/auth.js?v=20260510-1101"></script>
+<script src="js/supabase.js?v=20260510-1101"></script>
+<script src="js/cropper-helper.js?v=20260510-1101"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js?v=20260510-1044"></script>
+<script src="js/admin-portal.js?v=20260510-1101"></script>
 
 </body>
 </html>
