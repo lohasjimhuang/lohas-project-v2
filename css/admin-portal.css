@@ -102,7 +102,7 @@
 }
 
 .ad .nav-section{ padding:0 12px; margin-bottom:12px }
-.ad .nav-section:first-of-type{ padding-top:18px }
+.ad .nav-section:first-of-type{ padding-top:28px }
 .ad .nav-section-label{
   font-size:10px; letter-spacing:2px;
   color:var(--lohas-mute); font-weight:600;
