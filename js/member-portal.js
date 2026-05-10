@@ -351,6 +351,16 @@
         rejectBadge.style.display = 'none';
       }
     }
+    // 同步 drawer 紅標
+    const drawerBadge = document.getElementById('photoRejectBadgeDrawer');
+    if (drawerBadge) {
+      if (unackedRejected.length > 0) {
+        drawerBadge.textContent = unackedRejected.length;
+        drawerBadge.style.display = 'inline-flex';
+      } else {
+        drawerBadge.style.display = 'none';
+      }
+    }
 
     // 更新 tab 計數
     updateShareTabCounts();
@@ -540,6 +550,16 @@
         rejectBadge.style.display = 'inline-flex';
       } else {
         rejectBadge.style.display = 'none';
+      }
+      // 同步 drawer
+      const drawerBadge = document.getElementById('photoRejectBadgeDrawer');
+      if (drawerBadge) {
+        if (unackedRejected.length > 0) {
+          drawerBadge.textContent = unackedRejected.length;
+          drawerBadge.style.display = 'inline-flex';
+        } else {
+          drawerBadge.style.display = 'none';
+        }
       }
     } catch (err) {
       console.warn('[refreshPhotoRejectBadge]', err);
@@ -2175,6 +2195,8 @@
     if (page === 'shares') {
       const badge = document.getElementById('photoRejectBadge');
       if (badge) badge.style.display = 'none';
+      const badgeDrawer = document.getElementById('photoRejectBadgeDrawer');
+      if (badgeDrawer) badgeDrawer.style.display = 'none';
     }
 
     root.querySelector('.main').scrollTop = 0;
