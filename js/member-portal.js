@@ -1915,6 +1915,14 @@
       n.addEventListener('click', () => goTo(n.dataset.page));
     });
 
+    // 麵包屑「會員中心」點擊跳首頁
+    document.querySelectorAll('[data-jump-page]').forEach(el => {
+      el.addEventListener('click', e => {
+        e.preventDefault();
+        goTo(el.dataset.jumpPage);
+      });
+    });
+
     // 快捷功能跳轉
     root.querySelectorAll('.shortcut-card[data-jump]').forEach(c => {
       c.addEventListener('click', () => goTo(c.dataset.jump));
@@ -2076,9 +2084,11 @@
       p.classList.toggle('on', p.dataset.page === page);
     });
 
-    // 同步麵包屑
+    // 同步麵包屑 (電腦版 + 手機版)
     const bc = document.getElementById('mpBreadcrumbCurrent');
     if (bc) bc.textContent = pageTitles[page] || '';
+    const bcM = document.getElementById('mpMobileBreadcrumbCurrent');
+    if (bcM) bcM.textContent = pageTitles[page] || '';
 
     // 進入頁面時延遲載入該頁資料
     if (page === 'shares') {

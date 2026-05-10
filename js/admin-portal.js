@@ -146,7 +146,7 @@
      ============================================================= */
 
   const pageTitles = {
-    'dashboard': '儀表板',
+    'dashboard': '首頁',
     'review-designs': '刻圖審核',
     'review-uploads': '上傳審核',
     'cm-banner': '首頁與分頁 Banner',
@@ -198,6 +198,11 @@
     });
     root.querySelectorAll('[data-jump]').forEach(a => {
       a.addEventListener('click', () => goTo(a.dataset.jump));
+    });
+    // 麵包屑「樂活管理後台」點擊跳首頁
+    document.getElementById('adBcHome')?.addEventListener('click', e => {
+      e.preventDefault();
+      goTo('dashboard');
     });
   }
 
