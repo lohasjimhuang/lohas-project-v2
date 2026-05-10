@@ -1837,7 +1837,7 @@ body {
     position:relative;
   }
   .mp .mp-mobile-logo{
-    height:32px;
+    height:40px;
     width:auto;
     margin:0 auto;
   }
@@ -2341,7 +2341,10 @@ body {
 
 
 @media (max-width: 500px) {
-  .mp .photo-grid,
+  .mp .photo-grid{
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+  }
   .mp .inspo-list,
   .mp .design-list,
   .mp .wish-list{

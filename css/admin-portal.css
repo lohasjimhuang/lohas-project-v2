@@ -568,6 +568,11 @@
   outline:none;
 }
 .ad .filter-row .spacer{ flex:1 }
+.ad .filter-row .filter-group{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
 .ad .filter-info{
   font-size:11px; color:var(--lohas-mute);
   letter-spacing:0.3px;
@@ -2231,16 +2236,28 @@
     flex-wrap:wrap;
     gap:8px;
   }
-  .ad .filter-row label{
-    margin-left:0 !important;
-    font-size:11.5px;
+  .ad .filter-row > .editor-input{
+    flex:1 1 100%;
+    max-width:none !important;
   }
-  .ad .filter-row .editor-input,
-  .ad .filter-row select{
+  /* 「類型 [select]」 兩個一組成一行 */
+  .ad .filter-row .filter-group{
     flex:1 1 calc(50% - 4px);
+    display:flex;
+    align-items:center;
+    gap:6px;
     min-width:0;
   }
-  .ad .filter-row .spacer{ flex:0 0 0 }
+  .ad .filter-row .filter-group label{
+    font-size:11.5px;
+    flex-shrink:0;
+    color:var(--lohas-mute);
+  }
+  .ad .filter-row .filter-group select{
+    flex:1;
+    min-width:0;
+  }
+  .ad .filter-row .spacer{ display:none }
   .ad .filter-row .action-btn-solid{
     flex:1 1 100%;
   }
@@ -2317,5 +2334,15 @@
   .ag-modal-body .editor-input,
   .ag-modal-body .editor-area{
     max-width:100%;
+  }
+}
+
+/* drawer 登出按鈕 (紅色) */
+@media (max-width:768px){
+  .ad-drawer-body .drawer-item.drawer-logout{
+    color:var(--status-rejected);
+  }
+  .ad-drawer-body .drawer-item.drawer-logout > i:first-child{
+    color:var(--status-rejected);
   }
 }
