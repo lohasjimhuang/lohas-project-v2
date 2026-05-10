@@ -154,40 +154,28 @@
     'admin-upload': '樂活官方上傳',
     'users': '會員列表',
     'creators': '創作者管理',
-    'admin-grant-creator': '新增創作者個人頁',
     'ip': 'IP 合作'
   };
 
   function goTo(page, opts) {
     opts = opts || {};
-    // 離開「新增/編輯創作者個人頁」時自動清空表單
-    const currentActive = root.querySelector('.content-page.on');
-    const currentPage = currentActive?.dataset?.page;
-    if (currentPage === 'admin-grant-creator' && page !== 'admin-grant-creator') {
-      try { agReset(); } catch (e) {}
+
+    // 「新增創作者個人頁」改成: 跳到 creators 頁 + 打開 Modal
+    if (page === 'admin-grant-creator') {
+      goTo('creators');  // 點亮創作者管理 + 顯示列表
+      setTimeout(() => openCreatorModal(null), 100);  // 開新增 Modal
+      return;
     }
 
     root.querySelectorAll('.nav-link').forEach(x => x.classList.remove('on'));
-
-    // 編輯模式下不點亮「新增」, 反而點亮「創作者管理」
-    if (opts.editMode && page === 'admin-grant-creator') {
-      const creatorsNav = root.querySelector('.nav-link[data-page="creators"]');
-      if (creatorsNav) creatorsNav.classList.add('on');
-    } else {
-      const navLink = root.querySelector(`.nav-link[data-page="${page}"]`);
-      if (navLink) navLink.classList.add('on');
-    }
+    const navLink = root.querySelector(`.nav-link[data-page="${page}"]`);
+    if (navLink) navLink.classList.add('on');
 
     root.querySelectorAll('.content-page').forEach(p => {
       p.classList.toggle('on', p.dataset.page === page);
     });
 
-    // breadcrumb
-    if (opts.editMode && opts.editName) {
-      Utils.setText('#breadcrumbCurrent', `創作者管理 › 編輯：${opts.editName}`);
-    } else {
-      Utils.setText('#breadcrumbCurrent', pageTitles[page] || '');
-    }
+    Utils.setText('#breadcrumbCurrent', pageTitles[page] || '');
 
     // 進入頁面時觸發載入
     if (page === 'dashboard') { loadDashboard(); refreshReviewCounts(); }
@@ -196,7 +184,6 @@
     if (page === 'review-uploads') { loadReviewUploads(); refreshReviewCounts(); }
     if (page === 'cm-news') loadNews();
     if (page === 'admin-upload') { initAdminUpload(); loadAdminUploadHistory(); }
-    if (page === 'admin-grant-creator') initGrantCreator();
     if (page === 'creators') loadCreatorsList();
 
     root.querySelector('.main').scrollTop = 0;
@@ -2174,19 +2161,9 @@
       cbList.innerHTML = '<p class="empty-text" style="padding:30px 20px;font-size:12px">點上方「新增區塊」加入自訂的圖文段落</p>';
     }
 
-    // 還原 page 標題與按鈕文字
-    const pageTitle = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-title');
-    const pageSub = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-sub');
-    if (pageTitle) pageTitle.textContent = '新增創作者個人頁';
-    if (pageSub) pageSub.textContent = '建立獨立的創作者個人頁 · 預設名稱「LOHAS 企劃部」 · 可重複新增';
-
-    // 還原 page-head 顯示 (編輯模式時被藏起來)
-    const pageHead = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-head');
-    if (pageHead) {
-      pageHead.style.display = '';
-      pageHead.classList.remove('is-editing');
-      pageHead.querySelector('.ag-back-btn')?.remove();
-    }
+    // 還原 Modal 標題 (編輯/新增切換)
+    const modalTitle = document.getElementById('agModalTitle');
+    if (modalTitle) modalTitle.textContent = '新增創作者個人頁';
 
     const saveBtn = document.getElementById('agSaveBtn');
     if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-user-plus"></i><span>建立創作者</span>';
@@ -2355,7 +2332,16 @@
       // 編輯模式儲存後自動清空 (回到新增模式)
       // 新增模式保留網址卡讓使用者複製
       if (isEdit) {
-        setTimeout(() => agReset(), 100);
+        setTimeout(() => {
+          closeCreatorModal();
+          loadCreatorsList();  // 重新載入列表
+        }, 100);
+      } else {
+        // 新增成功也關 Modal + reload
+        setTimeout(() => {
+          closeCreatorModal();
+          loadCreatorsList();
+        }, 100);
       }
 
     } catch (err) {
@@ -2387,6 +2373,7 @@
       document.getElementById('creatorsFilterType')?.addEventListener('change', applyCreatorsFilter);
       document.getElementById('creatorsFilterStatus')?.addEventListener('change', applyCreatorsFilter);
       document.getElementById('creatorsRefresh')?.addEventListener('click', loadCreatorsList);
+      document.getElementById('creatorsAddBtn')?.addEventListener('click', () => openCreatorModal(null));
     }
 
     const { data, error } = await sb
@@ -2545,7 +2532,6 @@
     if (!sb) return;
 
     try {
-      // 取完整資料
       const { data, error } = await sb
         .from('creator_info')
         .select('*')
@@ -2557,25 +2543,60 @@
         return;
       }
 
-      // 跳到「新增創作者個人頁」並進入編輯模式
-      goTo('admin-grant-creator', { editMode: true, editName: data.display_name || data.member_id });
-
-      // 等頁面渲染好後再預填 (先 reset 再 prefill 避免殘留)
-      setTimeout(() => {
-        try {
-          agReset();
-          prefillCreatorForm(data);
-          // 滾到頂端讓使用者看到變化
-          root.querySelector('.main')?.scrollTo({ top: 0, behavior: 'smooth' });
-        } catch (err) {
-          console.error('[預填表單失敗]', err);
-          alert('預填表單時發生錯誤: ' + (err.message || err));
-        }
-      }, 150);
+      // 直接打開 Modal 並預填
+      openCreatorModal(data);
 
     } catch (err) {
       console.error('[編輯創作者失敗]', err);
       alert('載入失敗: ' + (err.message || err));
+    }
+  }
+
+  // 統一的開 Modal 函式 (新增 + 編輯共用)
+  function openCreatorModal(creatorData) {
+    const overlay = document.getElementById('agModalOverlay');
+    const title = document.getElementById('agModalTitle');
+    if (!overlay || !title) return;
+
+    // 確保事件已綁
+    initGrantCreator();
+    initAgModalHandlers();
+
+    // 重置 + 預填
+    agReset();
+    if (creatorData) {
+      // 編輯模式
+      title.textContent = `編輯創作者:${creatorData.display_name || creatorData.member_id}`;
+      prefillCreatorForm(creatorData);
+    } else {
+      // 新增模式
+      title.textContent = '新增創作者個人頁';
+    }
+
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCreatorModal() {
+    const overlay = document.getElementById('agModalOverlay');
+    if (overlay) overlay.style.display = 'none';
+    document.body.style.overflow = '';
+    agReset();
+  }
+
+  function initAgModalHandlers() {
+    const overlay = document.getElementById('agModalOverlay');
+    const closeBtn = document.getElementById('agModalClose');
+    if (overlay && !overlay.dataset.bound) {
+      overlay.dataset.bound = '1';
+      // 點背景關閉
+      overlay.addEventListener('click', e => {
+        if (e.target === overlay) closeCreatorModal();
+      });
+    }
+    if (closeBtn && !closeBtn.dataset.bound) {
+      closeBtn.dataset.bound = '1';
+      closeBtn.addEventListener('click', closeCreatorModal);
     }
   }
 
@@ -2631,13 +2652,7 @@
       });
     }
 
-    // 編輯模式: 整個 page-head 隱藏 (返回按鈕 + 標題 + ID 都不要)
-    const pageHead = root.querySelector('.content-page[data-page="admin-grant-creator"] .page-head');
-    if (pageHead) {
-      pageHead.style.display = 'none';
-    }
-
-    // 改按鈕文字
+    // 編輯模式: 改按鈕文字
     const saveBtn = document.getElementById('agSaveBtn');
     if (saveBtn) saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i><span>儲存變更</span>';
   }
