@@ -22,23 +22,15 @@
     }
   </style>
   <!-- LOHAS CSS · 載入順序: tokens → base → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260510-1112">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260510-1112">
-  <link rel="stylesheet" href="css/upload.css?v=20260510-1112">
-  <link rel="stylesheet" href="css/admin-portal.css?v=20260510-1112">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260510-1210">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260510-1210">
+  <link rel="stylesheet" href="css/upload.css?v=20260510-1210">
+  <link rel="stylesheet" href="css/admin-portal.css?v=20260510-1210">
 
 </head>
 <body>
 
 <div class="ad" id="ad">
-
-<!-- ====== 手機版獨立 Header (只在手機顯示) ====== -->
-<header class="ad-mobile-header">
-  <img class="ad-mobile-logo" src="images/lohas-logo.svg" alt="LOHAS">
-  <button type="button" class="ad-mobile-burger" id="adMobileBurger" aria-label="選單">
-    <i class="fa-solid fa-bars"></i>
-  </button>
-</header>
 
 <!-- ====== 手機版抽屜選單 ====== -->
 <div class="ad-drawer-overlay" id="adDrawerOverlay"></div>
@@ -131,6 +123,9 @@
         <input placeholder="搜尋會員、設計、故事..."/>
       </div>
       <a class="icon-btn-lg" id="btnOpenFront" href="index.html" target="_blank" title="在新分頁打開樂活官網"><i class="fa-solid fa-up-right-from-square"></i></a>
+      <button type="button" class="ad-mobile-burger" id="adMobileBurger" aria-label="選單">
+        <i class="fa-solid fa-bars"></i>
+      </button>
     </div>
   </div>
 
@@ -781,13 +776,13 @@
 </div>
 
 <!-- ====== 依賴 (按順序載入) ====== -->
-<script src="js/utils.js?v=20260510-1112"></script>
-<script src="js/auth.js?v=20260510-1112"></script>
-<script src="js/supabase.js?v=20260510-1112"></script>
-<script src="js/cropper-helper.js?v=20260510-1112"></script>
+<script src="js/utils.js?v=20260510-1210"></script>
+<script src="js/auth.js?v=20260510-1210"></script>
+<script src="js/supabase.js?v=20260510-1210"></script>
+<script src="js/cropper-helper.js?v=20260510-1210"></script>
 
 <!-- 後台主邏輯 -->
-<script src="js/admin-portal.js?v=20260510-1112"></script>
+<script src="js/admin-portal.js?v=20260510-1210"></script>
 
 </body>
 </html>
