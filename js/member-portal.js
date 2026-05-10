@@ -2055,6 +2055,18 @@
     });
   }
 
+  const pageTitles = {
+    'home': '首頁',
+    'inspo': '我的靈感',
+    'wishlist': '想刻清單',
+    'shares': '我的分享',
+    'my-designs': '我的刻圖設計',
+    'creator-page': '創作者個人頁',
+    'analytics': '創作數據',
+    'earnings': '分潤紀錄',
+    'profile': '會員資料'
+  };
+
   function goTo(page) {
     root.querySelectorAll('.nav-link').forEach(x => x.classList.remove('on'));
     const navLink = root.querySelector(`.nav-link[data-page="${page}"]`);
@@ -2063,6 +2075,10 @@
     root.querySelectorAll('.content-page').forEach(p => {
       p.classList.toggle('on', p.dataset.page === page);
     });
+
+    // 同步麵包屑
+    const bc = document.getElementById('mpBreadcrumbCurrent');
+    if (bc) bc.textContent = pageTitles[page] || '';
 
     // 進入頁面時延遲載入該頁資料
     if (page === 'shares') {
