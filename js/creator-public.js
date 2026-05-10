@@ -36,11 +36,17 @@
     // 抓創作者資料 (creator_info 是主要來源, members 表不在 Supabase 內)
     const { data: creatorInfo } = await sb
       .from('creator_info')
-      .select('display_name, bio, avatar_url, social_links, joining_story, joining_photo_url, video_url, video_title, tagline, custom_blocks')
+      .select('display_name, bio, avatar_url, social_links, joining_story, joining_photo_url, video_url, video_title, tagline, custom_blocks, status')
       .eq('member_id', erpid)
       .maybeSingle();
 
     if (!creatorInfo) { showError('此會員尚未開通創作者'); return; }
+
+    // 隱藏狀態 (status != 'active') → 自動 redirect 到刻圖市集
+    if (creatorInfo.status && creatorInfo.status !== 'active') {
+      window.location.replace('market.html');
+      return;
+    }
 
     // member 直接用 erpid 跟 creator_info.display_name 組成
     const member = { erpid, name: creatorInfo.display_name || erpid };

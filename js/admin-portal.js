@@ -2430,7 +2430,7 @@
             <div class="creator-card-name-row">
               <span class="creator-card-name">${escapeHtml(c.display_name || '未命名')}</span>
               ${isVirt ? '<span class="creator-card-tag virt">獨立創作者</span>' : '<span class="creator-card-tag">會員</span>'}
-              ${isSuspended ? '<span class="creator-card-tag suspended">停用</span>' : ''}
+              ${isSuspended ? '<span class="creator-card-tag suspended">已隱藏</span>' : ''}
             </div>
             <div class="creator-card-meta">
               <code>${escapeHtml(c.member_id)}</code>
@@ -2446,7 +2446,7 @@
               <i class="fa-regular fa-pen-to-square"></i>編輯
             </button>
             <button class="btn ${isSuspended ? '' : 'warn'}" data-act="toggle-status" data-id="${escapeHtml(c.member_id)}" data-current="${c.status}">
-              <i class="fa-solid ${isSuspended ? 'fa-circle-check' : 'fa-pause'}"></i>${isSuspended ? '啟用' : '停用'}
+              <i class="fa-solid ${isSuspended ? 'fa-eye' : 'fa-eye-slash'}"></i>${isSuspended ? '顯示' : '隱藏'}
             </button>
             <button class="btn danger" data-act="delete" data-id="${escapeHtml(c.member_id)}" data-name="${escapeHtml(c.display_name || '')}">
               <i class="fa-regular fa-trash-can"></i>刪除
@@ -2502,7 +2502,14 @@
   }
 
   async function toggleCreatorStatus(memberId, current) {
-    const newStatus = current === 'active' ? 'inactive' : 'active';
+    const isHiding = current === 'active';
+    const newStatus = isHiding ? 'inactive' : 'active';
+    const action = isHiding ? '隱藏' : '顯示';
+    const tip = isHiding
+      ? '隱藏後創作者個人頁網址將自動導向刻圖市集'
+      : '顯示後將恢復公開可見';
+    if (!confirm(`確定要${action}此創作者?\n\n${tip}`)) return;
+
     const sb = getSb();
     if (!sb) return;
 
