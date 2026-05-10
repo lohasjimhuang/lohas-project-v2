@@ -9,13 +9,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
   <!-- LOHAS CSS · 載入順序: tokens → components → page -->
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260510-1246">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260510-1246">
-  <link rel="stylesheet" href="css/member-portal.css?v=20260510-1246">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260510-1300">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260510-1300">
+  <link rel="stylesheet" href="css/member-portal.css?v=20260510-1300">
 
   <!-- 上傳 modal 所需資源 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
-  <link rel="stylesheet" href="css/upload.css?v=20260510-1246">
+  <link rel="stylesheet" href="css/upload.css?v=20260510-1300">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 </head>
 <body>
@@ -24,21 +24,14 @@
 
   <!-- ====== 手機版獨立 Header (只在手機顯示) ====== -->
   <header class="mp-mobile-header">
-    <img class="mp-mobile-logo" src="images/lohas-logo.svg" alt="LOHAS">
     <button type="button" class="mp-mobile-burger" id="mpMobileBurger" aria-label="選單">
       <i class="fa-solid fa-bars"></i>
     </button>
+    <img class="mp-mobile-logo" src="images/lohas-logo.svg" alt="LOHAS">
+    <a class="mp-mobile-front" href="index.html" target="_blank" title="在新分頁打開樂活官網">
+      <i class="fa-solid fa-up-right-from-square"></i>
+    </a>
   </header>
-
-  <!-- ====== 手機版麵包屑 ====== -->
-  <div class="mp-mobile-breadcrumb">
-    <div class="mp-breadcrumb-text">
-      <a href="#" class="mp-bc-home" data-jump-page="home">會員中心</a>
-      &nbsp;›&nbsp;
-      <b id="mpMobileBreadcrumbCurrent">首頁</b>
-    </div>
-    <a class="icon-btn-lg" href="index.html" target="_blank" title="在新分頁打開樂活官網"><i class="fa-solid fa-up-right-from-square"></i></a>
-  </div>
 
   <!-- ====== 手機版抽屜選單 ====== -->
   <div class="mp-drawer-overlay" id="mpDrawerOverlay"></div>
@@ -159,16 +152,6 @@
       <button class="nav-link" id="logout-btn-sidebar"><i class="fa-solid fa-arrow-right-from-bracket"></i><span>登出</span></button>
     </div>
   </aside>
-
-  <!-- ====== 麵包屑 (Hero 上方) ====== -->
-  <div class="mp-breadcrumb">
-    <div class="mp-breadcrumb-text">
-      <a href="#" class="mp-bc-home" data-jump-page="home">會員中心</a>
-      &nbsp;›&nbsp;
-      <b id="mpBreadcrumbCurrent">首頁</b>
-    </div>
-    <a class="icon-btn-lg" id="mpBtnOpenFront" href="index.html" target="_blank" title="在新分頁打開樂活官網"><i class="fa-solid fa-up-right-from-square"></i></a>
-  </div>
 
   <!-- ====== Hero (跟 sidebar / main 同層, 用 grid 對齊) ====== -->
   <div class="hero">
@@ -705,12 +688,12 @@
 
 <!-- ====== 依賴 (按順序載入) ====== -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/utils.js?v=20260510-1246"></script>
-<script src="js/auth.js?v=20260510-1246"></script>
-<script src="js/supabase.js?v=20260510-1246"></script>
-<script src="js/cropper-helper.js?v=20260510-1246"></script>
-<script src="js/member-portal.js?v=20260510-1246"></script>
-<script src="js/upload.js?v=20260510-1246"></script>
+<script src="js/utils.js?v=20260510-1300"></script>
+<script src="js/auth.js?v=20260510-1300"></script>
+<script src="js/supabase.js?v=20260510-1300"></script>
+<script src="js/cropper-helper.js?v=20260510-1300"></script>
+<script src="js/member-portal.js?v=20260510-1300"></script>
+<script src="js/upload.js?v=20260510-1300"></script>
 
 </body>
 </html>
