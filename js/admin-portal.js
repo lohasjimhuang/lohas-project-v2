@@ -2399,12 +2399,14 @@
           <div class="ag-success-label">創作者個人頁網址</div>
           <div class="ag-success-url-row">
             <a class="ag-success-url" href="${creatorUrl}" target="_blank" rel="noopener">${escapeHtml(creatorUrl)}</a>
-            <button type="button" class="ag-copy-btn" data-url="${escapeHtml(creatorUrl)}">
-              <i class="fa-regular fa-copy"></i>複製
-            </button>
-            <a class="ag-copy-btn" href="${creatorUrl}" target="_blank" rel="noopener" style="text-decoration:none">
-              <i class="fa-solid fa-arrow-up-right-from-square"></i>開啟
-            </a>
+            <div class="ag-success-btn-group">
+              <button type="button" class="ag-copy-btn" data-url="${escapeHtml(creatorUrl)}">
+                <i class="fa-regular fa-copy"></i>複製
+              </button>
+              <a class="ag-copy-btn" href="${creatorUrl}" target="_blank" rel="noopener" style="text-decoration:none">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>開啟
+              </a>
+            </div>
           </div>
           <div class="ag-success-hint">創作者 ID: <code>${escapeHtml(finalId)}</code></div>
         </div>`;
