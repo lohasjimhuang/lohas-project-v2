@@ -2699,6 +2699,12 @@
       closeBtn.dataset.bound = '1';
       closeBtn.addEventListener('click', closeCreatorModal);
     }
+    // 底部右下「關閉」按鈕
+    const closeBottom = document.getElementById('agModalCloseBottom');
+    if (closeBottom && !closeBottom.dataset.bound) {
+      closeBottom.dataset.bound = '1';
+      closeBottom.addEventListener('click', closeCreatorModal);
+    }
   }
 
   function prefillCreatorForm(c) {
