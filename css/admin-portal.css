@@ -2179,16 +2179,15 @@
     color:#fff;
     font-size:10px;
     font-weight:700;
-    padding:2px 8px;
-    border-radius:999px;
-    line-height:1.4;
+    padding:0;
+    border-radius:50%;
+    line-height:1;
     margin-right:6px;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    min-width:20px;
-    text-align:center;
-    letter-spacing:0.3px;
+    width:18px;
+    height:18px;
     flex-shrink:0;
   }
   .ad-drawer-body .drawer-item .drawer-badge[data-count="0"]{
