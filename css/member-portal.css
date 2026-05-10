@@ -165,7 +165,7 @@ body {
 }
 
 .mp .nav-section{ padding:0 14px; margin-bottom:14px; border:0 }
-.mp .nav-section:first-of-type{ padding-top:14px }
+.mp .nav-section:first-of-type{ padding-top:28px }
 .mp .nav-section + .nav-section,
 .mp .become-creator + .nav-section{
   position:relative;
