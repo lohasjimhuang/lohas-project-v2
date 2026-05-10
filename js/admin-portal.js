@@ -2388,10 +2388,10 @@
       const creatorUrl = `${window.location.origin}${window.location.pathname.replace('admin-portal.html', 'creator-public.html')}?id=${finalId}`;
       const successPrefix = isEdit ? '✓ 已儲存「' : '✓ 已建立創作者「';
 
-      // 跳出 alert 提示
+      // 跳出 alert 提示 (手機 alert 太長會卡, 用簡短版)
       const alertMsg = isEdit
         ? `已儲存對「${display_name}」的變更`
-        : `已建立創作者「${display_name}」\n\n網址:\n${creatorUrl}`;
+        : `已建立創作者「${display_name}」\n\n網址已顯示在下方,可複製或開啟`;
       alert(alertMsg);
       hint.innerHTML = `
         ${successPrefix}<b>${escapeHtml(display_name)}</b>」<br>
@@ -2431,6 +2431,11 @@
       // 儲存成功後 Modal 保持開啟 (使用者可看網址 / 繼續調)
       // 但背景列表要重新載入 (才會看到剛新增/編輯的項目)
       loadCreatorsList();
+
+      // 滾到 hint 位置 (手機板 modal scroll 才看得到網址卡)
+      setTimeout(() => {
+        hint.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
 
     } catch (err) {
       hint.style.color = 'var(--status-rejected)';
