@@ -1153,7 +1153,7 @@
   }
 
   /* 內容區 padding */
-  .ad .content{ padding:16px }
+  .ad .content{ padding:14px 8px }
 
   /* page-head */
   .ad .page-head{
@@ -2001,7 +2001,7 @@
     min-height:54px;
   }
   .ad .ad-mobile-logo{
-    height:44px;
+    height:36px;
     width:auto;
   }
   .ad .ad-mobile-front{
