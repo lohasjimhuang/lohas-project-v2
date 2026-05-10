@@ -2770,3 +2770,22 @@ body {
   }
 
 }
+
+/* drawer 紅標 (我的分享駁回) */
+.mp .drawer-item .reject-badge.drawer-reject-badge,
+.mp-drawer .reject-badge{
+  background:var(--status-rejected);
+  color:#fff;
+  font-size:10px;
+  padding:2px 8px;
+  border-radius:999px;
+  font-weight:700;
+  letter-spacing:0.3px;
+  min-width:20px;
+  text-align:center;
+  line-height:1.4;
+  margin-right:6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
