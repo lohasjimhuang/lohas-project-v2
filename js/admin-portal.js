@@ -1734,7 +1734,24 @@
       html += groupHtml;
     });
 
+    // 加最後一組: 登出
+    html += `
+      <div class="drawer-group">
+        <button class="drawer-item drawer-logout" data-action="logout">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <span>登出</span>
+          <i class="fa-solid fa-chevron-right drawer-arrow"></i>
+        </button>
+      </div>`;
+
     drawerBody.innerHTML = html;
+
+    // 綁登出事件
+    drawerBody.querySelector('[data-action="logout"]')?.addEventListener('click', () => {
+      if (!confirm('確定要登出?')) return;
+      if (window.LohasAuth?.logout) window.LohasAuth.logout();
+      window.location.href = 'index.html';
+    });
   }
 
   // 同步 active 狀態 (goTo 時呼叫)
@@ -2511,7 +2528,7 @@
           <div class="creator-card-body">
             <div class="creator-card-name-row">
               <span class="creator-card-name">${escapeHtml(c.display_name || '未命名')}</span>
-              ${isVirt ? '<span class="creator-card-tag virt">獨立創作者</span>' : '<span class="creator-card-tag">會員</span>'}
+              ${isVirt ? '<span class="creator-card-tag virt">樂活官方</span>' : '<span class="creator-card-tag">會員</span>'}
               ${isSuspended ? '<span class="creator-card-tag suspended">已隱藏</span>' : ''}
             </div>
             <div class="creator-card-meta">
