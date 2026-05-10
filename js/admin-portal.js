@@ -2329,20 +2329,9 @@
         });
       });
 
-      // 編輯模式儲存後自動清空 (回到新增模式)
-      // 新增模式保留網址卡讓使用者複製
-      if (isEdit) {
-        setTimeout(() => {
-          closeCreatorModal();
-          loadCreatorsList();  // 重新載入列表
-        }, 100);
-      } else {
-        // 新增成功也關 Modal + reload
-        setTimeout(() => {
-          closeCreatorModal();
-          loadCreatorsList();
-        }, 100);
-      }
+      // 儲存成功後 Modal 保持開啟 (使用者可看網址 / 繼續調)
+      // 但背景列表要重新載入 (才會看到剛新增/編輯的項目)
+      loadCreatorsList();
 
     } catch (err) {
       hint.style.color = 'var(--status-rejected)';
@@ -2372,7 +2361,6 @@
       document.getElementById('creatorsSearchInput')?.addEventListener('input', applyCreatorsFilter);
       document.getElementById('creatorsFilterType')?.addEventListener('change', applyCreatorsFilter);
       document.getElementById('creatorsFilterStatus')?.addEventListener('change', applyCreatorsFilter);
-      document.getElementById('creatorsRefresh')?.addEventListener('click', loadCreatorsList);
       document.getElementById('creatorsAddBtn')?.addEventListener('click', () => openCreatorModal(null));
     }
 
