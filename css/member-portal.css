@@ -150,7 +150,20 @@ body {
 }
 
 .mp .nav-section{ padding:0 14px; margin-bottom:14px; border:0 }
-.mp .nav-section:first-of-type{ padding-top:40px }
+.mp .nav-section:first-of-type{ padding-top:28px }
+.mp .nav-section + .nav-section,
+.mp .become-creator + .nav-section{
+  position:relative;
+  padding-top:14px;
+}
+.mp .nav-section + .nav-section::before,
+.mp .become-creator + .nav-section::before{
+  content:"";
+  display:block;
+  height:1px;
+  background:var(--lohas-line);
+  margin:0 0 14px;
+}
 .mp .nav-section-label{
   font-size:10px; letter-spacing:2px;
   color:var(--lohas-mute); font-weight:600;
@@ -2371,5 +2384,33 @@ body {
     flex-direction:column;
     align-items:flex-start;
     text-align:left;
+  }
+}
+
+/* =============================================================
+   會員中心 麵包屑 topbar
+   ============================================================= */
+
+.mp .topbar{
+  background:#fff;
+  border-bottom:1px solid var(--lohas-line);
+  padding:14px 28px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:18px;
+}
+.mp .breadcrumb{
+  font-size:12px;
+  color:var(--lohas-mute);
+  letter-spacing:0.5px;
+}
+.mp .breadcrumb b{
+  color:var(--lohas-text);
+  font-weight:600;
+}
+
+/* 手機版 - topbar 砍掉 (用獨立 mobile-header 取代) */
+@media (max-width:900px){
+  .mp .topbar{
+    display:none;
   }
 }
