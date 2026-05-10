@@ -1837,7 +1837,7 @@ body {
     position:relative;
   }
   .mp .mp-mobile-logo{
-    height:44px;
+    height:32px;
     width:auto;
     margin:0 auto;
   }
@@ -2405,3 +2405,45 @@ body {
 }
 
 /* 麵包屑已移除 */
+
+/* =============================================================
+   手機版 - 防爆框保護 (padding 6px 後容易爆)
+   ============================================================= */
+
+@media (max-width:900px){
+  /* 容器溢位保護 */
+  .mp .content,
+  .mp .content-page{
+    max-width:100%;
+    overflow-x:hidden;
+  }
+
+  /* 卡片內 ID/長 token 強制換行 */
+  .mp code,
+  .mp .meta-id{
+    word-break:break-all;
+  }
+
+  /* 通用卡片不爆 */
+  .mp .panel,
+  .mp .ig-card,
+  .mp .share-card,
+  .mp .design-card,
+  .mp .inspo-card,
+  .mp .creator-card,
+  .mp .earnings-card{
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  /* 標題保護 */
+  .mp h1, .mp h2, .mp h3, .mp .section-title{
+    word-break:break-word;
+  }
+
+  /* 圖片不爆 */
+  .mp img{
+    max-width:100%;
+    height:auto;
+  }
+}
