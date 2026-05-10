@@ -1984,11 +1984,42 @@
 
 /* 桌機預設隱藏 (手機 media query 內才顯示) */
 .ad .ad-mobile-burger{ display:none; }
+.ad .ad-mobile-header{ display:none; }
 .ad-drawer{ display:none; }
 .ad-drawer-overlay{ display:none; }
 
 @media (max-width:768px){
-  /* topbar 內漢堡按鈕 */
+  /* mobile-header (跳官網 + LOGO + 漢堡) */
+  .ad .ad-mobile-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:10px 14px;
+    background:#fff;
+    border-bottom:1px solid var(--lohas-line);
+    min-height:54px;
+  }
+  .ad .ad-mobile-logo{
+    height:32px;
+    width:auto;
+  }
+  .ad .ad-mobile-front{
+    width:40px; height:40px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--lohas-mute);
+    font-size:14px;
+    border:1px solid var(--lohas-line);
+    border-radius:8px;
+    text-decoration:none;
+    transition:all .15s;
+    flex-shrink:0;
+  }
+  .ad .ad-mobile-front:hover{
+    background:var(--lohas-tip);
+    color:var(--lohas-brown);
+  }
+  /* 漢堡按鈕 */
   .ad .ad-mobile-burger{
     display:flex;
     align-items:center;
