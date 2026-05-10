@@ -2187,13 +2187,31 @@
 
 @media (max-width:900px){
 
-  /* 1. 容器溢位保護 (子層可自行 scroll) */
+  /* 1. 容器溢位保護: 最外層 hidden, table 自己 scroll */
+  body, html{
+    overflow-x:hidden !important;
+  }
+  .ad{
+    max-width:100vw;
+    overflow-x:hidden;
+  }
+  .ad .main{
+    max-width:100%;
+    overflow-x:hidden;
+  }
   .ad .content{
     max-width:100%;
+    overflow-x:hidden;
   }
   .ad .content-page{
     max-width:100%;
     min-width:0;
+    overflow-x:hidden;
+  }
+  /* 但 users-table-wrap 例外, 允許橫向 scroll */
+  .ad .users-table-wrap{
+    overflow-x:auto;
+    overflow-y:hidden;
   }
 
   /* 2. 創作者管理卡片: 橫向 → 直向堆疊 */

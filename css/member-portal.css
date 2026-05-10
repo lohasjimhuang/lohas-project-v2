@@ -2550,3 +2550,14 @@ body {
     text-overflow:ellipsis;
   }
 }
+
+/* 手機板根元素橫向溢位保護 */
+@media (max-width:900px){
+  body, html{
+    overflow-x:hidden !important;
+  }
+  .mp{
+    max-width:100vw;
+    overflow-x:hidden;
+  }
+}
