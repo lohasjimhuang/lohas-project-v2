@@ -1701,6 +1701,8 @@
   padding:1px 6px;
   border-radius:3px;
   border:1px solid var(--lohas-line);
+  word-break:break-all;
+  overflow-wrap:anywhere;
   font-size:10.5px;
   color:var(--lohas-text);
 }
@@ -1959,10 +1961,16 @@
 .ag-modal-body {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px 24px;
+  min-width: 0;
+}
+.ag-modal-body * {
+  max-width: 100%;
 }
 .ag-modal-body .creator-edit-wrap {
   max-width: none;
+  min-width: 0;
 }
 
 @media (max-width: 768px) {
