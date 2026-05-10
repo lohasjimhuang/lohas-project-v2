@@ -1152,11 +1152,82 @@
       State.creatorInfo.custom_blocks = customBlocks;
     }
 
-    alert('已儲存');
+    alert(`已儲存「${dn}」的創作者資料`);
+
+    // 顯示底部 hint 卡 (網址 + 複製/開啟 + ID)
+    const hint = document.getElementById('creatorSaveHint');
+    const creatorUrl = `${window.location.origin}${window.location.pathname.replace('member-portal.html', 'creator-public.html')}?id=${State.member.erpid}`;
+    if (hint) {
+      hint.style.color = 'var(--status-approved)';
+      hint.innerHTML = `
+        ✓ 已儲存「<b>${escapeHtml(dn)}</b>」<br>
+        <div class="ag-success-card">
+          <div class="ag-success-label">創作者個人頁網址</div>
+          <div class="ag-success-url-row">
+            <a class="ag-success-url" href="${creatorUrl}" target="_blank" rel="noopener">${escapeHtml(creatorUrl)}</a>
+            <div class="ag-success-btn-group">
+              <button type="button" class="ag-copy-btn" data-url="${escapeHtml(creatorUrl)}">
+                <i class="fa-regular fa-copy"></i>複製
+              </button>
+              <a class="ag-copy-btn" href="${creatorUrl}" target="_blank" rel="noopener" style="text-decoration:none">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i>開啟
+              </a>
+            </div>
+          </div>
+          <div class="ag-success-hint">創作者 ID: <code>${escapeHtml(State.member.erpid)}</code></div>
+        </div>`;
+
+      // 複製按鈕
+      hint.querySelector('.ag-copy-btn[data-url]')?.addEventListener('click', function() {
+        const url = this.dataset.url;
+        navigator.clipboard?.writeText(url).then(() => {
+          const orig = this.innerHTML;
+          this.innerHTML = '<i class="fa-solid fa-check"></i>已複製';
+          setTimeout(() => { this.innerHTML = orig; }, 2000);
+        }).catch(() => {
+          alert('已複製: ' + url);
+        });
+      });
+
+      // scroll 到 hint
+      setTimeout(() => {
+        hint.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
   }
 
   function bindSaveCreatorInfo() {
     document.getElementById('saveCreatorInfo')?.addEventListener('click', saveCreatorInfo);
+    document.getElementById('creatorResetBtn')?.addEventListener('click', () => {
+      if (!confirm('確定要清空表單?\n\n所有未儲存的變更都會失去')) return;
+      // 清所有欄位
+      ['creatorDisplayName','creatorTagline','creatorBio','creatorJoiningStory','creatorVideoUrl','creatorVideoTitle','creatorIg','creatorFb','creatorLine','creatorEmail'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      // 清緣分照片
+      const jp = document.getElementById('creatorJoiningPhoto');
+      if (jp) jp.value = '';
+      const preview = document.getElementById('creatorJoiningPhotoPreview');
+      if (preview) {
+        preview.style.backgroundImage = '';
+        preview.classList.remove('has-image');
+      }
+      const clearBtn = document.getElementById('creatorJoiningPhotoClear');
+      if (clearBtn) clearBtn.style.display = 'none';
+      // 清自訂區塊
+      const cbList = document.getElementById('customBlocksList');
+      if (cbList) {
+        cbList.innerHTML = '<p class="empty-text" style="padding:30px 20px;font-size:12px">點上方「新增區塊」加入自訂的圖文段落</p>';
+      }
+      // 清 hint
+      const hint = document.getElementById('creatorSaveHint');
+      if (hint) hint.innerHTML = '';
+    });
+    document.getElementById('creatorCloseBtn')?.addEventListener('click', () => {
+      // 關閉 = 跳回首頁
+      goTo('home');
+    });
   }
 
   // 匯款資料 form 顯示 / 隱藏 / 儲存
