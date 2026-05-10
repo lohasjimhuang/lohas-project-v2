@@ -1626,14 +1626,14 @@
 }
 
 /* 新增創作者成功訊息卡片 */
-.ad .ag-success-card{
+.ag-success-card{
   margin-top:14px;
   padding:16px 18px;
   background:var(--lohas-soft);
   border:1px solid var(--lohas-line);
   border-radius:10px;
 }
-.ad .ag-success-label{
+.ag-success-label{
   font-size:10px;
   color:var(--lohas-mute);
   letter-spacing:2px;
@@ -1641,13 +1641,13 @@
   text-transform:uppercase;
   margin-bottom:8px;
 }
-.ad .ag-success-url-row{
+.ag-success-url-row{
   display:flex;
   align-items:center;
   gap:8px;
   flex-wrap:wrap;
 }
-.ad .ag-success-url{
+.ag-success-url{
   flex:1;
   min-width:0;
   padding:8px 12px;
@@ -1663,11 +1663,11 @@
   text-overflow:ellipsis;
   letter-spacing:0;
 }
-.ad .ag-success-url:hover{
+.ag-success-url:hover{
   border-color:var(--lohas-brown);
   background:var(--lohas-tip);
 }
-.ad .ag-copy-btn{
+.ag-copy-btn{
   display:inline-flex;
   align-items:center;
   gap:5px;
@@ -1683,19 +1683,19 @@
   cursor:pointer;
   flex-shrink:0;
 }
-.ad .ag-copy-btn:hover{
+.ag-copy-btn:hover{
   background:var(--lohas-brown);
   color:#fff;
   border-color:var(--lohas-brown);
 }
-.ad .ag-copy-btn i{ font-size:10px }
-.ad .ag-success-hint{
+.ag-copy-btn i{ font-size:10px }
+.ag-success-hint{
   font-size:10.5px;
   color:var(--lohas-mute);
   margin-top:8px;
   letter-spacing:0.3px;
 }
-.ad .ag-success-hint code{
+.ag-success-hint code{
   font-family:monospace;
   background:#fff;
   padding:1px 6px;
@@ -2378,7 +2378,7 @@
 }
 
 /* 成功卡按鈕群組 (桌面: inline) */
-.ad .ag-success-btn-group{
+.ag-success-btn-group{
   display:flex;
   gap:8px;
   flex-shrink:0;
@@ -2386,27 +2386,27 @@
 
 /* 手機板 - 成功網址卡 layout */
 @media (max-width:900px){
-  .ad .ag-success-card{
+  .ag-success-card{
     padding:12px;
   }
-  .ad .ag-success-url-row{
+  .ag-success-url-row{
     flex-direction:column;
     align-items:stretch;
     gap:8px;
   }
-  .ad .ag-success-url{
+  .ag-success-url{
     width:100%;
     text-align:center;
     font-size:11px;
     padding:10px 12px;
   }
   /* 兩個按鈕一行各佔半 */
-  .ad .ag-success-btn-group{
+  .ag-success-btn-group{
     display:flex;
     gap:8px;
     width:100%;
   }
-  .ad .ag-success-btn-group > .ag-copy-btn{
+  .ag-success-btn-group > .ag-copy-btn{
     flex:1;
     justify-content:center;
     padding:10px;
@@ -2429,23 +2429,23 @@
   }
 
   /* 2. 卡片不超出邊界 */
-  .ad .ag-success-card{
+  .ag-success-card{
     margin:10px 0 0;
     padding:10px;
     max-width:100%;
     box-sizing:border-box;
   }
-  .ad .ag-success-label{
+  .ag-success-label{
     font-size:10px;
   }
 
   /* 3. 網址裁切 (ellipsis) - 一行不換 */
-  .ad .ag-success-url-row{
+  .ag-success-url-row{
     flex-direction:column;
     align-items:stretch;
     gap:6px;
   }
-  .ad .ag-success-url{
+  .ag-success-url{
     width:100%;
     text-align:left;
     font-size:10.5px;
@@ -2457,28 +2457,28 @@
   }
 
   /* 4. 按鈕縮小、適中 */
-  .ad .ag-success-btn-group{
+  .ag-success-btn-group{
     display:flex;
     gap:6px;
     width:auto;
     justify-content:center;
   }
-  .ad .ag-success-btn-group > .ag-copy-btn{
+  .ag-success-btn-group > .ag-copy-btn{
     flex:0 1 auto;
     padding:6px 14px;
     font-size:10.5px;
   }
-  .ad .ag-success-btn-group > .ag-copy-btn i{
+  .ag-success-btn-group > .ag-copy-btn i{
     font-size:10px;
   }
 
   /* 5. ID hint 也縮 */
-  .ad .ag-success-hint{
+  .ag-success-hint{
     font-size:10px;
     margin-top:6px;
     word-break:break-all;
   }
-  .ad .ag-success-hint code{
+  .ag-success-hint code{
     font-size:9.5px;
     padding:1px 4px;
   }
