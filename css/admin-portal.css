@@ -2011,13 +2011,14 @@
     align-items:center;
     justify-content:space-between;
     gap:8px;
-    padding:8px 12px;
+    padding:14px 16px;
     background:transparent;
     border-bottom:0;
-    min-height:48px;
+    min-height:64px;
   }
   .ad .ad-mobile-logo{
-    height:32px;
+    display:block;
+    height:40px;
     width:auto;
   }
   .ad .ad-mobile-front{
