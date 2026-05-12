@@ -55,7 +55,7 @@
 
     // 取會員 (若已登入)
     try {
-      State.member = window.Auth?.getStoredMember?.() || null;
+      State.member = window.LohasAuth?.getStoredMember?.() || null;
     } catch(e){ State.member = null }
 
     bindEvents();
@@ -75,38 +75,94 @@
 
 
   // ===== Supabase 載入 =====
+  function getSupabaseClient(){
+    return window.LohasSupabase?.getClient?.() || window.Supabase?.client || null;
+  }
+
   async function loadFromSupabase(){
-    var sb = window.Supabase?.client || window.supabase;
+    var sb = getSupabaseClient();
     if(!sb) throw new Error('Supabase client not available');
 
     // 取已通過設計
-    var { data: designs, error: e1 } = await sb
+    var { data: rawDesigns, error: e1 } = await sb
       .from('engraving_designs')
       .select('id, name, type, creator_id, member_id, image_url, mock_url, story_text, created_at')
       .eq('status', 'approved')
       .order('created_at', { ascending: false })
       .limit(60);
     if(e1) throw e1;
-    State.designs = designs || [];
 
-    // 取所有相關創作者
-    var creatorIds = Array.from(new Set(State.designs.map(function(d){ return d.creator_id }).filter(Boolean)));
+    rawDesigns = rawDesigns || [];
+
+    // 取所有相關創作者 / 會員資料
+    var creatorIds = Array.from(new Set(rawDesigns.map(function(d){
+      return d.creator_id || d.member_id;
+    }).filter(Boolean)));
+
     if(creatorIds.length){
       var { data: creators, error: e2 } = await sb
         .from('creator_info')
         .select('member_id, display_name, short_tag, avatar_url, joining_story, status')
         .in('member_id', creatorIds);
       if(e2) throw e2;
-      (creators || []).forEach(function(c){ State.creators[c.member_id] = c });
+      (creators || []).forEach(function(c){ State.creators[String(c.member_id)] = c });
     }
 
-    // 取本月精選 (status='featured' 或最新一筆)
-    var featuredId = State.designs[0]?.creator_id;
-    if(featuredId && State.creators[featuredId]){
-      State.featuredCreator = State.creators[featuredId];
+    State.designs = rawDesigns.map(normalizeDesign);
+
+    // 取本月精選: 優先選第一位創作者, 若沒有就用第一筆作品的作者資訊
+    var featuredDesign = State.designs.find(function(d){ return d.tier === 'creator' && d.creator_id; }) || State.designs[0];
+    if(featuredDesign){
+      var fc = State.creators[String(featuredDesign.creator_id || featuredDesign.member_id)] || null;
+      State.featuredCreator = fc ? {
+        member_id: fc.member_id,
+        display_name: fc.display_name || featuredDesign.by,
+        short_tag: fc.short_tag || '精選創作者',
+        avatar_url: fc.avatar_url,
+        joining_story: fc.joining_story,
+        quote: fc.joining_story || featuredDesign.quote,
+        design_count: State.designs.filter(function(d){ return String(d.creator_id || d.member_id) === String(fc.member_id); }).length,
+        use_count: 87,
+        story_count: 2
+      } : {
+        display_name: featuredDesign.by || '精選創作者',
+        short_tag: '本月精選',
+        avatar_initials: (featuredDesign.by || 'LO').substring(0,2).toUpperCase(),
+        quote: featuredDesign.quote || '每一張設計,都是一個被認真活過的故事。',
+        design_count: 1,
+        use_count: 0,
+        story_count: 0
+      };
     }
   }
 
+  function normalizeDesign(d, index){
+    var type = String(d.type || '').toLowerCase();
+    var tier = d.tier || (type === 'kol' || type === 'creator' ? 'creator' : (type === 'ip' || type === 'collab' ? 'collab' : 'member'));
+    var creator = State.creators[String(d.creator_id || d.member_id)] || {};
+    var by = d.by || creator.display_name || d.creator_name || d.member_name || maskMemberName(d.member_id || d.creator_id);
+    var n = typeof index === 'number' ? index : Math.abs(hashCode(String(d.id || d.name || '0')) % 15);
+
+    return Object.assign({}, d, {
+      tier: tier,
+      by: by || 'LOHAS Member',
+      coverCls: d.coverCls || ('cover-' + ((n % 15) + 1)),
+      coverText: d.coverText || d.name || '刻 圖 設 計',
+      quote: d.quote || d.story_text || creator.joining_story || '每一張設計,都是一個被認真活過的故事。'
+    });
+  }
+
+  function maskMemberName(v){
+    if(!v) return '';
+    var s = String(v);
+    return s.length > 3 ? s.charAt(0) + '*' + s.slice(-1) : s;
+  }
+
+  function hashCode(s){
+    var h = 0;
+    for(var i=0; i<s.length; i++){ h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+    return h;
+  }
 
   // ===== Fallback 示範資料 =====
   function loadFallbackData(){
@@ -214,6 +270,7 @@
     renderGrid('creator', byTier.creator.slice(0,9));
     renderGrid('member',  byTier.member.slice(0,9));
     renderGrid('collab',  byTier.collab.slice(0,9));
+    renderCollabGrid(byTier.collab.slice(0,4));
   }
 
   function renderGrid(tier, list){
@@ -228,10 +285,12 @@
     grid.innerHTML = list.map(function(d){
       var coverCls = d.coverCls || ('cover-'+ (Math.floor(Math.random()*15)+1));
       var coverText = d.coverText || (d.name || '');
+      var imageStyle = d.image_url ? ' style="background-image:url('+escapeAttr(d.image_url)+');background-size:cover;background-position:center;"' : '';
+      var imageText = d.image_url ? '' : escapeHtml(coverText);
       return '<div class="design-card" data-id="'+escapeAttr(d.id)+'" data-tier="'+tier+'">' +
-        '<div class="design-cover '+coverCls+'">' +
+        '<div class="design-cover '+coverCls+'"'+imageStyle+'>' +
           '<span class="design-card-pill"><span class="pill '+tier+'">'+tierIcon[tier]+tierName[tier]+'</span></span>' +
-          escapeHtml(coverText) +
+          imageText +
         '</div>' +
         '<div class="design-info">' +
           '<div class="design-name">'+escapeHtml(d.name || '')+'</div>' +
@@ -246,6 +305,38 @@
         var id = card.dataset.id;
         var design = State.designs.find(function(x){ return String(x.id) === String(id) });
         if(design) openModal(design, tier);
+      });
+    });
+  }
+
+  function renderCollabGrid(list){
+    var grid = document.getElementById('collabGrid');
+    if(!grid) return;
+
+    if(!list.length){
+      grid.innerHTML = '<div class="design-empty">目前尚無官方授權聯名</div>';
+      return;
+    }
+
+    grid.innerHTML = list.map(function(d, i){
+      var coverCls = 'col-cov-' + ((i % 4) + 1);
+      var imageStyle = d.image_url ? ' style="background-image:url('+escapeAttr(d.image_url)+');background-size:cover;background-position:center;"' : '';
+      var imageText = d.image_url ? '' : escapeHtml(d.coverText || d.name || '');
+      return '<div class="collab-card" data-id="'+escapeAttr(d.id)+'">' +
+        '<div class="collab-card-badge"><i class="fa-solid fa-crown"></i>Official</div>' +
+        '<div class="collab-cover '+coverCls+'"'+imageStyle+'>'+imageText+'</div>' +
+        '<div class="collab-info">' +
+          '<div class="collab-name">'+escapeHtml(d.name || '')+'</div>' +
+          '<div class="collab-by">'+escapeHtml(d.by || '')+'</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    grid.querySelectorAll('.collab-card').forEach(function(card){
+      card.addEventListener('click', function(){
+        var id = card.dataset.id;
+        var design = State.designs.find(function(x){ return String(x.id) === String(id) });
+        if(design) openModal(design, 'collab');
       });
     });
   }
@@ -298,9 +389,22 @@
     var by = d.by || '';
     var byInit = (by || '?').charAt(0);
 
-    document.getElementById('slide-design').style.background = coverMap[coverCls] || '#A8927A';
-    document.getElementById('modalDesignText').textContent = coverText;
-    document.getElementById('thumb-design').style.background = coverMap[coverCls] || '#A8927A';
+    var slideDesign = document.getElementById('slide-design');
+    var thumbDesign = document.getElementById('thumb-design');
+    if(d.image_url){
+      slideDesign.style.background = 'url(' + d.image_url + ') center/cover no-repeat';
+      thumbDesign.style.background = 'url(' + d.image_url + ') center/cover no-repeat';
+      document.getElementById('modalDesignText').textContent = '';
+    } else {
+      slideDesign.style.background = coverMap[coverCls] || '#A8927A';
+      thumbDesign.style.background = coverMap[coverCls] || '#A8927A';
+      document.getElementById('modalDesignText').textContent = coverText;
+    }
+    if(d.mock_url){
+      document.getElementById('slide-mock').style.background = 'url(' + d.mock_url + ') center/cover no-repeat';
+    } else {
+      document.getElementById('slide-mock').style.background = 'linear-gradient(135deg,#765F4A,#3D2F2C)';
+    }
     document.getElementById('modalPill').innerHTML = '<span class="pill ' + tier + '">' + tierIcon[tier] + tierName[tier] + '</span>';
 
     var avatar = document.getElementById('modalByAvatar');
@@ -356,7 +460,7 @@
   // ===== Wishlist =====
   async function loadWishlist(){
     if(!State.member) return;
-    var sb = window.Supabase?.client;
+    var sb = getSupabaseClient();
     if(!sb) return;
     try {
       var { data } = await sb
@@ -372,12 +476,13 @@
   async function toggleWishlist(designId){
     if(!State.member){
       showToast('請先登入才能加入願望清單');
+      try { localStorage.setItem('redirectAfterLogin', 'market.html'); } catch(e){}
       setTimeout(function(){ window.location.href = 'login.html' }, 1200);
       return;
     }
 
-    var sb = window.Supabase?.client;
-    var memberId = String(State.member.erpid);
+    var sb = getSupabaseClient();
+    var memberId = String(State.member.erpid || State.member.member_id || State.member.id || '');
     var idStr = String(designId);
 
     if(State.wishlistIds.has(idStr)){
