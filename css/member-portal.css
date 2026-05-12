@@ -1829,11 +1829,11 @@ body {
     align-items:center;
     justify-content:space-between;
     gap:8px;
-    padding:14px 12px;
+    padding:8px 12px;
     background:transparent;
     border-bottom:0;
     order:0;
-    min-height:60px;
+    min-height:48px;
     position:relative;
   }
   .mp .mp-mobile-logo{
