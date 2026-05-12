@@ -326,31 +326,28 @@
           <h1 class="page-title">會員列表</h1>
           <div class="page-sub">所有註冊會員,可篩選身份、停權帳號、手動升級為 Creator</div>
         </div>
-        <div class="page-actions">
-          <button class="btn"><i class="fa-solid fa-arrow-down-to-line"></i>匯出 CSV</button>
-        </div>
       </div>
 
       <div class="kpi-grid">
         <div class="kpi-card">
           <div class="kpi-label">總 會 員 數</div>
-          <div class="kpi-value">2,486</div>
-          <div class="kpi-trend up">↑ 本月 +142</div>
+          <div class="kpi-value" id="usersKpiTotal">—</div>
+          <div class="kpi-trend flat" id="usersKpiTotalSub">統計中</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">CREATOR 總 數</div>
-          <div class="kpi-value">15</div>
-          <div class="kpi-trend purple">↑ 本月新增 2</div>
+          <div class="kpi-value" id="usersKpiCreator">—</div>
+          <div class="kpi-trend purple" id="usersKpiCreatorSub">含官方</div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-label">本 月 自 動 升 級</div>
-          <div class="kpi-value">2</div>
-          <div class="kpi-trend flat">王*姐、陳*生</div>
+          <div class="kpi-label">官 方 創 作 者</div>
+          <div class="kpi-value" id="usersKpiOfficial">—</div>
+          <div class="kpi-trend flat" id="usersKpiOfficialSub">virt- 帳號</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-label">停 權 帳 號</div>
-          <div class="kpi-value">7</div>
-          <div class="kpi-trend flat">本月 +1</div>
+          <div class="kpi-value" id="usersKpiSuspended">—</div>
+          <div class="kpi-trend flat" id="usersKpiSuspendedSub">已停權</div>
         </div>
       </div>
 
@@ -393,18 +390,24 @@
           <i class="fa-solid fa-magnifying-glass"></i>
           <input id="userSearchInput" placeholder="搜尋姓名、電話、信箱、會員編號..."/>
         </div>
-        <select id="filterRole">
-          <option value="">所有身份</option>
-          <option value="member">Member</option>
-          <option value="creator">Creator</option>
-          <option value="ip">Collab</option>
-          <option value="admin">Admin</option>
-        </select>
-        <select id="filterStatus">
-          <option value="">所有狀態</option>
-          <option value="active">正常</option>
-          <option value="suspended">已停權</option>
-        </select>
+        <div class="filter-group">
+          <label>身份</label>
+          <select id="filterRole">
+            <option value="">所有身份</option>
+            <option value="member">Member</option>
+            <option value="creator">Creator</option>
+            <option value="ip">Collab</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>狀態</label>
+          <select id="filterStatus">
+            <option value="">所有狀態</option>
+            <option value="active">正常</option>
+            <option value="suspended">已停權</option>
+          </select>
+        </div>
       </div>
 
       <div class="users-table-wrap">
