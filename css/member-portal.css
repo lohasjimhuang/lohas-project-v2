@@ -2003,7 +2003,7 @@ body {
     font-size:16px;
     text-align:center;
   }
-  .drawer-item > span{
+  .drawer-item > span:not(.reject-badge):not(.drawer-badge){
     flex:1;
   }
   .drawer-arrow{
@@ -2771,21 +2771,23 @@ body {
 
 }
 
-/* drawer 紅標 (我的分享駁回) - 正圓 */
-.mp .drawer-item .reject-badge.drawer-reject-badge,
+/* drawer 紅標 (我的分享駁回) - 一位數正圓, 多位數自然拉長 */
+.mp .drawer-item .reject-badge,
 .mp-drawer .reject-badge{
   background:var(--status-rejected);
   color:#fff;
   font-size:10px;
-  padding:0;
-  border-radius:50%;
+  padding:0 6px;
+  border-radius:999px;
   font-weight:700;
-  width:18px;
-  height:18px;
+  min-width:20px;
+  height:20px;
   line-height:1;
   margin-right:6px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
+  box-sizing:border-box;
+  letter-spacing:0;
   flex-shrink:0;
 }

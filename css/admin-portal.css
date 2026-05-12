@@ -2167,7 +2167,7 @@
     font-size:16px;
     text-align:center;
   }
-  .ad-drawer-body .drawer-item > span{
+  .ad-drawer-body .drawer-item > span:not(.drawer-badge):not(.badge){
     flex:1;
   }
   .ad-drawer-body .drawer-arrow{
@@ -2179,16 +2179,17 @@
     color:#fff;
     font-size:10px;
     font-weight:700;
-    padding:0;
-    border-radius:50%;
+    padding:0 6px;
+    border-radius:999px;
     line-height:1;
     margin-right:6px;
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    width:18px;
-    height:18px;
+    min-width:20px;
+    height:20px;
     flex-shrink:0;
+    box-sizing:border-box;
   }
   .ad-drawer-body .drawer-item .drawer-badge[data-count="0"]{
     display:none;
