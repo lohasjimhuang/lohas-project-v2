@@ -610,27 +610,13 @@
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--lohas-mute)">載入中...</td></tr>';
 
     try {
-      // 1. 從 ERP 撈會員列表
-      // ⚠️ 假設 endpoint 是 /proxy/member/list 不傳參數 = 全部
-      // 如果你的 endpoint 不同, 改這裡
-      const erpResult = await Auth.apiPost('/proxy/member/list', {});
-
-      let erpUsers = [];
-      if (Utils.normalizeApiCode(erpResult.code) === '200') {
-        erpUsers = erpResult.data || [];
-        // ERP 可能回單筆或陣列
-        if (!Array.isArray(erpUsers)) erpUsers = [erpUsers];
-      } else {
-        console.warn('[ERP 撈會員失敗]', erpResult);
-      }
-
-      // 2. 從 Supabase 撈創作者 / 停權 / admin 狀態
       const sb = getSb();
-      const [creatorsRes, statusRes, adminsRes, postsCountRes] = await Promise.all([
-        sb.from('creator_info').select('member_id, status'),
+
+      // 1. 從 Supabase 多個表撈所有有資料的會員 ID
+      const [creatorsRes, statusRes, adminsRes, postsRes] = await Promise.all([
+        sb.from('creator_info').select('member_id, display_name, avatar_url, social_links, status'),
         sb.from('member_status').select('member_id, status'),
         sb.from('admins').select('member_id'),
-        // 累積上傳統計 - 撈每個會員的數量
         sb.from('gallery_posts').select('member_id')
       ]);
 
@@ -646,32 +632,48 @@
 
       // 統計每個會員的照片數
       const photoCount = {};
-      (postsCountRes.data || []).forEach(p => {
-        photoCount[p.member_id] = (photoCount[p.member_id] || 0) + 1;
+      (postsRes.data || []).forEach(p => {
+        if (p.member_id) {
+          photoCount[p.member_id] = (photoCount[p.member_id] || 0) + 1;
+        }
       });
 
-      // 3. 整合 ERP + Supabase 資料
-      const merged = erpUsers.map(u => {
-        // 強制轉字串(ERP 可能回 number, Supabase 是 text)
-        const erpid = String(u.client_id || u.erpid || '');
+      // 蒐集所有 member_id (creator + status + admin + 上傳者)
+      const allIds = new Set();
+      (creatorsRes.data || []).forEach(c => c.member_id && allIds.add(c.member_id));
+      (statusRes.data || []).forEach(s => s.member_id && allIds.add(s.member_id));
+      (adminsRes.data || []).forEach(a => a.member_id && allIds.add(a.member_id));
+      (postsRes.data || []).forEach(p => p.member_id && p.member_id !== 'OFFICIAL' && allIds.add(p.member_id));
+
+      // 創作者 display_name 對應
+      const creatorMap = {};
+      (creatorsRes.data || []).forEach(c => {
+        creatorMap[c.member_id] = c;
+      });
+
+      // 2. 整合 (對每個 id 從 creator_info 拿名字, 沒有的話顯示 ID)
+      const merged = [...allIds].map(erpid => {
         const isAdmin = State.adminIds.has(erpid);
         const isCreator = State.creatorIds.has(erpid);
         const isSuspended = State.suspendedIds.has(erpid);
+        const isVirt = erpid.startsWith('virt-');
 
         let role = 'member';
         if (isAdmin) role = 'admin';
         else if (isCreator) role = 'creator';
-        // collab 暫時靠 ERP id 開頭判斷 (LH-COL-...) 或從 erp 欄位
-        if (erpid && erpid.startsWith('LH-COL-')) role = 'ip';
+        if (isVirt) role = 'ip';  // virt- 創作者顯示成 ip/collab
 
         const photos = photoCount[erpid] || 0;
+        const creatorInfo = creatorMap[erpid];
+        const name = creatorInfo?.display_name || erpid;
 
         return {
           erpid,
-          name: u.name || u.client_name || '-',
-          email: u.email || '',
-          mobile: u.mobile || '',
-          avatar: (u.name || '?').slice(0, 1),
+          name,
+          email: creatorInfo?.social_links?.email || '',
+          mobile: '',
+          avatar: name.slice(0, 1).toUpperCase(),
+          avatar_url: creatorInfo?.avatar_url || '',
           role,
           status: isSuspended ? 'suspended' : 'active',
           uploads: photos > 0 ? `${photos} 張照片` : '—'
@@ -679,6 +681,26 @@
       });
 
       State.users = merged;
+
+      // 更新 KPI
+      const total = merged.length;
+      const creators = State.creatorIds.size;
+      const official = merged.filter(u => u.erpid.startsWith('virt-')).length;
+      const suspended = State.suspendedIds.size;
+
+      const setKpi = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+      };
+      setKpi('usersKpiTotal', total);
+      setKpi('usersKpiTotalSub', `Member + Creator + Admin`);
+      setKpi('usersKpiCreator', creators);
+      setKpi('usersKpiCreatorSub', `含官方 ${official} 位`);
+      setKpi('usersKpiOfficial', official);
+      setKpi('usersKpiOfficialSub', `virt- 帳號`);
+      setKpi('usersKpiSuspended', suspended);
+      setKpi('usersKpiSuspendedSub', suspended === 0 ? '無' : '已停權');
+
       applyFilters();
 
     } catch (err) {
