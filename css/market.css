@@ -18,16 +18,6 @@
 
 /* === 區塊獨用變數 === */
 .cm{
-  /* 與 lohas-tokens.css 相容：market 原本使用的變數別名 */
-  --lohas-text: var(--text-main, #2F2A25);
-  --lohas-muted: var(--text-muted, #8A8178);
-  --lohas-line: var(--lohas-bd, #E8E1D8);
-  --lohas-brand: var(--lohas-brand-color, #50422D);
-  --lohas-hover: var(--lohas-hover-color, #765F4A);
-  --bg-warm: var(--lohas-bg-warm, #F9F8F6);
-
-  margin-top:70px;
-
   --collab-bg:#3D2F2C;
   --collab-bg-2:#2D2520;
   --collab-gold:#D4B068;
