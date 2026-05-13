@@ -357,7 +357,7 @@
     setText('modalCat', (d.category ? '#' + d.category + ' · ' : '') + (d.keywords || '客製作品'));
     setText('modalQuote', d.slogan || '每一張設計,都是被認真活過的故事。');
 
-    setSlide('design');
+    setSlide('mock');
 
     // 願望清單狀態
     var inWish = State.wishlistIds.has(String(d.id));
