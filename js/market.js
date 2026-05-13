@@ -494,6 +494,42 @@
     var tM = document.getElementById('thumb-mock');
     tD?.addEventListener('click', function(){ setSlide('design'); });
     tM?.addEventListener('click', function(){ setSlide('mock'); });
+
+    bindScrollToJoin();
+  }
+
+
+  // ===== 滑到 CTA 浮鈕 =====
+  function bindScrollToJoin(){
+    var btn = document.getElementById('scrollToJoin');
+    var target = document.getElementById('joinBlock');
+    if(!btn || !target) return;
+
+    // 滾動 240px 後浮出來
+    function onScroll(){
+      var scrolled = window.scrollY > 240;
+      btn.classList.toggle('show', scrolled);
+
+      // 進到 joinBlock 範圍時切換狀態 (icon 翻轉 + 文字改「回到頂部」)
+      var rect = target.getBoundingClientRect();
+      var inJoin = rect.top < window.innerHeight * 0.6;
+      btn.classList.toggle('at-bottom', inJoin);
+
+      var label = btn.querySelector('.scroll-label');
+      if(label) label.textContent = inJoin ? '回到頂部' : '創作者計畫';
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // 點擊:依當前狀態決定捲到 CTA 或頂部
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      if(btn.classList.contains('at-bottom')){
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
   }
 
 
