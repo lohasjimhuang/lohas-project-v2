@@ -43,7 +43,10 @@
     if(!root) return;
 
     try {
-      State.member = window.Auth?.getStoredMember?.() || null;
+      // 對齊專案實際的 auth wrapper
+      State.member = window.LohasAuth?.getMember?.()
+                  || window.Auth?.getStoredMember?.()
+                  || JSON.parse(localStorage.getItem('lohasMember') || 'null');
     } catch(e){ State.member = null }
 
     bindEvents();
@@ -65,8 +68,13 @@
 
   // ===== Supabase 載入 =====
   async function loadFromSupabase(){
-    var sb = window.Supabase?.client || window.supabase;
-    if(!sb) throw new Error('Supabase client 沒設好');
+    // 對齊 v2 專案實際的 supabase.js wrapper
+    var sb = window.LohasSupabase?.getClient?.()
+          || window.Supabase?.client
+          || window.supabase;
+    if(!sb || typeof sb.from !== 'function') {
+      throw new Error('Supabase client 取得失敗,檢查 supabase.js 是否載入');
+    }
 
     var { data, error } = await sb
       .from('engraving_designs')
@@ -379,8 +387,8 @@
   // ===== Wishlist =====
   async function loadWishlist(){
     if(!State.member) return;
-    var sb = window.Supabase?.client;
-    if(!sb) return;
+    var sb = window.LohasSupabase?.getClient?.() || window.Supabase?.client;
+    if(!sb || typeof sb.from !== 'function') return;
     try {
       var { data } = await sb
         .from('wishlist_designs')
@@ -399,7 +407,7 @@
       return;
     }
 
-    var sb = window.Supabase?.client;
+    var sb = window.LohasSupabase?.getClient?.() || window.Supabase?.client;
     var memberId = String(State.member.erpid);
     var idStr = String(designId);
 
