@@ -740,10 +740,10 @@
   padding:0;
 }
 .cm .stage-slide.mock-glasses .engrave-on-lens{
-  /* 鏡片右上 (縮小+再往右版) */
+  /* 鏡片右上 (再往右上微調) */
   position:absolute;
-  left:75%;
-  top:22%;
+  left:80%;
+  top:14%;
   width:22%;
   height:22%;
   transform:translateX(-50%);
@@ -1062,10 +1062,18 @@
   .cm .join-steps{ grid-template-columns:1fr; gap:12px; margin-bottom:28px }
   .cm .join-step{ padding:24px 22px }
   .cm .step-num{ font-size:36px; top:18px; right:18px }
-  .cm .join-kpi{ padding:20px 16px; gap:8px }
-  .cm .kpi-num{ font-size:24px }
-  .cm .kpi-label{ font-size:10px; letter-spacing:1.8px }
-  .cm .kpi-divider{ height:36px }
+
+  /* KPI 改 3 欄 grid + 拿掉分隔線 */
+  .cm .join-kpi{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    padding:20px 12px;
+    gap:0;
+  }
+  .cm .kpi-num{ font-size:22px }
+  .cm .kpi-label{ font-size:9px; letter-spacing:1.2px; white-space:nowrap }
+  .cm .kpi-divider{ display:none }
+
   .cm .join-cta-row{ flex-direction:column; gap:10px }
   .cm .join-btn{ width:100%; padding:14px 24px; font-size:13px }
   .cm .join-btn-line{ width:100%; justify-content:center; padding:12px 18px }
