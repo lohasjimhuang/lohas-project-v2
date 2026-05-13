@@ -10,9 +10,10 @@
   <link rel="stylesheet" href="css/lohas-components.css?v=20260512-1430">
   <link rel="stylesheet" href="css/market.css?v=20260512-1430">
 </head>
-<body>
+<body data-page="market">
 
-<div id="site-header"></div>
+<!-- Header (由 layout.js 從 components/header.html 載入) -->
+<div id="lohas-header"></div>
 
 <main class="cm" id="cm">
 
@@ -170,7 +171,8 @@
 
 </main>
 
-<div id="site-footer"></div>
+<!-- Footer (由 layout.js 從 components/footer.html 載入) -->
+<div id="lohas-footer"></div>
 
 <!-- Supabase + 共用工具 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
