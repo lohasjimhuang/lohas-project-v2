@@ -657,12 +657,12 @@
   padding:0;
 }
 .cm .stage-slide.mock-glasses .engrave-on-lens{
-  /* 鏡片右上區域 (左 48% 上 30%, 大小 16%×16%) */
+  /* 鏡片右上角眼角區域 (左 62% 上 18%, 大小 14%×14%) */
   position:absolute;
-  left:48%;
-  top:30%;
-  width:16%;
-  height:16%;
+  left:62%;
+  top:18%;
+  width:14%;
+  height:14%;
   display:flex;
   align-items:center;
   justify-content:center;
