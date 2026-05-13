@@ -207,14 +207,16 @@
     }
 
     grid.innerHTML = list.map(function(d, idx){
+      // 卡片封面用 png 透明底版本 (沒有就退 jpg)
+      var coverImg = d.imagePng || d.imageJpg;
       return (
         '<div class="design-card" data-id="' + escapeAttr(d.id) + '" data-tier="' + tier + '">' +
           '<div class="design-cover">' +
             '<span class="design-card-pill">' +
               '<span class="pill ' + tier + '">' + tierIcon[tier] + tierName[tier] + '</span>' +
             '</span>' +
-            (d.imageJpg
-              ? '<img src="' + escapeAttr(d.imageJpg) + '" alt="' + escapeAttr(d.name) + '" loading="lazy"' +
+            (coverImg
+              ? '<img src="' + escapeAttr(coverImg) + '" alt="' + escapeAttr(d.name) + '" loading="lazy"' +
                 ' onerror="this.style.display=\'none\';this.parentNode.classList.add(\'no-img\')">'
               : '<span class="cover-text">' + escapeHtml(d.name) + '</span>'
             ) +
