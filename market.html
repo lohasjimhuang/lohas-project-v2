@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>創作者刻圖市集 · LOHAS 樂活眼鏡</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260512-1430">
-  <link rel="stylesheet" href="css/lohas-base.css?v=20260512-1430">
-  <link rel="stylesheet" href="css/lohas-components.css?v=20260512-1430">
-  <link rel="stylesheet" href="css/market.css?v=20260512-1430">
+  <link rel="stylesheet" href="css/lohas-tokens.css?v=20260513-2230">
+  <link rel="stylesheet" href="css/lohas-base.css?v=20260513-2230">
+  <link rel="stylesheet" href="css/lohas-components.css?v=20260513-2230">
+  <link rel="stylesheet" href="css/market.css?v=20260513-2230">
 </head>
 <body data-page="market">
 
@@ -31,32 +31,32 @@
         <h3 class="section-title">本月精選</h3>
         <span class="section-meta">由 樂 活 企 劃 部 選 輯</span>
       </div>
-      <a class="featured-hero" id="featuredHero" href="#" data-creator-slug="emo-bonnie">
+      <a class="featured-hero" id="featuredHero" href="#" role="button">
         <div class="featured-visual">
           <div class="featured-visual-tag">F E A T U R E D</div>
-          <div class="featured-avatar-big" id="featuredAvatar">EM</div>
+          <div class="featured-avatar-big" id="featuredAvatar">--</div>
         </div>
         <div class="featured-content">
           <div class="featured-name-row">
-            <span class="featured-name" id="featuredName">EMO Bonnie</span>
+            <span class="featured-name" id="featuredName">載入中...</span>
             <span class="pill creator"><i class="fa-solid fa-star"></i>Creator</span>
           </div>
-          <div class="featured-tag" id="featuredTag">情緒化的兔子 · 上架 5 件設計</div>
+          <div class="featured-tag" id="featuredTag">--</div>
           <div class="featured-quote-wrap">
-            <p class="featured-quote" id="featuredQuote">眼鏡居然可以自己設計?我把兔子蛋糕刻進去了。每次戴上的時候,就像把心情藏在最容易看見的地方。</p>
+            <p class="featured-quote" id="featuredQuote">--</p>
           </div>
           <div class="featured-foot">
             <div class="featured-foot-stats">
-              <span><b id="featuredUses">87</b> 次使用</span>
-              <span><b id="featuredStories">2</b> 篇故事</span>
+              <span><b id="featuredUses">0</b> 次喜歡</span>
+              <span><b id="featuredStories">0</b> 次收藏</span>
             </div>
-            <span class="featured-foot-cta">看看 EMO Bonnie 的設計 <i class="fa-solid fa-arrow-right featured-arrow"></i></span>
+            <span class="featured-foot-cta">看看作品 <i class="fa-solid fa-arrow-right featured-arrow"></i></span>
           </div>
         </div>
       </a>
     </section>
 
-    <!-- 三大區塊 Sidebar + Grid (v14) -->
+    <!-- Sidebar + Grid -->
     <section class="market-layout">
       <aside class="market-sidebar">
         <div class="sidebar-search">
@@ -65,19 +65,19 @@
         </div>
         <div class="sidebar-title">作 品 分 類</div>
         <ul class="category-list" id="categoryList">
-          <li><button class="cat-btn on" data-tier="all">全部 <span class="cat-count" id="countAll">36</span></button></li>
-          <li><button class="cat-btn" data-tier="member">會員原創 <span class="cat-count" id="countMember">12</span></button></li>
-          <li><button class="cat-btn" data-tier="creator">創作者作品 <span class="cat-count" id="countCreator">12</span></button></li>
-          <li><button class="cat-btn" data-tier="collab">授權聯名 <span class="cat-count" id="countCollab">12</span></button></li>
+          <li><button class="cat-btn on" data-tier="all">全部 <span class="cat-count" id="countAll">0</span></button></li>
+          <li><button class="cat-btn" data-tier="creator">創作者作品 <span class="cat-count" id="countCreator">0</span></button></li>
+          <li><button class="cat-btn" data-tier="member">會員原創 <span class="cat-count" id="countMember">0</span></button></li>
+          <li><button class="cat-btn" data-tier="collab">授權聯名 <span class="cat-count" id="countCollab">0</span></button></li>
         </ul>
       </aside>
 
       <div class="market-content" id="marketContent">
-        <!-- 區塊由 market.js 渲染填入 -->
+
         <div class="market-block" data-section="creator">
           <div class="market-block-head">
             <h3 class="market-block-h">創作者作品</h3>
-            <a class="see-all" href="market.html#all?tier=creator">顯示全部 <span id="seeAllCreator">12</span> 件 <i class="fa-solid fa-arrow-right"></i></a>
+            <a class="see-all" href="#">顯示全部 <span id="seeAllCreator">0</span> 件 <i class="fa-solid fa-arrow-right"></i></a>
           </div>
           <div class="design-grid" data-grid="creator"></div>
         </div>
@@ -85,7 +85,7 @@
         <div class="market-block" data-section="member">
           <div class="market-block-head">
             <h3 class="market-block-h">會員原創</h3>
-            <a class="see-all" href="market.html#all?tier=member">顯示全部 <span id="seeAllMember">12</span> 件 <i class="fa-solid fa-arrow-right"></i></a>
+            <a class="see-all" href="#">顯示全部 <span id="seeAllMember">0</span> 件 <i class="fa-solid fa-arrow-right"></i></a>
           </div>
           <div class="design-grid" data-grid="member"></div>
         </div>
@@ -93,19 +93,12 @@
         <div class="market-block" data-section="collab">
           <div class="market-block-head">
             <h3 class="market-block-h">授權聯名</h3>
-            <a class="see-all" href="market.html#all?tier=collab">顯示全部 <span id="seeAllCollab">12</span> 件 <i class="fa-solid fa-arrow-right"></i></a>
+            <a class="see-all" href="#">顯示全部 <span id="seeAllCollab">0</span> 件 <i class="fa-solid fa-arrow-right"></i></a>
           </div>
           <div class="design-grid" data-grid="collab"></div>
         </div>
-      </div>
-    </section>
 
-    <!-- 官方授權聯名 -->
-    <section class="collab-block">
-      <div class="collab-eb"><i class="fa-solid fa-crown"></i>OFFICIAL · IP COLLAB</div>
-      <h3 class="collab-title">官方授權聯名</h3>
-      <p class="collab-desc">這些是我們合作過的 IP 與工作室。<br>他們的世界觀,被我們刻進了眼鏡裡。</p>
-      <div class="collab-grid" id="collabGrid"></div>
+      </div>
     </section>
 
     <!-- 邀請會員加入 -->
@@ -117,9 +110,9 @@
         <a href="news.html#creator-plan" class="join-btn-sec">了解創作者方案</a>
       </div>
       <div class="join-stats">
-        <div class="stat-item"><div class="stat-num" id="statMonthDesigns">87</div><div class="stat-label">本 月 上 架 設 計</div></div>
-        <div class="stat-item"><div class="stat-num" id="statTotalUses">2,346</div><div class="stat-label">設 計 被 刻 上 眼 鏡</div></div>
-        <div class="stat-item"><div class="stat-num" id="statTotalPayout">$58,000</div><div class="stat-label">創 作 者 累 計 收 益</div></div>
+        <div class="stat-item"><div class="stat-num" id="statTotalDesigns">0</div><div class="stat-label">市 集 全 部 設 計</div></div>
+        <div class="stat-item"><div class="stat-num" id="statTotalDesigners">0</div><div class="stat-label">參 與 創 作 者 數</div></div>
+        <div class="stat-item"><div class="stat-num" id="statTotalCategories">0</div><div class="stat-label">作 品 分 類</div></div>
       </div>
     </section>
 
@@ -133,8 +126,8 @@
       <div class="modal-left">
         <div class="modal-stage">
           <span class="modal-pill" id="modalPill"></span>
-          <div class="stage-slide on" id="slide-design"><span id="modalDesignText"></span></div>
-          <div class="stage-slide" id="slide-mock" style="background:linear-gradient(135deg,#765F4A,#3D2F2C)">刻 圖 模 擬</div>
+          <div class="stage-slide on" id="slide-design"></div>
+          <div class="stage-slide" id="slide-mock">刻 圖 模 擬</div>
         </div>
         <div class="thumb-row">
           <div class="thumb t-design on" id="thumb-design" data-slide="design">刻 圖 檔</div>
@@ -176,11 +169,11 @@
 
 <!-- Supabase + 共用工具 -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/utils.js?v=20260512-1430"></script>
-<script src="js/auth.js?v=20260512-1430"></script>
-<script src="js/supabase.js?v=20260512-1430"></script>
-<script src="js/layout.js?v=20260512-1430"></script>
-<script src="js/market.js?v=20260512-1430"></script>
+<script src="js/utils.js?v=20260513-2230"></script>
+<script src="js/auth.js?v=20260513-2230"></script>
+<script src="js/supabase.js?v=20260513-2230"></script>
+<script src="js/layout.js?v=20260513-2230"></script>
+<script src="js/market.js?v=20260513-2230"></script>
 
 </body>
 </html>
