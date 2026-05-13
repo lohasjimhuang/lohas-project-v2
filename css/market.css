@@ -467,7 +467,7 @@
 /* === 邀請會員加入創作者計畫 === */
 .cm .join-block{
   padding:72px 32px;
-  background:linear-gradient(180deg, #FAF7F2 0%, var(--bg-soft) 100%);
+  background:#fff;
   border-top:1px solid var(--lohas-line);
 }
 
@@ -510,7 +510,7 @@
   max-width:1080px;
 }
 .cm .join-step{
-  background:#fff;
+  background:var(--bg-soft);
   border-radius:14px;
   padding:30px 26px;
   border:1px solid var(--lohas-bd, #E8DED1);
@@ -529,7 +529,7 @@
 .cm .step-icon{
   width:44px;
   height:44px;
-  background:var(--bg-soft);
+  background:#fff;
   border-radius:12px;
   display:flex;
   align-items:center;
@@ -740,12 +740,12 @@
   padding:0;
 }
 .cm .stage-slide.mock-glasses .engrave-on-lens{
-  /* 鏡片中央偏右上區域 (放大兩倍版) */
+  /* 鏡片右上 (縮小+再往右版) */
   position:absolute;
-  left:70%;
-  top:18%;
-  width:28%;
-  height:28%;
+  left:75%;
+  top:22%;
+  width:22%;
+  height:22%;
   transform:translateX(-50%);
   display:flex;
   align-items:center;
