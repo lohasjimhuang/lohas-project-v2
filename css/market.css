@@ -657,12 +657,13 @@
   padding:0;
 }
 .cm .stage-slide.mock-glasses .engrave-on-lens{
-  /* 鏡片右上角眼角區域 (左 62% 上 18%, 大小 14%×14%) */
+  /* 鏡片中央偏右上區域 (放大兩倍版) */
   position:absolute;
-  left:62%;
+  left:70%;
   top:18%;
-  width:14%;
-  height:14%;
+  width:28%;
+  height:28%;
+  transform:translateX(-50%);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -923,7 +924,7 @@
 
 /* === RWD: 手機 === */
 @media (max-width: 768px){
-  .cm .hero{ padding:48px 20px 40px }
+  .cm .hero{ padding:118px 20px 40px }   /* 48px 原 + 70px header */
   .cm .hero h1{ font-size:32px }
   .cm .hero-sub{ font-size:14px }
 
@@ -976,10 +977,13 @@
   .cm .join-stats{ gap:20px }
   .cm .join-title{ font-size:22px }
 
+  .cm .ovl{ align-items:flex-start; padding:80px 12px 20px }
   .cm .modal{
     grid-template-columns:1fr;
-    width:96vw;
-    max-height:90vh;
+    width:100%;
+    max-width:96vw;
+    max-height:calc(100vh - 100px);
+    margin-top:0;
     overflow-y:auto;
   }
   .cm .modal-right{ max-height:none }
