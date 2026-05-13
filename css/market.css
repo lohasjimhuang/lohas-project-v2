@@ -383,7 +383,7 @@
 }
 .cm .design-cover{
   aspect-ratio:1/1;
-  background:var(--bg-soft);
+  background:#fff;
   position:relative;
   overflow:hidden;
   display:flex;
@@ -618,7 +618,7 @@
   position:relative;
   overflow:hidden;
   border-radius:var(--r-md, 14px);
-  background:#F4F1EC;
+  background:#fff;
 }
 .cm .stage-slide{
   position:absolute;
@@ -639,6 +639,53 @@
   max-height:100%;
   object-fit:contain;
   padding:24px;
+}
+
+/* 刻圖模擬:眼鏡背景 + 刻圖縮在左鏡片左上 */
+.cm .stage-slide.mock-glasses{
+  background:#fff;
+  background-image:url('../images/glasses-mockup.jpg');
+  background-size:cover;
+  background-position:center;
+  background-repeat:no-repeat;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  padding:0;
+}
+.cm .stage-slide.mock-glasses .engrave-on-lens{
+  /* 鏡片左上角區域:左 32% / 上 28% / 大小 20%×20% */
+  position:absolute;
+  left:32%;
+  top:28%;
+  width:20%;
+  height:20%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.cm .stage-slide.mock-glasses .engrave-on-lens img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  /* 雷雕真實效果:深灰、半透明、稍微疊在鏡片上 */
+  filter:brightness(0.4) opacity(0.85);
+  mix-blend-mode:multiply;
+  padding:0;
+}
+.cm .stage-slide.mock-glasses .mock-hint{
+  position:absolute;
+  bottom:16px;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:11px;
+  color:rgba(80,66,45,0.6);
+  letter-spacing:2px;
+  font-weight:500;
+  background:rgba(255,255,255,0.85);
+  padding:6px 14px;
+  border-radius:var(--r-pill);
+  white-space:nowrap;
 }
 .cm .modal-pill{
   position:absolute;
@@ -672,7 +719,26 @@
   object-fit:contain;
   padding:4px;
 }
-.cm .thumb.t-mock{ background:linear-gradient(135deg, #765F4A, #3D2F2C) }
+.cm .thumb.t-mock{
+  background-image:url('../images/glasses-mockup.jpg');
+  background-size:cover;
+  background-position:center;
+  color:transparent;
+}
+.cm .thumb.t-mock::after{
+  content:"刻 圖 模 擬";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,0.4);
+  color:#fff;
+  font-size:10px;
+  letter-spacing:1px;
+  font-weight:600;
+}
+.cm .thumb{ position:relative }
 .cm .thumb.on{ border-color:var(--lohas-brand) }
 .cm .thumb:hover{ opacity:0.85 }
 .cm .modal-right{
