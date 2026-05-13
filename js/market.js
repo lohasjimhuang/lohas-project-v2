@@ -121,17 +121,17 @@
       .sort(function(a,b){ return b.likes - a.likes; })[0];
     if(!top) return;
 
-    var setText = function(id, v){
+    var setLocalText = function(id, v){
       var el = document.getElementById(id);
       if(el) el.textContent = v;
     };
 
-    // 對齊 v18 featured-hero 結構 (member-portal 那邊有)
-    setText('featuredName',    top.designer || top.name);
-    setText('featuredTag',     (top.name ? top.name + ' · ' : '') + '上架 ' + countByDesigner(top.designer) + ' 件設計');
-    setText('featuredQuote',   top.slogan || top.keywords || '每一張設計,都是被認真活過的故事。');
-    setText('featuredUses',    top.likes);
-    setText('featuredStories', top.collects);
+    // 對齊 v18 featured-hero 結構
+    setLocalText('featuredName',    maskName(top.designer) || top.name);
+    setLocalText('featuredTag',     (top.name ? top.name + ' · ' : '') + '上架 ' + countByDesigner(top.designer) + ' 件設計');
+    setLocalText('featuredQuote',   top.slogan || top.keywords || '每一張設計,都是被認真活過的故事。');
+    setLocalText('featuredUses',    top.likes);
+    setLocalText('featuredStories', top.collects);
 
     // 大頭照:用設計者名稱前 2 字
     var avatar = document.getElementById('featuredAvatar');
@@ -222,7 +222,7 @@
           '<div class="design-info">' +
             '<div class="design-name">' + escapeHtml(d.name || '(未命名)') + '</div>' +
             '<div class="design-slogan">' + escapeHtml(d.slogan || '') + '</div>' +
-            '<div class="design-by">by ' + escapeHtml(d.designer || '匿名') + '</div>' +
+            '<div class="design-by">by ' + escapeHtml(maskName(d.designer) || '匿名') + '</div>' +
           '</div>' +
         '</div>'
       );
@@ -307,14 +307,26 @@
       }
     }
 
-    // 刻圖模擬 (預留)
+    // 刻圖模擬 (第二張) - 眼鏡背景 + 刻圖縮在左鏡片
     var slideMock = document.getElementById('slide-mock');
-    if(slideMock) slideMock.style.background = 'linear-gradient(135deg, #765F4A, #3D2F2C)';
+    if(slideMock){
+      slideMock.classList.add('mock-glasses');
+      slideMock.style.background = '';  // 清舊的 gradient
+      if(imgUrl){
+        slideMock.innerHTML =
+          '<div class="engrave-on-lens">' +
+            '<img src="' + escapeAttr(imgUrl) + '" alt="刻圖模擬">' +
+          '</div>' +
+          '<div class="mock-hint">刻 在 鏡 片 左 上 · 預 覽 示 意</div>';
+      } else {
+        slideMock.innerHTML = '<div class="mock-hint">刻圖模擬</div>';
+      }
+    }
 
     // 縮圖用 jpg
     var thumbDesign = document.getElementById('thumb-design');
     if(thumbDesign){
-      thumbDesign.style.background = '#F4F1EC';
+      thumbDesign.style.background = '#fff';
       thumbDesign.innerHTML = imgUrl
         ? '<img src="' + escapeAttr(imgUrl) + '" style="width:100%;height:100%;object-fit:contain">'
         : '刻 圖 檔';
@@ -323,16 +335,18 @@
     document.getElementById('modalPill').innerHTML =
       '<span class="pill ' + tier + '">' + tierIcon[tier] + tierName[tier] + '</span>';
 
+    var maskedDesigner = maskName(d.designer) || '匿名';
+
     var avatar = document.getElementById('modalByAvatar');
     if(avatar){
       avatar.className = 'modal-by-avatar ' + tier;
-      avatar.textContent = (d.designer || '?').charAt(0);
+      avatar.textContent = (maskedDesigner).charAt(0);
     }
 
     setText('modalByLabel', 'designed by · ' + tierName[tier]);
     var byNameEl = document.getElementById('modalByName');
     if(byNameEl){
-      byNameEl.innerHTML = escapeHtml(d.designer || '匿名') +
+      byNameEl.innerHTML = escapeHtml(maskedDesigner) +
         ' <span class="pill ' + tier + '" style="font-size:10px;padding:1.5px 7px">' +
         tierIcon[tier] + tierName[tier] + '</span>';
     }
@@ -483,6 +497,18 @@
     var el = document.getElementById(id);
     if(el) el.textContent = v;
   }
+
+  // 姓名遮罩:中文姓名第 2 字改 *,英文/暱稱原樣顯示
+  function maskName(name){
+    if(!name) return '';
+    var s = String(name).trim();
+    // 中文姓名 (3 字以上,且第 2 字是中文)
+    if(s.length >= 2 && /[\u4e00-\u9fa5]/.test(s.charAt(1))){
+      return s.charAt(0) + '*' + s.slice(2);
+    }
+    return s;
+  }
+
   function escapeHtml(s){
     return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
       return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
