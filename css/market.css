@@ -1,29 +1,23 @@
 /* =============================================================
-   創作者刻圖市集 · market.css
+   創作者刻圖市集 · market.css (v2 - legacy 圖庫適配)
    -------------------------------------------------------------
    依賴: lohas-tokens.css + lohas-base.css + lohas-components.css
-   -------------------------------------------------------------
-   包含區塊:
-   - 容器 .cm
-   - Hero (.hero)
-   - 本月精選 (.featured-block / .featured-hero / .featured-visual)
-   - 三大區塊 + Sidebar (.market-layout / .market-sidebar / .design-grid)
-   - 官方授權聯名 (.collab-block)
-   - 邀請會員加入 (.join-block)
-   - Modal 詳情 (.ovl / .modal)
-   - Toast (.toast)
-   - Pill 系統 (.pill.member/.creator/.collab)
+   v2 變更:
+   - 設計卡封面改用 img (取代純色文字背景)
+   - 加上 design-slogan 子標
+   - 統計區改成全部設計/創作者數/分類數
+   - 拿掉官方授權聯名區 (collab-block) - 之後分類齊全再加回
    ============================================================= */
 
 
 /* === 區塊獨用變數 === */
 .cm{
-  --collab-bg:#3D2F2C;
-  --collab-bg-2:#2D2520;
-  --collab-gold:#D4B068;
   --bg-soft:#F4F1EC;
   --tmu:#9B9186;
   --tl:#CDBEA2;
+  --collab-bg:#3D2F2C;
+  --collab-bg-2:#2D2520;
+  --collab-gold:#D4B068;
   --sh-card:0 18px 38px rgba(80,66,45,0.09);
   --sh-modal:0 24px 80px rgba(80,66,45,0.28);
 
@@ -57,7 +51,7 @@
 }
 
 
-/* === Pill 系統 (三種身份) === */
+/* === Pill 系統 === */
 .cm .pill{
   display:inline-flex;
   align-items:center;
@@ -260,7 +254,7 @@
 }
 
 
-/* === 三大區塊 Sidebar + Grid (v14) === */
+/* === Sidebar + Grid === */
 .cm .market-layout{
   display:grid;
   grid-template-columns:220px 1fr;
@@ -364,7 +358,7 @@
 .cm .see-all i{ font-size:10px; transition:transform .15s }
 
 
-/* === 設計卡 (3 欄) === */
+/* === 設計卡 (用 img 取代純色文字) === */
 .cm .design-grid{
   display:grid;
   grid-template-columns:repeat(3, 1fr);
@@ -384,18 +378,38 @@
   box-shadow:var(--sh-card);
   transform:translateY(-3px);
 }
+.cm .design-card:hover .design-cover img{
+  transform:scale(1.05);
+}
 .cm .design-cover{
   aspect-ratio:1/1;
+  background:var(--bg-soft);
+  position:relative;
+  overflow:hidden;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:rgba(255,255,255,0.85);
+}
+.cm .design-cover img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  padding:14px;
+  transition:transform .25s;
+}
+.cm .design-cover.no-img::after{
+  content:"沒有圖片";
+  color:var(--tmu);
+  font-size:12px;
+  letter-spacing:1px;
+}
+.cm .design-cover .cover-text{
+  color:rgba(80,66,45,0.5);
   font-size:14px;
   letter-spacing:2px;
   font-weight:600;
   text-align:center;
   padding:18px;
-  position:relative;
   line-height:1.5;
 }
 .cm .design-card-pill{
@@ -404,145 +418,46 @@
   left:11px;
   z-index:2;
 }
-.cm .design-info{ padding:14px 16px }
+
+/* === 設計卡資訊 (name 主標 + slogan 子標) === */
+.cm .design-info{
+  padding:12px 14px 14px;
+}
 .cm .design-name{
-  font-size:15px;
+  font-size:14px;
   font-weight:600;
   color:var(--lohas-text);
   letter-spacing:0.3px;
-  margin:0 0 4px;
+  margin:0 0 2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
-.cm .design-by{
+.cm .design-slogan{
   font-size:12px;
   color:var(--tmu);
   letter-spacing:0.3px;
+  margin:0 0 6px;
+  line-height:1.5;
+  display:-webkit-box;
+  -webkit-line-clamp:1;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.cm .design-by{
+  font-size:11px;
+  color:var(--tmu);
+  letter-spacing:0.3px;
+  margin-top:4px;
 }
 .cm .design-empty{
-  grid-column:1/-1;
+  grid-column:1 / -1;
   text-align:center;
-  padding:48px 0;
+  padding:60px 20px;
   color:var(--tmu);
   font-size:13px;
   letter-spacing:1px;
-}
-
-/* 設計卡封面預設色票 */
-.cm .cover-1{ background:#A8927A } .cm .cover-2{ background:#9D8868 } .cm .cover-3{ background:#765F4A }
-.cm .cover-4{ background:#5A4A35 } .cm .cover-5{ background:#7A6B5C } .cm .cover-6{ background:#3D2F2C }
-.cm .cover-7{ background:#A85A4A } .cm .cover-8{ background:#7A6230 } .cm .cover-9{ background:#8B7558 }
-.cm .cover-10{ background:#A8927A } .cm .cover-11{ background:#765F4A } .cm .cover-12{ background:#5A4A35 }
-.cm .cover-13{ background:#9D8868 } .cm .cover-14{ background:#A8927A } .cm .cover-15{ background:#765F4A }
-
-
-/* === 官方授權聯名 (深棕底 + 金邊) === */
-.cm .collab-block{
-  padding:48px 32px;
-  background:var(--collab-bg);
-  color:#fff;
-  border-top:1px solid var(--collab-gold);
-  position:relative;
-}
-.cm .collab-block::before{
-  content:"";
-  position:absolute;
-  top:0; left:0; right:0;
-  height:1.5px;
-  background:var(--collab-gold);
-}
-.cm .collab-eb{
-  font-size:12px;
-  color:var(--collab-gold);
-  letter-spacing:4px;
-  font-weight:500;
-  margin-bottom:10px;
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-.cm .collab-eb i{ font-size:12px }
-.cm .collab-title{
-  font-size:24px;
-  font-weight:500;
-  color:#fff;
-  letter-spacing:1px;
-  margin:0 0 12px;
-  line-height:1.3;
-}
-.cm .collab-desc{
-  font-size:14px;
-  color:rgba(255,255,255,0.7);
-  line-height:1.9;
-  letter-spacing:0.5px;
-  margin:0 0 24px;
-  max-width:520px;
-}
-.cm .collab-grid{
-  display:grid;
-  grid-template-columns:repeat(4, 1fr);
-  gap:14px;
-}
-.cm .collab-card{
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(212,176,104,0.3);
-  border-radius:var(--r-md, 14px);
-  overflow:hidden;
-  cursor:pointer;
-  transition:all .2s;
-  position:relative;
-}
-.cm .collab-card:hover{
-  border-color:var(--collab-gold);
-  background:rgba(212,176,104,0.08);
-  transform:translateY(-3px);
-}
-.cm .collab-card-badge{
-  position:absolute;
-  top:11px;
-  left:11px;
-  background:var(--collab-bg-2);
-  color:#fff;
-  padding:3px 10px;
-  border-radius:var(--r-pill);
-  font-size:10px;
-  font-weight:600;
-  letter-spacing:0.5px;
-  display:inline-flex;
-  align-items:center;
-  gap:4px;
-  border:1px solid var(--collab-gold);
-  z-index:2;
-}
-.cm .collab-card-badge i{ color:var(--collab-gold); font-size:9px }
-.cm .collab-cover{
-  aspect-ratio:1/1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:rgba(255,255,255,0.85);
-  font-size:14px;
-  letter-spacing:2px;
-  font-weight:600;
-  text-align:center;
-  padding:20px;
-  line-height:1.5;
-}
-.cm .col-cov-1{ background:#5A4A35 }
-.cm .col-cov-2{ background:#9D8868 }
-.cm .col-cov-3{ background:#3D2F2C }
-.cm .col-cov-4{ background:#765F4A }
-.cm .collab-info{ padding:13px 14px }
-.cm .collab-name{
-  font-size:14px;
-  color:#fff;
-  font-weight:600;
-  letter-spacing:0.3px;
-  margin:0 0 3px;
-}
-.cm .collab-by{
-  font-size:11px;
-  color:rgba(212,176,104,0.85);
-  letter-spacing:1px;
-  font-weight:500;
 }
 
 
@@ -703,6 +618,7 @@
   position:relative;
   overflow:hidden;
   border-radius:var(--r-md, 14px);
+  background:#F4F1EC;
 }
 .cm .stage-slide{
   position:absolute;
@@ -718,6 +634,12 @@
   transition:opacity .35s ease;
 }
 .cm .stage-slide.on{ opacity:1 }
+.cm .stage-slide img{
+  max-width:100%;
+  max-height:100%;
+  object-fit:contain;
+  padding:24px;
+}
 .cm .modal-pill{
   position:absolute;
   top:14px; left:14px;
@@ -742,6 +664,13 @@
   text-align:center;
   padding:6px;
   line-height:1.3;
+  background:#F4F1EC;
+}
+.cm .thumb img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  padding:4px;
 }
 .cm .thumb.t-mock{ background:linear-gradient(135deg, #765F4A, #3D2F2C) }
 .cm .thumb.on{ border-color:var(--lohas-brand) }
@@ -968,10 +897,12 @@
   }
   .cm .cat-btn .cat-count{ display:none }
 
-  .cm .design-grid,
-  .cm .collab-grid{ grid-template-columns:repeat(2, 1fr) }
+  .cm .design-grid{ grid-template-columns:repeat(2, 1fr); gap:12px }
+  .cm .design-cover img{ padding:10px }
+  .cm .design-info{ padding:10px 12px 12px }
+  .cm .design-name{ font-size:13px }
+  .cm .design-slogan{ font-size:11px }
 
-  .cm .collab-block,
   .cm .join-block{ padding:40px 20px }
   .cm .join-stats{ gap:20px }
   .cm .join-title{ font-size:22px }
