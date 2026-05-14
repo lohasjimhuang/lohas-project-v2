@@ -63,6 +63,11 @@
     renderFeatured();
     renderAllSections();
     if(State.member) await loadWishlist();
+
+    // 監聽上傳成功事件 - 提示使用者
+    window.addEventListener('lohas:design-upload-success', function(){
+      showToast('設計已送出審核,通過後會出現在市集');
+    });
   }
 
 
@@ -496,6 +501,36 @@
     tM?.addEventListener('click', function(){ setSlide('mock'); });
 
     bindScrollToJoin();
+    bindCtaUploadDesign();
+  }
+
+
+  // ===== CTA「開始我的創作旅程」→ 直接開上傳 modal =====
+  function bindCtaUploadDesign(){
+    document.querySelectorAll('[data-action="upload-design"]').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        e.preventDefault();
+
+        // 未登入 → 先去登入
+        var member = (window.LohasAuth?.getStoredMember?.())
+                  || (function(){ try { return JSON.parse(localStorage.getItem('lohasMember')||'null'); } catch(e){ return null } })();
+        if(!member?.erpid){
+          // 記住要回來的位置
+          try { localStorage.setItem('redirectAfterLogin', 'market.html'); } catch(e){}
+          showToast('請先登入才能上傳設計');
+          setTimeout(function(){ window.location.href = 'login.html'; }, 1200);
+          return;
+        }
+
+        if(window.LohasUploadDesign?.openModal){
+          window.LohasUploadDesign.openModal();
+        } else {
+          console.warn('[market] LohasUploadDesign 模組沒載入');
+          // fallback 回 member-portal
+          window.location.href = 'member-portal.html#my-designs';
+        }
+      });
+    });
   }
 
 
