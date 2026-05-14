@@ -2611,19 +2611,7 @@
 
 
 /* === 表格 + 預覽側面板佈局 === */
-.ad .md-layout{
-  display:grid;
-  grid-template-columns:1fr 360px;
-  gap:14px;
-  align-items:flex-start;
-}
 /* === Grid 卡片佈局 === */
-.ad .md-table-wrap{
-  background:transparent;
-  border:0;
-  overflow:visible;
-  max-height:none;
-}
 .ad .md-grid{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
@@ -2774,93 +2762,6 @@
 
 
 /* === 右側預覽側面板 === */
-.ad .md-side{
-  background:#fff;
-  border:1px solid var(--lohas-line);
-  border-radius:12px;
-  padding:20px;
-  position:sticky;
-  top:80px;
-  max-height:calc(100vh - 100px);
-  overflow-y:auto;
-}
-.ad .md-side-empty{
-  text-align:center;
-  padding:48px 20px;
-  color:var(--lohas-mute);
-}
-.ad .md-side-empty i{ font-size:36px; margin-bottom:14px; color:var(--lohas-light-brown) }
-.ad .md-side-empty p{ font-size:13px; margin:0; letter-spacing:0.5px }
-
-.ad .md-side-img{
-  aspect-ratio:1/1;
-  background:#FAF7F2 center/contain no-repeat;
-  border-radius:10px;
-  margin-bottom:16px;
-  border:1px solid var(--lohas-line);
-}
-.ad .md-side-name{
-  font-size:16px;
-  font-weight:600;
-  margin:0 0 6px;
-  color:var(--lohas-text);
-  letter-spacing:0.3px;
-}
-.ad .md-side-slogan{
-  font-size:12px;
-  color:var(--lohas-sub);
-  margin:0 0 14px;
-  line-height:1.6;
-}
-.ad .md-side-meta{
-  border-top:1px solid var(--lohas-line);
-  padding-top:14px;
-  margin-bottom:18px;
-}
-.ad .md-side-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:12px;
-  padding:6px 0;
-}
-.ad .md-side-row span{ color:var(--lohas-mute); letter-spacing:0.5px }
-.ad .md-side-row b{ color:var(--lohas-text); font-weight:600; text-align:right; max-width:65%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-
-.ad .md-side-actions{
-  display:flex;
-  gap:8px;
-}
-
-.ad .md-btn{
-  flex:1;
-  height:38px;
-  border:0;
-  border-radius:8px;
-  font-family:inherit;
-  font-size:13px;
-  font-weight:600;
-  letter-spacing:0.5px;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  transition:all .15s;
-}
-.ad .md-btn-edit{
-  background:var(--lohas-brown);
-  color:#fff;
-}
-.ad .md-btn-edit:hover{ background:var(--lohas-text) }
-.ad .md-btn-del{
-  background:#fff;
-  color:var(--status-rejected);
-  border:1px solid var(--status-rejected);
-}
-.ad .md-btn-del:hover{ background:var(--status-rejected); color:#fff }
-
-
 /* === 編輯 Modal === */
 .ad .md-modal-overlay{
   position:fixed;
@@ -2945,6 +2846,22 @@
   padding:14px 20px;
   border-top:1px solid var(--lohas-line);
 }
+.ad .md-btn{
+  flex:1;
+  height:38px;
+  border:0;
+  border-radius:8px;
+  font-family:inherit;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  transition:all .15s;
+}
 .ad .md-btn-cancel{
   background:#fff;
   color:var(--lohas-text);
@@ -2960,14 +2877,6 @@
 
 
 /* === RWD === */
-@media (max-width: 1100px){
-  .ad .md-layout{ grid-template-columns:1fr }
-  .ad .md-side{
-    position:relative;
-    top:auto;
-    max-height:none;
-  }
-}
 @media (max-width: 768px){
   .ad .md-toolbar{ flex-direction:column; align-items:stretch }
   .ad .md-filters{ flex-direction:column }
