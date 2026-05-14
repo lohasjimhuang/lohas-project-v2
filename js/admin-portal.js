@@ -217,12 +217,12 @@
     const sb = getSb();
     if (!sb) return;
 
-    // 待審核項目 (3 個 table 的 pending 加總)
+    // 待審核項目 (engraving_designs + gallery_posts 拆 photo/story)
     try {
       const [designs, photos, stories] = await Promise.all([
         sb.from('engraving_designs').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-        sb.from('gallery_posts').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-        sb.from('member_stories').select('id', { count: 'exact', head: true }).eq('status', 'pending')
+        sb.from('gallery_posts').select('id', { count: 'exact', head: true }).eq('status', 'pending').eq('type', 'photo'),
+        sb.from('gallery_posts').select('id', { count: 'exact', head: true }).eq('status', 'pending').eq('type', 'story')
       ]);
 
       const dCount = designs.count || 0;
@@ -1393,7 +1393,7 @@
     const tableMap = {
       design: 'engraving_designs',
       photo: 'gallery_posts',
-      story: 'member_stories'
+      story: 'gallery_posts'
     };
     const table = tableMap[type];
     if (!table) return;
@@ -1440,7 +1440,7 @@
     const sb = getSb();
     if (!sb) return;
 
-    // photo 跟 story 都寫到 gallery_posts (不是 member_stories)
+    // photo 跟 story 都寫到 gallery_posts
     const tableMap = {
       design: 'engraving_designs',
       photo: 'gallery_posts',

@@ -872,7 +872,7 @@
 
 
   /* =============================================================
-     Stories · 我的故事 (member_stories)
+     Stories · 我的故事 (gallery_posts type=story)
      ============================================================= */
 
   async function loadStories() {
@@ -883,36 +883,16 @@
     const sb = getSupabase();
     if (!sb) return;
 
-    // 同時抓兩個來源:
-    // 1) member_stories - 純文字故事
-    // 2) gallery_posts type=story - 上傳照片時寫了 50+ 字故事的, 自動分流為 story
-    const [memRes, postsRes] = await Promise.all([
-      sb.from('member_stories')
-        .select('id, title, content, status, reject_reason, created_at')
-        .eq('member_id', State.member.erpid)
-        .order('created_at', { ascending: false }),
-      sb.from('gallery_posts')
-        .select('id, title, story, status, reject_reason, created_at, image_urls, main_image_url')
-        .eq('member_id', State.member.erpid)
-        .eq('type', 'story')
-        .order('created_at', { ascending: false })
-    ]);
+    // 全部從 gallery_posts 抓 (type=story)
+    const { data, error } = await sb.from('gallery_posts')
+      .select('id, title, story, status, reject_reason, created_at, image_urls, main_image_url')
+      .eq('member_id', State.member.erpid)
+      .eq('type', 'story')
+      .order('created_at', { ascending: false });
 
-    if (memRes.error) console.error('[讀取 member_stories 失敗]', memRes.error);
-    if (postsRes.error) console.error('[讀取 gallery_posts 故事失敗]', postsRes.error);
+    if (error) console.error('[讀取 gallery_posts 故事失敗]', error);
 
-    // 統一格式: source 欄位區分來自哪邊 (供刪除時用對的 table)
-    const memStories = (memRes.data || []).map(s => ({
-      id: s.id,
-      title: s.title,
-      content: s.content,
-      status: s.status,
-      reject_reason: s.reject_reason,
-      created_at: s.created_at,
-      image_url: null,
-      source: 'member_stories'
-    }));
-    const postStories = (postsRes.data || []).map(p => ({
+    const items = (data || []).map(p => ({
       id: p.id,
       title: p.title,
       content: p.story,
@@ -920,13 +900,7 @@
       reject_reason: p.reject_reason,
       created_at: p.created_at,
       image_url: p.main_image_url || (p.image_urls && p.image_urls[0]) || null,
-      source: 'gallery_posts'
     }));
-
-    // 合併 + 按時間排序
-    const items = [...memStories, ...postStories].sort((a, b) =>
-      new Date(b.created_at) - new Date(a.created_at)
-    );
 
     if (countEl) countEl.textContent = items.length ? items.length + ' 篇' : '';
 
@@ -941,36 +915,20 @@
       return;
     }
 
-    // 抓每篇故事的收藏次數 (只有 member_stories 來源才查 story_favorites)
-    const favCounts = {};
-    for (const s of items) {
-      if (s.source === 'member_stories') {
-        const { count } = await sb
-          .from('story_favorites')
-          .select('story_id', { count: 'exact', head: true })
-          .eq('story_id', s.id);
-        favCounts[s.id] = count || 0;
-      } else {
-        favCounts[s.id] = 0;
-      }
-    }
-
     list.innerHTML = items.map(s => `
-      <div class="story-card" data-id="${s.id}" data-source="${s.source}">
+      <div class="story-card" data-id="${s.id}">
         <div class="story-h">
           <h3 class="story-title">${escapeHtml(s.title || '未命名')}</h3>
           <div class="story-menu-wrap">
             <button class="story-menu-btn" data-story="${s.id}"><i class="fa-solid fa-ellipsis"></i></button>
             <div class="story-menu" data-menu="${s.id}">
-              ${s.source === 'member_stories' ? `<button data-action="edit" data-id="${s.id}"><i class="fa-regular fa-pen-to-square"></i>編輯</button>` : ''}
-              <button class="danger" data-action="delete" data-id="${s.id}" data-source="${s.source}"><i class="fa-regular fa-trash-can"></i>刪除故事</button>
+              <button class="danger" data-action="delete" data-id="${s.id}"><i class="fa-regular fa-trash-can"></i>刪除故事</button>
             </div>
           </div>
         </div>
         <p class="story-content">${escapeHtml(s.content || '')}</p>
         <div class="story-meta">
-          <span>發佈於 ${formatDate(s.created_at)} · ${s.status === 'approved' ? '已公開' : s.status === 'rejected' ? '未通過' : '審核中'}${s.source === 'gallery_posts' ? ' · 含照片' : ''}</span>
-          <span class="story-fav"><i class="fa-solid fa-bookmark"></i>被加入收藏 <b>${favCounts[s.id]}</b> 次</span>
+          <span>發佈於 ${formatDate(s.created_at)} · ${s.status === 'approved' ? '已公開' : s.status === 'rejected' ? '未通過' : '審核中'}${s.image_url ? ' · 含照片' : ''}</span>
         </div>
       </div>
     `).join('') + `
@@ -1001,13 +959,13 @@
     if (!id) return;
     if (!window.confirm('確定刪除這篇故事?')) return;
     const sb = getSupabase();
-    const { error } = await sb
-      .from('member_stories')
+    const { error } = await sb.from('gallery_posts')
       .delete()
       .eq('id', id)
       .eq('member_id', State.member.erpid);
     if (error) {
-      window.alert('刪除失敗');
+      console.error('[deleteStory] 失敗:', error);
+      window.alert('刪除失敗:' + (error.message || ''));
       return;
     }
     loadStories();
