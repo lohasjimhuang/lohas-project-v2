@@ -389,28 +389,49 @@
     ctx.drawImage(img, 0, 0);
     URL.revokeObjectURL(imgUrl);
 
-    // 2. 像素掃描:亮度 > 閾值 → alpha=0 / 否則保留為深色
-    var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    var data = imgData.data;
+    // 2. 像素掃描 → 產生兩份 imgData:
+    //    - imgDataForPng: 白底變透明 (給 PNG 用)
+    //    - imgDataForSvg: 白底保白 (給 imagetracerjs 用,它不擅長處理 alpha)
+    var imgDataForPng = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var dataPng = imgDataForPng.data;
+
+    // 複製一份給 SVG 用
+    var canvas2 = document.createElement('canvas');
+    canvas2.width = canvas.width;
+    canvas2.height = canvas.height;
+    var ctx2 = canvas2.getContext('2d');
+    ctx2.drawImage(img, 0, 0);
+    var imgDataForSvg = ctx2.getImageData(0, 0, canvas.width, canvas.height);
+    var dataSvg = imgDataForSvg.data;
+
     var threshold = CONFIG.WHITE_THRESHOLD;
     var inkRgb = hexToRgb(CONFIG.INK_COLOR); // {r,g,b}
 
-    for(var i = 0; i < data.length; i += 4){
-      var r = data[i], g = data[i+1], b = data[i+2];
-      // 亮度公式 (Rec. 709)
+    for(var i = 0; i < dataPng.length; i += 4){
+      var r = dataPng[i], g = dataPng[i+1], b = dataPng[i+2];
       var lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
       if(lum > threshold){
-        // 白底 → 透明
-        data[i+3] = 0;
+        // 白底 → PNG 變透明
+        dataPng[i+3] = 0;
+        // SVG 版本保留白底 (255,255,255,255)
+        dataSvg[i]   = 255;
+        dataSvg[i+1] = 255;
+        dataSvg[i+2] = 255;
+        dataSvg[i+3] = 255;
       } else {
-        // 保留深色,改成統一墨色
-        data[i]   = inkRgb.r;
-        data[i+1] = inkRgb.g;
-        data[i+2] = inkRgb.b;
-        data[i+3] = 255;
+        // 深色:PNG 和 SVG 都改成統一墨色
+        dataPng[i]   = inkRgb.r;
+        dataPng[i+1] = inkRgb.g;
+        dataPng[i+2] = inkRgb.b;
+        dataPng[i+3] = 255;
+        dataSvg[i]   = inkRgb.r;
+        dataSvg[i+1] = inkRgb.g;
+        dataSvg[i+2] = inkRgb.b;
+        dataSvg[i+3] = 255;
       }
     }
-    ctx.putImageData(imgData, 0, 0);
+    ctx.putImageData(imgDataForPng, 0, 0);
 
     // 3. Canvas → 透明 PNG Blob
     var pngBlob = await new Promise(function(resolve, reject){
@@ -421,14 +442,16 @@
     });
 
     // 4. imagetracerjs 追蹤路徑 → SVG XML
+    //    用白底版的 imgDataForSvg (透明像素會混淆 tracer)
     var svgString = '';
     if(window.ImageTracer){
       try {
-        // 用 imagedata 直接追蹤 (跳過再次讀檔)
-        svgString = window.ImageTracer.imagedataToSVG(imgData, {
-          // 雙色設定 (黑+透明)
-          numberofcolors: 2,
-          colorquantcycles: 1,
+        svgString = window.ImageTracer.imagedataToSVG(imgDataForSvg, {
+          // 強制兩色:墨色 + 白色 (palette,跳過量化避免錯誤)
+          pal: [
+            { r: inkRgb.r, g: inkRgb.g, b: inkRgb.b, a: 255 },
+            { r: 255,      g: 255,      b: 255,      a: 255 },
+          ],
           ltres:    1,        // 直線閾值
           qtres:    1,        // 曲線閾值
           pathomit: 8,        // 忽略小於 8 px 的雜訊路徑
@@ -436,12 +459,24 @@
           strokewidth: 0,
           linefilter: false,
           scale:    1,
-          roundcoords: 1,     // 座標小數點 (0=整數最小, 5=精確最大)
+          roundcoords: 1,
           viewbox: true,
           desc: false,
           lcpr: 0,
           qcpr: 0,
         });
+
+        // 移除 SVG 內白色路徑 (只保留墨色),這樣 SVG 顯示時白底自動透明
+        if(svgString){
+          // 拿掉 fill 是白色 (255,255,255) 的 path
+          svgString = svgString.replace(
+            /<path[^>]+fill="rgb\(255,255,255\)"[^>]*\/>/g, ''
+          );
+          // 拿掉 svg 的背景矩形 (有些版本會加)
+          svgString = svgString.replace(
+            /<rect[^>]+fill="rgb\(255,255,255\)"[^>]*\/>/g, ''
+          );
+        }
       } catch(e){
         console.warn('[upload-design] SVG 追蹤失敗,只回傳 PNG:', e);
       }
