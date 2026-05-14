@@ -215,16 +215,21 @@
       }
     }
 
-    // 點擊跳設計者作品集
+    // 點擊跳創作者個人頁(本月精選有 creatorId 才跳)
     var hero = document.getElementById('featuredHero');
     if(hero){
       hero.addEventListener('click', function(e){
         e.preventDefault();
-        State.searchTerm = featured.name;
-        var input = document.getElementById('marketSearch');
-        if(input) input.value = featured.name;
-        applySearch();
-        showToast('已篩選 ' + featured.name + ' 的作品');
+        if(featured.creatorId){
+          window.location.href = 'creator-public.html?id=' + encodeURIComponent(featured.creatorId);
+        } else {
+          // Fallback (沒 creatorId,例如 legacy 沒 creator_id 的設計):用舊邏輯篩選
+          State.searchTerm = featured.name;
+          var input = document.getElementById('marketSearch');
+          if(input) input.value = featured.name;
+          applySearch();
+          showToast('已篩選 ' + featured.name + ' 的作品');
+        }
       });
     }
   }
@@ -492,7 +497,7 @@
     if(!sb || typeof sb.from !== 'function') return;
     try {
       var { data } = await sb
-        .from('wishlist_designs')
+        .from('engraving_wishlist')
         .select('design_id')
         .eq('member_id', String(State.member.erpid));
       State.wishlistIds = new Set((data || []).map(function(r){ return String(r.design_id); }));
@@ -517,7 +522,7 @@
       setWishlistState(false);
       showToast('已從我的最愛刻圖移除');
       if(sb){
-        await sb.from('wishlist_designs').delete()
+        await sb.from('engraving_wishlist').delete()
           .eq('member_id', memberId).eq('design_id', idStr);
       }
       // 通知其他頁面 (member-portal 同視窗會自動 reload)
@@ -529,7 +534,7 @@
       setWishlistState(true);
       showToast('已加入我的最愛刻圖');
       if(sb){
-        await sb.from('wishlist_designs').insert({
+        await sb.from('engraving_wishlist').insert({
           member_id: memberId,
           design_id: idStr,
           created_at: new Date().toISOString(),
