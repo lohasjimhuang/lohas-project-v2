@@ -2733,6 +2733,8 @@
 .ad .md-pill.s-rejected{ background:var(--status-rejected-bg); color:var(--status-rejected) }
 .ad .md-pill.t-legacy  { background:#F0EBE2; color:#765F4A }
 .ad .md-pill.t-member  { background:var(--c-bg); color:var(--c-text) }
+.ad .md-pill.t-photo   { background:#EAF2F0; color:#3F7E6F }
+.ad .md-pill.t-story   { background:#F2EAEF; color:#7E3F66 }
 
 
 .ad .md-icon-btn{
