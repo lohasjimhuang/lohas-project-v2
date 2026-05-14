@@ -35,6 +35,7 @@
   max-height:calc(100vh - 60px);
   display:grid;
   grid-template-columns:380px 1fr;
+  grid-template-rows:1fr;          /* 強制單列,撐滿 max-height */
   overflow:hidden;
   box-shadow:0 24px 80px rgba(80,66,45,0.28);
   animation:dumIn .3s cubic-bezier(.2,.8,.2,1);
@@ -73,6 +74,8 @@
   border-right:1px solid var(--lohas-bd, #E8DED1);
   display:flex;
   flex-direction:column;
+  min-height:0;         /* 讓 flex 子可以 shrink */
+  overflow-y:auto;      /* 內容過長可滾 */
 }
 
 .dum-eyebrow{
@@ -227,6 +230,7 @@
   padding:30px 32px 26px;
   display:flex;
   flex-direction:column;
+  min-height:0;         /* 讓 flex 子可以 shrink,overflow 才會 work */
   overflow-y:auto;
 }
 
@@ -443,16 +447,24 @@
   .design-upload-modal{ padding:0 }
   .dum-dialog{
     grid-template-columns:1fr;
+    grid-template-rows:auto;       /* 取消強制單列 */
     width:100%;
     height:100vh;
     max-height:100vh;
     border-radius:0;
-    overflow-y:auto;
+    overflow-y:auto;               /* 整個 dialog 自己滾 */
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+  }
+  .dum-left,
+  .dum-right{
+    overflow:visible;              /* 取消子層的 scroll */
+    min-height:auto;
   }
   .dum-left{
     border-right:0;
     border-bottom:1px solid var(--lohas-bd, #E8DED1);
-    padding:80px 20px 20px;  /* 80px 留 header 高度 */
+    padding:80px 20px 20px;        /* 80px 留 header 高度 */
   }
   .dum-uploader{ aspect-ratio:auto; height:200px }
   .dum-flow-info{ padding-top:14px; margin-top:14px }
