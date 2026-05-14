@@ -72,7 +72,7 @@
       <span class="badge" id="badgeDesigns">0</span>
     </button>
     <button class="nav-link" data-page="review-uploads">
-      <i class="fa-regular fa-image"></i><span>上傳審核</span>
+      <i class="fa-regular fa-image"></i><span>上傳照片審核</span>
       <span class="badge" id="badgeUploads">0</span>
     </button>
   </div>
@@ -206,18 +206,11 @@
         </div>
       </div>
 
-      <div class="review-tabs" id="designReviewTabs">
-        <button class="rtab on" data-filter="all">全部 <span class="count">0</span></button>
-        <button class="rtab" data-filter="creator">Creator <span class="count">0</span></button>
-        <button class="rtab" data-filter="collab">Collab <span class="count">0</span></button>
-        <button class="rtab" data-filter="member">Member <span class="count">0</span></button>
-      </div>
-
       <div class="filter-row">
         <label>排序</label>
         <select><option>送審時間 · 最舊優先</option><option>送審時間 · 最新優先</option></select>
         <label>狀態</label>
-        <select><option>待審核</option><option>已通過</option><option>已駁回</option></select>
+        <select><option>待審核</option><option>已駁回</option></select>
         <div class="spacer"></div>
         <div class="filter-info" id="reviewDesignsFilterInfo">— 件</div>
       </div>
@@ -439,26 +432,24 @@
     <div class="content-page" data-page="review-uploads">
       <div class="page-head">
         <div>
-          <h1 class="page-title">上傳審核</h1>
+          <h1 class="page-title">上傳照片審核</h1>
           <div class="page-sub" id="reviewUploadsSub">— 件待審核 · 通過後將出現在靈感牆</div>
         </div>
       </div>
 
       <div class="filter-row">
-        <label>狀態</label>
-        <select id="reviewUploadsStatus">
-          <option value="pending">待審核</option>
-          <option value="approved">已通過</option>
-          <option value="rejected">已駁回</option>
-        </select>
-        <label style="margin-left:14px">類型</label>
+        <label>類型</label>
         <select id="reviewUploadsType">
           <option value="all">全部</option>
           <option value="photo">只有照片</option>
           <option value="story">有故事 (≥50字)</option>
         </select>
+        <label style="margin-left:14px">狀態</label>
+        <select id="reviewUploadsStatus">
+          <option value="pending">待審核</option>
+          <option value="rejected">已駁回</option>
+        </select>
         <div class="spacer"></div>
-        <button class="rtab" id="reviewUploadsRefresh"><i class="fa-solid fa-rotate"></i> 重新整理</button>
       </div>
 
       <div class="review-grid" id="reviewUploadsGrid">
