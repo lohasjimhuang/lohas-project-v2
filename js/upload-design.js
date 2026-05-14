@@ -122,6 +122,12 @@
             '<p class="dum-subtitle">填寫作品資訊,審核通過後將出現在創作者市集' + (memberName ? ' · <span class="dum-by">by ' + escAttr(memberName) + '</span>' : '') + '</p>',
           '</div>',
 
+          // 錯誤訊息 (放最上面,顯眼)
+          '<div class="dum-error" id="dumError" hidden>',
+            '<i class="fa-solid fa-circle-exclamation"></i>',
+            '<span class="dum-error-text"></span>',
+          '</div>',
+
           '<div class="dum-form" id="dumForm">',
 
             // 設計名稱
@@ -167,9 +173,6 @@
             '<button type="button" class="dum-btn-cancel" id="dumCancel">取 消</button>',
             '<button type="button" class="dum-btn-submit" id="dumSubmit"><span>送 出 審 核</span></button>',
           '</div>',
-
-          // 錯誤訊息
-          '<div class="dum-error" id="dumError" hidden></div>',
 
         '</div>',
 
@@ -493,24 +496,26 @@
     // 顯示眼鏡模擬框
     els.mockImg.src = state.previewUrl;
     els.mockFrame.hidden = false;
-    syncMockStageSquare();
+    syncSquareBoxes();
   }
 
 
-  // 強制 .dum-mock-stage 變方形(不靠 CSS 算)
-  function syncMockStageSquare(){
+  // 強制 .dum-mock-stage / .dum-uploader 都變方形(不靠 CSS 算)
+  function syncSquareBoxes(){
     if(!modal) return;
-    var stage = modal.querySelector('.dum-mock-stage');
-    if(!stage) return;
-    var w = stage.offsetWidth;
-    if(w > 0) stage.style.height = w + 'px';
+    [modal.querySelector('.dum-mock-stage'),
+     modal.querySelector('.dum-uploader')].forEach(function(el){
+      if(!el) return;
+      var w = el.offsetWidth;
+      if(w > 0) el.style.height = w + 'px';
+    });
   }
 
 
   // window resize 也要重算
   window.addEventListener('resize', function(){
     if(modal && modal.classList.contains('is-open')){
-      syncMockStageSquare();
+      syncSquareBoxes();
     }
   });
 
@@ -623,8 +628,9 @@
       }
       if(resp.error) throw new Error('資料寫入失敗:' + resp.error.message);
 
-      // 成功 → 關閉 + 通知
+      // 成功 → 關閉 + 清空 + 通知
       closeModal();
+      resetForm();
       toast(state.editId ? '已重新送審' : '已送出審核,我們會盡快通知你');
       // 通知 member-portal 重整列表
       window.dispatchEvent(new CustomEvent('lohas:design-upload-success', { detail: resp.data }));
@@ -656,7 +662,10 @@
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
-    setTimeout(function(){ els.name.focus(); }, 100);
+    setTimeout(function(){
+      els.name.focus();
+      syncSquareBoxes();   // 等 modal 顯示後再算
+    }, 100);
   }
 
 
@@ -699,7 +708,7 @@
       // 編輯模式也要顯示眼鏡模擬
       els.mockImg.src = design.image_url;
       els.mockFrame.hidden = false;
-      syncMockStageSquare();
+      syncSquareBoxes();
     }
 
     modal.classList.add('is-open');
@@ -751,8 +760,17 @@
   // ===== UI helpers =====
   function showError(msg){
     if(!els.error) return alert(msg);
-    els.error.textContent = msg;
+    var txt = els.error.querySelector('.dum-error-text');
+    if(txt) txt.textContent = msg;
+    else els.error.textContent = msg;
     els.error.hidden = false;
+    // 觸發抖動動畫(reset 再加)
+    els.error.classList.remove('shake');
+    void els.error.offsetWidth;   // 強制 reflow
+    els.error.classList.add('shake');
+    // 滾到視圖內 (右欄頂部)
+    var rightCol = modal.querySelector('.dum-right');
+    if(rightCol) rightCol.scrollTop = 0;
   }
   function clearError(){
     if(els.error){ els.error.hidden = true; els.error.textContent = ''; }
