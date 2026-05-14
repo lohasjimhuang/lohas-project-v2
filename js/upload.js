@@ -28,8 +28,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const workTitleError = document.getElementById("workTitleError");
   const workCategory = document.getElementById("workCategory");
   const carrierCategory = document.getElementById("carrierCategory");
+  const subtagChips = document.getElementById("subtagChips");
   const previewBtn = document.getElementById("previewBtn");
   const submitBtn = document.getElementById("submitBtn");
+
+  // 已選的細部標籤 (Set)
+  const selectedSubtags = new Set();
 
   let cropper = null;
   let cropTargetSlot = null;
@@ -65,6 +69,44 @@ document.addEventListener("DOMContentLoaded", () => {
         : cleanName.slice(-1);
 
     return `${first}＊${suffix}`;
+  }
+
+  /* ============== 子標籤 chip 渲染 (按主類切換) ============== */
+  function renderSubtags(topic) {
+    if (!subtagChips) return;
+    const tags = (window.LohasSubcategories || {})[topic] || [];
+
+    if (!tags.length) {
+      subtagChips.innerHTML = ''; // 空 → :empty::before 顯示「請先選擇靈感主題」
+      return;
+    }
+
+    subtagChips.innerHTML = tags.map(t => {
+      const active = selectedSubtags.has(t);
+      return `<button type="button" class="tag-chip ${active ? 'is-active' : ''}" data-tag="${escapeAttr(t)}">${escapeHtml(t)}</button>`;
+    }).join('');
+
+    subtagChips.querySelectorAll('.tag-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const tag = chip.dataset.tag;
+        if (selectedSubtags.has(tag)) {
+          selectedSubtags.delete(tag);
+          chip.classList.remove('is-active');
+        } else {
+          selectedSubtags.add(tag);
+          chip.classList.add('is-active');
+        }
+      });
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c =>
+      ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])
+    );
+  }
+  function escapeAttr(s) {
+    return escapeHtml(s).replace(/`/g, '&#96;');
   }
 
   function openModal() {
@@ -346,6 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
       title: getTitle(),
       topic: workCategory.value,
       carrier: carrierCategory.value,
+      subcategories: Array.from(selectedSubtags),
       story: storyText,
       type: cardType,
       customer_name: member.name || "顧客",
@@ -525,6 +568,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    // 靈感主題切換 → 刷子標籤
+    workCategory?.addEventListener("change", () => {
+      selectedSubtags.clear();
+      renderSubtags(workCategory.value);
+    });
+
+    // 初次 render (預設主題)
+    if (workCategory) renderSubtags(workCategory.value);
+
     workTitle?.addEventListener("input", () => {
       if (workTitleError) {
         workTitleError.textContent = "";
@@ -686,6 +738,11 @@ document.addEventListener("DOMContentLoaded", () => {
       // 觸發字數計算
       shareText.dispatchEvent(new Event('input'));
     }
+
+    // 載回舊的子標籤
+    selectedSubtags.clear();
+    (post.subcategories || []).forEach(t => selectedSubtags.add(t));
+    if (workCategory) renderSubtags(workCategory.value);
 
     // 預填照片 (顯示 + 記下原 URL)
     const urls = Array.isArray(post.image_urls) ? post.image_urls : [];
