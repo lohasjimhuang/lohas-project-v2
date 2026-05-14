@@ -2617,69 +2617,121 @@
   gap:14px;
   align-items:flex-start;
 }
+/* === Grid 卡片佈局 === */
 .ad .md-table-wrap{
+  background:transparent;
+  border:0;
+  overflow:visible;
+  max-height:none;
+}
+.ad .md-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+  gap:14px;
+}
+.ad .md-card{
   background:#fff;
   border:1px solid var(--lohas-line);
   border-radius:12px;
   overflow:hidden;
-  max-height:calc(100vh - 240px);
-  overflow-y:auto;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
 }
-.ad .md-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:13px;
+.ad .md-card:hover{
+  border-color:var(--lohas-brown);
+  box-shadow:0 8px 24px rgba(80,66,45,0.1);
+  transform:translateY(-2px);
 }
-.ad .md-table thead th{
-  position:sticky;
-  top:0;
-  background:#FAF7F2;
+.ad .md-card.on{
+  border-color:var(--lohas-brown);
+  box-shadow:0 0 0 2px var(--lohas-brown);
+}
+
+/* 封面 (1:1) */
+.ad .md-card-cover{
+  aspect-ratio:1/1;
+  background:#FAF7F2 center/contain no-repeat;
+  position:relative;
   border-bottom:1px solid var(--lohas-line);
-  text-align:left;
-  padding:12px 14px;
-  font-size:11px;
+}
+.ad .md-card-cover::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+/* 卡片內 pill */
+.ad .md-card-status,
+.ad .md-card-type{
+  position:absolute;
+  top:8px;
+}
+.ad .md-card-status{ left:8px }
+.ad .md-card-type  { right:8px }
+
+/* 卡片內文 */
+.ad .md-card-body{
+  padding:12px 14px 14px;
+}
+.ad .md-card-name{
+  font-size:13px;
   font-weight:600;
-  color:var(--lohas-sub);
-  letter-spacing:1.5px;
+  color:var(--lohas-text);
+  letter-spacing:0.3px;
+  margin-bottom:3px;
   white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ad .md-card-slogan{
+  font-size:11px;
+  color:var(--lohas-sub);
+  margin-bottom:6px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ad .md-card-by{
+  font-size:10px;
+  color:var(--lohas-mute);
+  margin-bottom:8px;
+  letter-spacing:0.3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ad .md-card-stats{
+  display:flex;
+  gap:10px;
+  font-size:10px;
+  color:var(--lohas-mute);
+  border-top:1px solid var(--lohas-line);
+  padding-top:8px;
+}
+.ad .md-card-stats i{ font-size:9px; margin-right:3px }
+
+/* 卡片操作按鈕 (右下角浮) */
+.ad .md-card-actions{
+  position:absolute;
+  top:8px;
+  right:8px;
+  display:flex;
+  gap:4px;
+  opacity:0;
+  transition:opacity .15s;
   z-index:2;
 }
-.ad .md-table thead th.th-img{ width:48px }
-.ad .md-table tbody tr{
-  border-bottom:1px solid #F0EBE2;
-  cursor:pointer;
-  transition:background .15s;
+.ad .md-card:hover .md-card-actions{ opacity:1 }
+.ad .md-card-actions .md-icon-btn{
+  background:rgba(255,255,255,0.95);
+  backdrop-filter:blur(4px);
 }
-.ad .md-table tbody tr:hover{ background:#FAF7F2 }
-.ad .md-table tbody tr.on{ background:#F4F1EC }
-.ad .md-table tbody td{
-  padding:10px 14px;
-  vertical-align:middle;
-  color:var(--lohas-text);
-}
-.ad .md-thumb{
-  width:36px;
-  height:36px;
-  border-radius:6px;
-  background:#FAF7F2 center/contain no-repeat;
-  border:1px solid var(--lohas-line);
-}
-.ad .md-cell-name{
-  font-weight:600;
-  max-width:200px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-.ad .md-cell-slogan{
-  font-size:11px;
-  color:var(--lohas-mute);
-  margin-top:2px;
-  max-width:200px;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
+/* hover 操作按鈕時隱藏 card-type pill 避免重疊 */
+.ad .md-card:hover .md-card-type{ opacity:0 }
+
+
 .ad .md-pill{
   display:inline-flex;
   padding:3px 10px;
@@ -2694,19 +2746,7 @@
 .ad .md-pill.t-legacy  { background:#F0EBE2; color:#765F4A }
 .ad .md-pill.t-member  { background:var(--c-bg); color:var(--c-text) }
 
-.ad .md-stat-row{
-  display:flex;
-  gap:10px;
-  font-size:11px;
-  color:var(--lohas-mute);
-  white-space:nowrap;
-}
-.ad .md-stat-row i{ font-size:10px; margin-right:3px }
 
-.ad .md-row-actions{
-  display:flex;
-  gap:4px;
-}
 .ad .md-icon-btn{
   width:28px;
   height:28px;
@@ -2725,8 +2765,9 @@
 .ad .md-icon-btn.danger:hover{ background:var(--status-rejected); border-color:var(--status-rejected) }
 
 .ad .md-empty{
+  grid-column:1 / -1;
   text-align:center;
-  padding:48px 24px;
+  padding:60px 24px;
   color:var(--lohas-mute);
   font-size:13px;
 }
@@ -2931,21 +2972,10 @@
   .ad .md-toolbar{ flex-direction:column; align-items:stretch }
   .ad .md-filters{ flex-direction:column }
   .ad .md-search{ width:100% }
-  .ad .md-table thead{ display:none }
-  .ad .md-table tbody tr{
-    display:grid;
-    grid-template-columns:48px 1fr;
-    padding:12px 14px;
-    gap:8px 14px;
+  .ad .md-grid{
+    grid-template-columns:repeat(2, 1fr);
+    gap:10px;
   }
-  .ad .md-table tbody td{
-    padding:0;
-    border:0;
-  }
-  .ad .md-table tbody td:not(:nth-child(1)):not(:nth-child(2)){
-    grid-column:2;
-    font-size:11px;
-    color:var(--lohas-mute);
-  }
-  .ad .md-row-actions{ grid-column:1 / -1; justify-content:flex-end }
+  .ad .md-card-actions{ opacity:1 }      /* 手機沒 hover,永遠顯示 */
+  .ad .md-card:hover .md-card-type{ opacity:1 }
 }
