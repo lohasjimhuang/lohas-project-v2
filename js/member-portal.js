@@ -1032,7 +1032,7 @@
 
     const { data, error } = await sb
       .from('engraving_designs')
-      .select('id, name, image_url, status, reject_reason, created_at')
+      .select('id, name, image_url, image_url_png, image_url_svg, status, reject_reason, created_at')
       .eq('creator_id', State.member.erpid)
       .order('created_at', { ascending: false });
 
@@ -1066,11 +1066,20 @@
       const grad = grads[i % grads.length];
       const isApproved = d.status === 'approved';
       const isPending = d.status === 'pending';
+      // 優先 PNG (透明) → image_url(原始) → SVG
+      var coverImg = '';
+      var candidates = [d.image_url_png, d.image_url, d.image_url_svg];
+      for (var k = 0; k < candidates.length; k++) {
+        var u = candidates[k];
+        if (u && typeof u === 'string' && u.trim() !== '' && /^https?:\/\//.test(u)) {
+          coverImg = u;
+          break;
+        }
+      }
       return `
         <div class="design-card">
-          <div class="design-img ${grad}" ${d.image_url ? `style="background-image:url('${d.image_url}');background-size:cover;background-position:center"` : ''}>
+          <div class="design-img ${grad}" ${coverImg ? `style="background-image:url('${coverImg}');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#fff"` : ''}>
             <span class="design-status ${d.status}">${isApproved ? '已 上 架' : isPending ? '審 核 中' : '未 通 過'}</span>
-            ${escapeHtml(d.name || '')}
           </div>
           <div class="design-info">
             <div class="design-name">${escapeHtml(d.name || '')}</div>
@@ -2029,13 +2038,8 @@
             window.LohasUpload.openModal();
           }
         } else if (action === 'upload-design') {
-          // 開上傳刻圖設計 modal
-          if (window.LohasUploadDesign && window.LohasUploadDesign.openModal) {
-            window.LohasUploadDesign.openModal();
-          } else {
-            console.warn('[member-portal] LohasUploadDesign 模組沒載入');
-            alert('上傳模組載入中,請稍候');
-          }
+          // 開上傳刻圖設計 modal (尚未實作 → 暫時提示)
+          alert('上傳刻圖設計功能即將推出');
         }
       });
     });

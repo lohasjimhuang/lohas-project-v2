@@ -152,6 +152,7 @@
     'cm-banner': '首頁與分頁 Banner',
     'cm-news': '最新消息',
     'admin-upload': '樂活官方上傳',
+    'manage-designs': '刻圖管理',
     'users': '會員列表',
     'creators': '創作者管理',
     'ip': 'IP 合作'
@@ -188,6 +189,7 @@
     if (page === 'cm-news') loadNews();
     if (page === 'admin-upload') { initAdminUpload(); loadAdminUploadHistory(); }
     if (page === 'creators') loadCreatorsList();
+    if (page === 'manage-designs') loadManageDesigns();
 
     root.querySelector('.main').scrollTop = 0;
   }
@@ -2941,5 +2943,300 @@
 
     return blocks;
   }
+
+
+  /* =============================================================
+     刻圖管理 (manage-designs)
+     - 全表列出 + 過濾 + 編輯 + 硬刪除
+     ============================================================= */
+
+  var mdState = {
+    designs:        [],
+    filtered:       [],
+    selectedId:     null,
+    editId:         null,
+  };
+
+  async function loadManageDesigns() {
+    const sb = getSb();
+    if (!sb) return;
+
+    const tbody = document.getElementById('mdTbody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="8" class="md-empty">載入中...</td></tr>';
+
+    try {
+      const { data, error } = await sb.from('engraving_designs')
+        .select('id, legacy_id, name, slogan, keywords, designer_name, category, image_url, image_url_png, image_url_svg, status, type, creator_id, like_count, share_count, collect_count, created_at')
+        .order('created_at', { ascending: false })
+        .limit(2000);
+
+      if (error) throw error;
+
+      mdState.designs = data || [];
+      mdBindToolbar();
+      mdApplyFilters();
+
+    } catch (err) {
+      console.error('[manage-designs] 載入失敗:', err);
+      tbody.innerHTML = '<tr><td colspan="8" class="md-empty">載入失敗:' + err.message + '</td></tr>';
+    }
+  }
+
+  // 工具列只綁一次
+  let mdToolbarBound = false;
+  function mdBindToolbar() {
+    if (mdToolbarBound) return;
+    mdToolbarBound = true;
+
+    document.getElementById('mdFilterStatus')?.addEventListener('change', mdApplyFilters);
+    document.getElementById('mdFilterType')?.addEventListener('change', mdApplyFilters);
+    document.getElementById('mdSearch')?.addEventListener('input', debounce(mdApplyFilters, 200));
+
+    // 編輯 Modal
+    document.getElementById('mdModalClose')?.addEventListener('click', mdCloseEditModal);
+    document.getElementById('mdEditCancel')?.addEventListener('click', mdCloseEditModal);
+    document.getElementById('mdEditSave')?.addEventListener('click', mdSaveEdit);
+    document.getElementById('mdModalOverlay')?.addEventListener('click', e => {
+      if (e.target.id === 'mdModalOverlay') mdCloseEditModal();
+    });
+
+    // 側面板按鈕
+    document.getElementById('mdSideEdit')?.addEventListener('click', () => {
+      if (mdState.selectedId) mdOpenEditModal(mdState.selectedId);
+    });
+    document.getElementById('mdSideDel')?.addEventListener('click', () => {
+      if (mdState.selectedId) mdDeleteDesign(mdState.selectedId);
+    });
+  }
+
+  function debounce(fn, ms) {
+    let t;
+    return function() { clearTimeout(t); t = setTimeout(() => fn.apply(this, arguments), ms); };
+  }
+
+  function mdApplyFilters() {
+    const status = document.getElementById('mdFilterStatus')?.value || '';
+    const type   = document.getElementById('mdFilterType')?.value || '';
+    const q      = (document.getElementById('mdSearch')?.value || '').toLowerCase().trim();
+
+    mdState.filtered = mdState.designs.filter(d => {
+      if (status && d.status !== status) return false;
+      if (type && d.type !== type) return false;
+      if (q) {
+        const hay = [d.name, d.slogan, d.designer_name, d.category, d.keywords]
+          .map(s => (s || '').toString().toLowerCase())
+          .join(' ');
+        if (hay.indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+
+    mdRenderTable();
+    document.getElementById('mdCount').textContent =
+      `共 ${mdState.filtered.length} / ${mdState.designs.length} 件`;
+  }
+
+  function mdRenderTable() {
+    const tbody = document.getElementById('mdTbody');
+    if (!tbody) return;
+
+    if (!mdState.filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="md-empty">沒有符合條件的設計</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = mdState.filtered.map(d => {
+      const imgUrl = mdValidUrl(d.image_url_png) || mdValidUrl(d.image_url) || '';
+      const statusLabel = { approved:'已通過', pending:'待審核', rejected:'已駁回' }[d.status] || d.status || '--';
+      const typeLabel = { legacy:'官方', member:'會員' }[d.type] || d.type || '--';
+      return (
+        '<tr data-id="' + escapeAttr(d.id) + '">' +
+          '<td><div class="md-thumb" style="' + (imgUrl ? 'background-image:url(\'' + escapeAttr(imgUrl) + '\')' : '') + '"></div></td>' +
+          '<td><div class="md-cell-name">' + escapeHtml(d.name || '(未命名)') + '</div>' +
+            (d.slogan ? '<div class="md-cell-slogan">' + escapeHtml(d.slogan) + '</div>' : '') +
+          '</td>' +
+          '<td>' + escapeHtml(d.designer_name || '--') + '</td>' +
+          '<td>' + escapeHtml(d.category || '--') + '</td>' +
+          '<td><span class="md-pill s-' + (d.status || 'pending') + '">' + statusLabel + '</span></td>' +
+          '<td><span class="md-pill t-' + (d.type || 'member') + '">' + typeLabel + '</span></td>' +
+          '<td><div class="md-stat-row">' +
+            '<span><i class="fa-regular fa-heart"></i>' + (d.like_count || 0) + '</span>' +
+            '<span><i class="fa-regular fa-bookmark"></i>' + (d.collect_count || 0) + '</span>' +
+          '</div></td>' +
+          '<td><div class="md-row-actions">' +
+            '<button class="md-icon-btn" data-act="edit" title="編輯"><i class="fa-solid fa-pen"></i></button>' +
+            '<button class="md-icon-btn danger" data-act="delete" title="刪除"><i class="fa-solid fa-trash"></i></button>' +
+          '</div></td>' +
+        '</tr>'
+      );
+    }).join('');
+
+    // 點 row 顯示側面板
+    tbody.querySelectorAll('tr').forEach(tr => {
+      tr.addEventListener('click', e => {
+        const act = e.target.closest('[data-act]')?.dataset?.act;
+        const id  = tr.dataset.id;
+        if (act === 'edit')   { mdOpenEditModal(id); return; }
+        if (act === 'delete') { mdDeleteDesign(id); return; }
+        // 點 row 其他地方 → 顯示側面板
+        tbody.querySelectorAll('tr.on').forEach(t => t.classList.remove('on'));
+        tr.classList.add('on');
+        mdShowSide(id);
+      });
+    });
+  }
+
+  function mdValidUrl(u) {
+    return (u && typeof u === 'string' && u.trim() !== '' && /^https?:\/\//.test(u)) ? u : '';
+  }
+
+  function mdShowSide(id) {
+    const d = mdState.designs.find(x => String(x.id) === String(id));
+    if (!d) return;
+    mdState.selectedId = id;
+
+    document.getElementById('mdSideEmpty').hidden = true;
+    document.getElementById('mdSideContent').hidden = false;
+
+    const imgUrl = mdValidUrl(d.image_url_svg) || mdValidUrl(d.image_url_png) || mdValidUrl(d.image_url) || '';
+    document.getElementById('mdSideImg').style.backgroundImage = imgUrl ? "url('" + imgUrl + "')" : '';
+    document.getElementById('mdSideName').textContent     = d.name || '(未命名)';
+    document.getElementById('mdSideSlogan').textContent   = d.slogan || '';
+    document.getElementById('mdSideDesigner').textContent = d.designer_name || '--';
+    document.getElementById('mdSideCategory').textContent = d.category || '--';
+    document.getElementById('mdSideKeywords').textContent = d.keywords || '--';
+    document.getElementById('mdSideStatus').textContent   = { approved:'已通過', pending:'待審核', rejected:'已駁回' }[d.status] || '--';
+    document.getElementById('mdSideType').textContent     = { legacy:'官方圖庫', member:'會員上傳' }[d.type] || '--';
+    document.getElementById('mdSideCreated').textContent  = d.created_at ? new Date(d.created_at).toLocaleDateString('zh-TW') : '--';
+  }
+
+  function mdOpenEditModal(id) {
+    const d = mdState.designs.find(x => String(x.id) === String(id));
+    if (!d) return;
+    mdState.editId = id;
+
+    document.getElementById('mdEditName').value     = d.name || '';
+    document.getElementById('mdEditSlogan').value   = d.slogan || '';
+    document.getElementById('mdEditCategory').value = d.category || '';
+    document.getElementById('mdEditKeywords').value = d.keywords || '';
+    document.getElementById('mdEditDesigner').value = d.designer_name || '';
+
+    document.getElementById('mdModalOverlay').hidden = false;
+    setTimeout(() => document.getElementById('mdEditName').focus(), 50);
+  }
+
+  function mdCloseEditModal() {
+    document.getElementById('mdModalOverlay').hidden = true;
+    mdState.editId = null;
+  }
+
+  async function mdSaveEdit() {
+    if (!mdState.editId) return;
+    const sb = getSb();
+    if (!sb) return;
+
+    const saveBtn = document.getElementById('mdEditSave');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '儲存中...';
+
+    try {
+      const payload = {
+        name:          document.getElementById('mdEditName').value.trim(),
+        slogan:        document.getElementById('mdEditSlogan').value.trim(),
+        category:      document.getElementById('mdEditCategory').value.trim(),
+        keywords:      document.getElementById('mdEditKeywords').value.trim(),
+        designer_name: document.getElementById('mdEditDesigner').value.trim(),
+      };
+
+      if (!payload.name) {
+        alert('名稱不可為空');
+        return;
+      }
+
+      const { error } = await sb.from('engraving_designs')
+        .update(payload)
+        .eq('id', mdState.editId);
+
+      if (error) throw error;
+
+      // 同步本地資料
+      const idx = mdState.designs.findIndex(x => String(x.id) === String(mdState.editId));
+      if (idx >= 0) {
+        Object.assign(mdState.designs[idx], payload);
+      }
+
+      alert('已儲存');
+      mdCloseEditModal();
+      mdApplyFilters();
+      if (mdState.selectedId === mdState.editId) mdShowSide(mdState.selectedId);
+
+    } catch (err) {
+      console.error('[manage-designs] 儲存失敗:', err);
+      alert('儲存失敗:' + err.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '儲存';
+    }
+  }
+
+  async function mdDeleteDesign(id) {
+    const d = mdState.designs.find(x => String(x.id) === String(id));
+    if (!d) return;
+
+    if (!confirm(`確定刪除「${d.name || '(未命名)'}」?\n\n⚠️ 這個動作會永久刪除:\n· 資料庫紀錄\n· Storage 內的圖檔(PNG + SVG)\n\n無法復原`)) return;
+
+    const sb = getSb();
+    if (!sb) return;
+
+    try {
+      // 1. 先刪 Storage 檔案 (從 URL 抓 path)
+      const filesToDelete = [];
+      [d.image_url, d.image_url_png, d.image_url_svg].forEach(url => {
+        const path = mdExtractStoragePath(url);
+        if (path) filesToDelete.push(path);
+      });
+
+      if (filesToDelete.length) {
+        const { error: storageErr } = await sb.storage
+          .from('engraving-uploads')
+          .remove(filesToDelete);
+        if (storageErr) {
+          console.warn('[manage-designs] Storage 刪除部分失敗(資料庫照刪):', storageErr);
+        }
+      }
+
+      // 2. 刪資料庫紀錄
+      const { error } = await sb.from('engraving_designs')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      // 3. 同步本地狀態
+      mdState.designs = mdState.designs.filter(x => String(x.id) !== String(id));
+      if (mdState.selectedId === id) {
+        mdState.selectedId = null;
+        document.getElementById('mdSideEmpty').hidden = false;
+        document.getElementById('mdSideContent').hidden = true;
+      }
+      mdApplyFilters();
+      alert('已刪除');
+
+    } catch (err) {
+      console.error('[manage-designs] 刪除失敗:', err);
+      alert('刪除失敗:' + err.message);
+    }
+  }
+
+  // 從完整 publicUrl 抓出 bucket 內的 path
+  // 例如: https://xxx.supabase.co/storage/v1/object/public/engraving-uploads/designs/123/abc.png
+  //   → designs/123/abc.png
+  function mdExtractStoragePath(url) {
+    if (!url || typeof url !== 'string') return null;
+    const m = url.match(/\/engraving-uploads\/(.+)$/);
+    return m ? m[1] : null;
+  }
+
 
 })(window);

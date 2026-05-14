@@ -229,12 +229,10 @@
             '<span class="design-card-pill">' +
               '<span class="pill ' + tier + '">' + tierIcon[tier] + tierName[tier] + '</span>' +
             '</span>' +
-            // 永遠放 cover-text 當底層,圖片載成功時蓋上去
-            '<span class="cover-text">' + escapeHtml(d.name || '(未命名)') + '</span>' +
             (coverImg
               ? '<img src="' + escapeAttr(coverImg) + '" alt="' + escapeAttr(d.name) + '" loading="lazy"' +
                 ' onerror="this.style.display=\'none\';this.parentNode.classList.add(\'no-img\')">'
-              : ''
+              : '<span class="cover-text">' + escapeHtml(d.name || '(未命名)') + '</span>'
             ) +
           '</div>' +
           '<div class="design-info">' +
