@@ -28,7 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const workTitleError = document.getElementById("workTitleError");
   const workCategory = document.getElementById("workCategory");
   const carrierCategory = document.getElementById("carrierCategory");
-  const subtagChips = document.getElementById("subtagChips");
+  const subtagChips = document.getElementById("tagChipCloud");
+  const subtagRow   = document.getElementById("tagRow");
+  const subtagCount = document.getElementById("tagCount");
   const previewBtn = document.getElementById("previewBtn");
   const submitBtn = document.getElementById("submitBtn");
 
@@ -77,9 +79,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const tags = (window.LohasSubcategories || {})[topic] || [];
 
     if (!tags.length) {
-      subtagChips.innerHTML = ''; // 空 → :empty::before 顯示「請先選擇靈感主題」
+      if (subtagRow) subtagRow.style.display = 'none';
+      subtagChips.innerHTML = '';
       return;
     }
+
+    // 確保 row 顯示 (gallery 預設 display:none)
+    if (subtagRow) subtagRow.style.display = '';
 
     subtagChips.innerHTML = tags.map(t => {
       const active = selectedSubtags.has(t);
@@ -96,8 +102,11 @@ document.addEventListener("DOMContentLoaded", () => {
           selectedSubtags.add(tag);
           chip.classList.add('is-active');
         }
+        if (subtagCount) subtagCount.textContent = selectedSubtags.size;
       });
     });
+
+    if (subtagCount) subtagCount.textContent = selectedSubtags.size;
   }
 
   function escapeHtml(s) {
@@ -388,7 +397,6 @@ document.addEventListener("DOMContentLoaded", () => {
       title: getTitle(),
       topic: workCategory.value,
       carrier: carrierCategory.value,
-      subcategories: Array.from(selectedSubtags),
       story: storyText,
       type: cardType,
       customer_name: member.name || "顧客",
@@ -738,11 +746,6 @@ document.addEventListener("DOMContentLoaded", () => {
       // 觸發字數計算
       shareText.dispatchEvent(new Event('input'));
     }
-
-    // 載回舊的子標籤
-    selectedSubtags.clear();
-    (post.subcategories || []).forEach(t => selectedSubtags.add(t));
-    if (workCategory) renderSubtags(workCategory.value);
 
     // 預填照片 (顯示 + 記下原 URL)
     const urls = Array.isArray(post.image_urls) ? post.image_urls : [];
