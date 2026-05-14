@@ -2029,8 +2029,13 @@
             window.LohasUpload.openModal();
           }
         } else if (action === 'upload-design') {
-          // 開上傳刻圖設計 modal (尚未實作 → 暫時提示)
-          alert('上傳刻圖設計功能即將推出');
+          // 開上傳刻圖設計 modal
+          if (window.LohasUploadDesign && window.LohasUploadDesign.openModal) {
+            window.LohasUploadDesign.openModal();
+          } else {
+            console.warn('[member-portal] LohasUploadDesign 模組沒載入');
+            alert('上傳模組載入中,請稍候');
+          }
         }
       });
     });
