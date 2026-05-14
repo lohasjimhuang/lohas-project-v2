@@ -60,7 +60,7 @@
       return;
     }
 
-    renderFeatured();
+    await renderFeatured();
     renderAllSections();
     if(State.member) await loadWishlist();
 
@@ -120,12 +120,73 @@
 
 
   // ===== 本月精選 =====
-  function renderFeatured(){
-    // 取 likes 最高的當本月精選 (legacy 資料目前都這樣)
-    var top = State.designs
-      .slice()
-      .sort(function(a,b){ return b.likes - a.likes; })[0];
-    if(!top) return;
+  async function renderFeatured(){
+    var featured = null;
+
+    // 1. 優先讀 featured_creators table (本月由管理員指定)
+    var sb = window.LohasSupabase?.getClient?.() || window.Supabase?.client;
+    if(sb){
+      try {
+        var month = currentMonthKey();
+        var fcRes = await sb.from('featured_creators')
+          .select('creator_id')
+          .eq('featured_month', month)
+          .maybeSingle();
+
+        if(fcRes.data?.creator_id){
+          var creatorId = fcRes.data.creator_id;
+
+          // 拿 creator_info 補頭像/介紹
+          var ciRes = await sb.from('creator_info')
+            .select('member_id, display_name, tagline, bio, avatar_url')
+            .eq('member_id', creatorId)
+            .maybeSingle();
+
+          var ci = ciRes.data || {};
+
+          // 算這個 creator 在當前列表內的作品數 + 統計
+          var works = State.designs.filter(function(d){
+            return String(d.creator_id || '') === String(creatorId);
+          });
+          var totalLikes    = works.reduce(function(s, w){ return s + (w.likes || 0); }, 0);
+          var totalCollects = works.reduce(function(s, w){ return s + (w.collects || 0); }, 0);
+
+          featured = {
+            source:     'featured_table',
+            creatorId:  creatorId,
+            name:       ci.display_name || (works[0] && works[0].designer) || '創作者',
+            tagline:    ci.tagline || ci.bio || '',
+            avatar:     ci.avatar_url || '',
+            worksCount: works.length,
+            likes:      totalLikes,
+            collects:   totalCollects,
+            slogan:     (works[0] && works[0].slogan) || '',
+          };
+        }
+      } catch(e){
+        console.warn('[market] 讀取 featured_creators 失敗:', e);
+      }
+    }
+
+    // 2. Fallback: 取 like 最高的當本月精選 (legacy 邏輯)
+    if(!featured){
+      var top = State.designs
+        .slice()
+        .sort(function(a,b){ return b.likes - a.likes; })[0];
+      if(!top) return;
+
+      featured = {
+        source:     'fallback_likes',
+        creatorId:  top.creator_id,
+        name:       top.designer || top.name,
+        tagline:    top.slogan || top.keywords || '',
+        avatar:     '',
+        worksCount: countByDesigner(top.designer),
+        likes:      top.likes,
+        collects:   top.collects,
+        slogan:     top.slogan || top.keywords || '每一張設計,都是被認真活過的故事。',
+      };
+    }
 
     var setLocalText = function(id, v){
       var el = document.getElementById(id);
@@ -133,31 +194,45 @@
     };
 
     // 對齊 v18 featured-hero 結構
-    setLocalText('featuredName',    maskName(top.designer) || top.name);
-    setLocalText('featuredTag',     (top.name ? top.name + ' · ' : '') + '上架 ' + countByDesigner(top.designer) + ' 件設計');
-    setLocalText('featuredQuote',   top.slogan || top.keywords || '每一張設計,都是被認真活過的故事。');
-    setLocalText('featuredUses',    top.likes);
-    setLocalText('featuredStories', top.collects);
+    setLocalText('featuredName',    maskName(featured.name));
+    setLocalText('featuredTag',     '上架 ' + featured.worksCount + ' 件設計');
+    setLocalText('featuredQuote',   featured.slogan || featured.tagline || '每一張設計,都是被認真活過的故事。');
+    setLocalText('featuredUses',    featured.likes);
+    setLocalText('featuredStories', featured.collects);
 
-    // 大頭照:用設計者名稱前 2 字
+    // 頭像:有圖片就用,沒有就顯示前 2 字
     var avatar = document.getElementById('featuredAvatar');
     if(avatar){
-      var initials = (top.designer || '?').substring(0, 2).toUpperCase();
-      avatar.textContent = initials;
+      if(featured.avatar){
+        avatar.style.backgroundImage = "url('" + featured.avatar + "')";
+        avatar.style.backgroundSize = 'cover';
+        avatar.style.backgroundPosition = 'center';
+        avatar.textContent = '';
+      } else {
+        var initials = (featured.name || '?').substring(0, 2).toUpperCase();
+        avatar.textContent = initials;
+        avatar.style.backgroundImage = '';
+      }
     }
 
-    // 點擊跳設計者作品集 (之後可改)
+    // 點擊跳設計者作品集
     var hero = document.getElementById('featuredHero');
     if(hero){
       hero.addEventListener('click', function(e){
         e.preventDefault();
-        State.searchTerm = top.designer;
+        State.searchTerm = featured.name;
         var input = document.getElementById('marketSearch');
-        if(input) input.value = top.designer;
+        if(input) input.value = featured.name;
         applySearch();
-        showToast('已篩選 ' + top.designer + ' 的作品');
+        showToast('已篩選 ' + featured.name + ' 的作品');
       });
     }
+  }
+
+  // 'YYYY-MM' 例如 '2026-05'
+  function currentMonthKey(){
+    var d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
   }
 
   function countByDesigner(designer){
@@ -445,6 +520,10 @@
         await sb.from('wishlist_designs').delete()
           .eq('member_id', memberId).eq('design_id', idStr);
       }
+      // 通知其他頁面 (member-portal 同視窗會自動 reload)
+      window.dispatchEvent(new CustomEvent('lohas:wishlist-changed', {
+        detail: { action: 'remove', designId: idStr }
+      }));
     } else {
       State.wishlistIds.add(idStr);
       setWishlistState(true);
@@ -456,6 +535,9 @@
           created_at: new Date().toISOString(),
         });
       }
+      window.dispatchEvent(new CustomEvent('lohas:wishlist-changed', {
+        detail: { action: 'add', designId: idStr }
+      }));
     }
   }
 

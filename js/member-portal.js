@@ -2316,6 +2316,13 @@
 
     // 預載入首頁需要的東西
     if (State.isCreator) loadAnalytics(); // 首頁累計數據
+
+    // 監聽 market 加入/移除最愛 → 重新整理「我的最愛刻圖」分頁
+    window.addEventListener('lohas:wishlist-changed', () => {
+      // 只在「我的最愛刻圖」分頁開著時才 reload (省 query)
+      const active = document.querySelector('.content-page.active')?.dataset?.page;
+      if (active === 'wishlist') loadWishlist();
+    });
   }
 
   document.addEventListener('DOMContentLoaded', init);
