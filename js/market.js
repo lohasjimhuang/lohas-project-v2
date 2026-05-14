@@ -375,19 +375,11 @@
     setText('modalCat', (d.category ? '#' + d.category + ' · ' : '') + (d.keywords || '客製作品'));
     setText('modalQuote', d.slogan || '每一張設計,都是被認真活過的故事。');
 
-    setSlide('design');
+    setSlide('mock');
 
     // 我的最愛刻圖狀態
     var inWish = State.wishlistIds.has(String(d.id));
     setWishlistState(inWish);
-
-    // 立即使用 → 帶 design id 跳 engraving
-    var useBtn = document.getElementById('useBtn');
-    if(useBtn){
-      useBtn.onclick = function(){
-        window.location.href = 'engraving.html?design=' + encodeURIComponent(d.id);
-      };
-    }
 
     // 我的最愛刻圖 toggle
     document.getElementById('wishBtn').onclick = function(){
@@ -474,11 +466,11 @@
     if(!btn || !txt || !icon) return;
     if(inWish){
       btn.classList.add('added');
-      txt.textContent = '已 加 入 最 愛';
+      txt.textContent = '已 加 入 最 愛 刻 圖';
       icon.className = 'fa-solid fa-heart';
     } else {
       btn.classList.remove('added');
-      txt.textContent = '加 入 我 的 最 愛';
+      txt.textContent = '加 入 我 的 最 愛 刻 圖';
       icon.className = 'fa-regular fa-heart';
     }
   }
