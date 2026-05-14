@@ -1037,7 +1037,6 @@
               <div class="rcard-actions">
                 <button class="approve" data-act="approve" data-id="${d.id}"><i class="fa-solid fa-check"></i>通 過</button>
                 <button class="reject" data-act="reject" data-id="${d.id}" data-name="${escapeHtml(d.name)}" data-by="${escapeHtml(d.creator_id)}"><i class="fa-solid fa-xmark"></i>駁 回</button>
-                <button class="more"><i class="fa-solid fa-ellipsis"></i></button>
               </div>
             </div>
           </div>`;

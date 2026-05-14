@@ -1076,23 +1076,138 @@
           break;
         }
       }
+      const statusLabel = isApproved ? '已 上 架' : isPending ? '審 核 中' : '未 通 過';
+      const statusIcon  = isApproved ? 'check' : isPending ? 'clock' : 'xmark';
+      const wishCount   = wishCounts[d.id] || 0;
       return `
-        <div class="design-card">
-          <div class="design-img ${grad}" ${coverImg ? `style="background-image:url('${coverImg}');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#fff"` : ''}>
-            <span class="design-status ${d.status}">${isApproved ? '已 上 架' : isPending ? '審 核 中' : '未 通 過'}</span>
+        <div class="photo-card" data-design-id="${d.id}">
+          <div class="photo-cover design-cover-img ${grad}"
+               data-id="${d.id}"
+               data-name="${escapeHtml(d.name || '')}"
+               data-slogan="${escapeHtml(d.slogan || '')}"
+               data-status="${d.status}"
+               data-wish="${wishCount}"
+               data-cover-img="${escapeHtml(coverImg || '')}"
+               data-reason="${escapeHtml(d.reject_reason || '')}"
+               data-created="${escapeHtml(formatDate(d.created_at))}"
+               ${coverImg ? `style="background-image:url('${coverImg}');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#fff"` : ''}>
+            <span class="status-badge ${d.status}">
+              <i class="fa-solid fa-${statusIcon}"></i>${statusLabel}
+            </span>
+            <div class="photo-cover-dim"></div>
+            <div class="photo-cover-text">詳 情</div>
           </div>
-          <div class="design-info">
-            <div class="design-name">${escapeHtml(d.name || '')}</div>
-            ${isApproved
-              ? `<div class="design-wish"><i class="fa-solid fa-pencil"></i>被加入想刻清單 <b>${wishCounts[d.id]}</b> 次</div>`
-              : `<div class="design-wish" style="color:var(--lohas-mute)"><i class="fa-regular fa-clock" style="color:var(--lohas-mute)"></i>${isPending ? '審核通過後開放收藏' : '未通過審核'}</div>`
-            }
+          <div class="photo-info">
+            <div class="photo-name">${escapeHtml(d.name || '')}</div>
+            <div class="photo-date">${isApproved ? `<i class="fa-solid fa-pencil"></i>被加入想刻清單 ${wishCount} 次` : (isPending ? '審核通過後開放收藏' : '未通過審核')}</div>
           </div>
         </div>`;
     }).join('') + `
       <button class="add-tile" id="addDesignBtn"><i class="fa-solid fa-plus"></i><span>上 傳 新 設 計</span></button>`;
 
     bindAddDesign();
+
+    // 綁卡片點擊 → 開 design modal
+    list.querySelectorAll('.design-cover-img').forEach(cover => {
+      cover.addEventListener('click', () => openDesignModal(cover));
+    });
+  }
+
+
+  /* =============================================================
+     我的刻圖 · 詳情 Modal (比照 photo modal 風格)
+     ============================================================= */
+  function openDesignModal(cover) {
+    const id        = cover.dataset.id;
+    const name      = cover.dataset.name || '(未命名)';
+    const slogan    = cover.dataset.slogan || '';
+    const status    = cover.dataset.status || 'pending';
+    const wish      = parseInt(cover.dataset.wish, 10) || 0;
+    const reason    = cover.dataset.reason || '';
+    const created   = cover.dataset.created || '';
+    const coverImg  = cover.dataset.coverImg || '';
+
+    // 共用 photo modal 的 DOM 元素
+    const modalBg          = document.getElementById('modalBg');
+    const modalTitle       = document.getElementById('modalTitle');
+    const modalDate        = document.getElementById('modalDate');
+    const modalImg         = document.getElementById('modalImg');
+    const modalImgLabel    = document.getElementById('modalImgLabel');
+    const modalStatus      = document.getElementById('modalStatus');
+    const modalFav         = document.getElementById('modalFav');
+    const modalReason      = document.getElementById('modalReason');
+    const modalReasonText  = document.getElementById('modalReasonText');
+    const modalActions     = document.getElementById('modalActions');
+
+    if (!modalBg) { console.warn('[my-designs] photo modal 元素不存在'); return; }
+
+    if (modalTitle)    modalTitle.textContent = name;
+    if (modalDate)     modalDate.textContent  = created;
+    if (modalImgLabel) modalImgLabel.textContent = slogan || name;
+
+    // 大圖背景
+    if (modalImg) {
+      modalImg.style.background = coverImg ? `url('${coverImg}') center/contain no-repeat #fff` : '#FAF7F2';
+    }
+
+    // 狀態 pill
+    const statusLabel = { approved:'已 上 架', pending:'審 核 中', rejected:'未 通 過' }[status] || status;
+    const statusIcon  = { approved:'check',   pending:'clock',     rejected:'xmark'    }[status] || 'circle-info';
+    if (modalStatus) {
+      modalStatus.className = 'modal-status ' + status;
+      modalStatus.innerHTML = `<i class="fa-solid fa-${statusIcon}"></i>${statusLabel}`;
+    }
+
+    // 想刻清單統計 (只在已上架顯示)
+    if (modalFav) {
+      if (status === 'approved') {
+        modalFav.style.display = 'inline-flex';
+        modalFav.innerHTML = `<i class="fa-solid fa-pencil"></i>被加入想刻清單 <b>${wish}</b> 次`;
+      } else {
+        modalFav.style.display = 'none';
+      }
+    }
+
+    // 駁回原因
+    if (modalReason) {
+      if (status === 'rejected' && reason) {
+        modalReason.classList.add('on');
+        if (modalReasonText) modalReasonText.textContent = reason;
+      } else {
+        modalReason.classList.remove('on');
+      }
+    }
+
+    // 按鈕邏輯
+    let html = '';
+    if (status === 'rejected') {
+      html += '<button class="btn warn" data-action="re-upload-design"><i class="fa-solid fa-rotate"></i> 重新上傳</button>';
+    }
+    html += '<button class="btn secondary" id="designModalCloseBtn">關閉</button>';
+    if (modalActions) modalActions.innerHTML = html;
+
+    document.getElementById('designModalCloseBtn')?.addEventListener('click', () => modalBg.classList.remove('on'));
+    // 全域 X 鈕也綁(只綁一次,避免重複)
+    const modalCloseX = document.getElementById('modalClose');
+    if (modalCloseX && !modalCloseX.dataset.designBound) {
+      modalCloseX.dataset.designBound = '1';
+      modalCloseX.addEventListener('click', () => modalBg.classList.remove('on'));
+    }
+
+    const reBtn = modalActions?.querySelector('[data-action="re-upload-design"]');
+    if (reBtn) {
+      reBtn.addEventListener('click', () => {
+        const design = { id, name, slogan, image_url: coverImg, status, reject_reason: reason };
+        modalBg.classList.remove('on');
+        if (window.LohasUploadDesign?.openModalForEdit) {
+          window.LohasUploadDesign.openModalForEdit(design);
+        } else if (window.LohasUploadDesign?.openModal) {
+          window.LohasUploadDesign.openModal();
+        }
+      });
+    }
+
+    modalBg.classList.add('on');
   }
 
   function bindAddDesign() {
