@@ -90,7 +90,6 @@
   background:#fff;
   border-radius:14px;
   border:1px dashed var(--lohas-bd, #E8DED1);
-  aspect-ratio:1/1;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -101,6 +100,9 @@
   transition:all .2s;
   position:relative;
   overflow:hidden;
+  flex-shrink:0;          /* 防 flex column 把上傳框壓扁 */
+  aspect-ratio:1/1;
+  min-height:300px;
 }
 .dum-uploader:hover,
 .dum-uploader:focus-visible{
