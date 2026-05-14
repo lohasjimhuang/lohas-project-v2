@@ -1028,7 +1028,6 @@
           <div class="rcard" data-id="${d.id}">
             <div class="rcard-img ${grad}" ${imgStyle}>
               <span class="rcard-pill">${typeLabel}</span>
-              ${escapeHtml(d.name)}
             </div>
             <div class="rcard-info">
               <div class="rcard-title">${escapeHtml(d.name)}</div>
@@ -3038,50 +3037,53 @@
   }
 
   function mdRenderTable() {
-    const tbody = document.getElementById('mdTbody');
-    if (!tbody) return;
+    // 用 grid container 取代 tbody
+    const container = document.getElementById('mdGrid') || document.getElementById('mdTbody');
+    if (!container) return;
 
     if (!mdState.filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="md-empty">沒有符合條件的設計</td></tr>';
+      container.innerHTML = '<div class="md-empty">沒有符合條件的設計</div>';
       return;
     }
 
-    tbody.innerHTML = mdState.filtered.map(d => {
-      const imgUrl = mdValidUrl(d.image_url_png) || mdValidUrl(d.image_url) || '';
+    container.innerHTML = mdState.filtered.map(d => {
+      const imgUrl = mdValidUrl(d.image_url_svg) || mdValidUrl(d.image_url_png) || mdValidUrl(d.image_url) || '';
       const statusLabel = { approved:'已通過', pending:'待審核', rejected:'已駁回' }[d.status] || d.status || '--';
       const typeLabel = { legacy:'官方', member:'會員' }[d.type] || d.type || '--';
+      const designer = d.designer_name || '匿名';
       return (
-        '<tr data-id="' + escapeHtml(d.id) + '">' +
-          '<td><div class="md-thumb" style="' + (imgUrl ? 'background-image:url(\'' + escapeHtml(imgUrl) + '\')' : '') + '"></div></td>' +
-          '<td><div class="md-cell-name">' + escapeHtml(d.name || '(未命名)') + '</div>' +
-            (d.slogan ? '<div class="md-cell-slogan">' + escapeHtml(d.slogan) + '</div>' : '') +
-          '</td>' +
-          '<td>' + escapeHtml(d.designer_name || '--') + '</td>' +
-          '<td>' + escapeHtml(d.category || '--') + '</td>' +
-          '<td><span class="md-pill s-' + (d.status || 'pending') + '">' + statusLabel + '</span></td>' +
-          '<td><span class="md-pill t-' + (d.type || 'member') + '">' + typeLabel + '</span></td>' +
-          '<td><div class="md-stat-row">' +
-            '<span><i class="fa-regular fa-heart"></i>' + (d.like_count || 0) + '</span>' +
-            '<span><i class="fa-regular fa-bookmark"></i>' + (d.collect_count || 0) + '</span>' +
-          '</div></td>' +
-          '<td><div class="md-row-actions">' +
+        '<div class="md-card" data-id="' + escapeHtml(d.id) + '">' +
+          '<div class="md-card-cover" ' + (imgUrl ? 'style="background-image:url(\'' + escapeHtml(imgUrl) + '\')"' : '') + '>' +
+            '<span class="md-card-status md-pill s-' + (d.status || 'pending') + '">' + statusLabel + '</span>' +
+            '<span class="md-card-type md-pill t-' + (d.type || 'member') + '">' + typeLabel + '</span>' +
+          '</div>' +
+          '<div class="md-card-body">' +
+            '<div class="md-card-name">' + escapeHtml(d.name || '(未命名)') + '</div>' +
+            (d.slogan ? '<div class="md-card-slogan">' + escapeHtml(d.slogan) + '</div>' : '') +
+            '<div class="md-card-by">by ' + escapeHtml(designer) + (d.category ? ' · ' + escapeHtml(d.category) : '') + '</div>' +
+            '<div class="md-card-stats">' +
+              '<span><i class="fa-regular fa-heart"></i>' + (d.like_count || 0) + '</span>' +
+              '<span><i class="fa-regular fa-bookmark"></i>' + (d.collect_count || 0) + '</span>' +
+              '<span><i class="fa-solid fa-share"></i>' + (d.share_count || 0) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div class="md-card-actions">' +
             '<button class="md-icon-btn" data-act="edit" title="編輯"><i class="fa-solid fa-pen"></i></button>' +
             '<button class="md-icon-btn danger" data-act="delete" title="刪除"><i class="fa-solid fa-trash"></i></button>' +
-          '</div></td>' +
-        '</tr>'
+          '</div>' +
+        '</div>'
       );
     }).join('');
 
-    // 點 row 顯示側面板
-    tbody.querySelectorAll('tr').forEach(tr => {
-      tr.addEventListener('click', e => {
+    // 點卡片
+    container.querySelectorAll('.md-card').forEach(card => {
+      card.addEventListener('click', e => {
         const act = e.target.closest('[data-act]')?.dataset?.act;
-        const id  = tr.dataset.id;
+        const id  = card.dataset.id;
         if (act === 'edit')   { mdOpenEditModal(id); return; }
         if (act === 'delete') { mdDeleteDesign(id); return; }
-        // 點 row 其他地方 → 顯示側面板
-        tbody.querySelectorAll('tr.on').forEach(t => t.classList.remove('on'));
-        tr.classList.add('on');
+        container.querySelectorAll('.md-card.on').forEach(t => t.classList.remove('on'));
+        card.classList.add('on');
         mdShowSide(id);
       });
     });
