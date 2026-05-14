@@ -170,7 +170,15 @@
   width:100%;
   height:100%;
   object-fit:contain;
-  background:#fff;
+  /* 棋盤格背景:看得出透明圖層 (PS 風格) */
+  background-color:#fff;
+  background-image:
+    linear-gradient(45deg, #F0EBE2 25%, transparent 25%),
+    linear-gradient(-45deg, #F0EBE2 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #F0EBE2 75%),
+    linear-gradient(-45deg, transparent 75%, #F0EBE2 75%);
+  background-size:16px 16px;
+  background-position:0 0, 0 8px, 8px -8px, -8px 0;
   padding:16px;
   box-sizing:border-box;
   display:block;
@@ -260,9 +268,8 @@
   max-width:100%;
   max-height:100%;
   object-fit:contain;
-  /* 雷雕視覺:深灰、半透明、輕疊在鏡片 */
-  filter:brightness(0.4) opacity(0.85);
-  mix-blend-mode:multiply;
+  /* 已是透明 PNG,輕微降低不透明度模擬刻在鏡片上 */
+  opacity:0.88;
 }
 
 
@@ -535,4 +542,50 @@
   .dum-actions{ flex-direction:column-reverse }
   .dum-btn-cancel,
   .dum-btn-submit{ flex:none; width:100% }
+}
+
+
+/* === Loading overlay (透明轉換中) === */
+.dum-loading{
+  position:absolute;
+  inset:0;
+  background:rgba(255,253,249,0.92);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:20;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .2s;
+}
+.dum-loading.on{
+  opacity:1;
+  pointer-events:auto;
+}
+.dum-loading-box{
+  text-align:center;
+}
+.dum-loading-spinner{
+  width:44px;
+  height:44px;
+  border:3px solid var(--lohas-bd, #E8DED1);
+  border-top-color:var(--lohas-brand, #50422D);
+  border-radius:50%;
+  animation:dumSpin .8s linear infinite;
+  margin:0 auto 14px;
+}
+@keyframes dumSpin{ to{ transform:rotate(360deg) } }
+.dum-loading-text{
+  font-size:13px;
+  font-weight:600;
+  color:var(--lohas-text, #2F2A24);
+  letter-spacing:1px;
+  margin-bottom:6px;
+}
+.dum-loading-hint{
+  font-size:11px;
+  color:var(--lohas-muted, #9B9186);
+  letter-spacing:0.5px;
 }
