@@ -3051,8 +3051,8 @@
       const statusLabel = { approved:'已通過', pending:'待審核', rejected:'已駁回' }[d.status] || d.status || '--';
       const typeLabel = { legacy:'官方', member:'會員' }[d.type] || d.type || '--';
       return (
-        '<tr data-id="' + escapeAttr(d.id) + '">' +
-          '<td><div class="md-thumb" style="' + (imgUrl ? 'background-image:url(\'' + escapeAttr(imgUrl) + '\')' : '') + '"></div></td>' +
+        '<tr data-id="' + escapeHtml(d.id) + '">' +
+          '<td><div class="md-thumb" style="' + (imgUrl ? 'background-image:url(\'' + escapeHtml(imgUrl) + '\')' : '') + '"></div></td>' +
           '<td><div class="md-cell-name">' + escapeHtml(d.name || '(未命名)') + '</div>' +
             (d.slogan ? '<div class="md-cell-slogan">' + escapeHtml(d.slogan) + '</div>' : '') +
           '</td>' +
