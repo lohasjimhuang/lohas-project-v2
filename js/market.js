@@ -85,7 +85,7 @@
       .from('engraving_designs')
       .select(`
         id, legacy_id, name, slogan, keywords, designer_name, category,
-        image_url, image_url_png, like_count, share_count, collect_count,
+        image_url, image_url_png, image_url_svg, like_count, share_count, collect_count,
         detail_url, type, status, created_at, creator_id
       `)
       .eq('status', 'approved')
@@ -106,6 +106,7 @@
         category: d.category || '',
         imageJpg: d.image_url || '',
         imagePng: d.image_url_png || d.image_url || '',
+        imageSvg: d.image_url_svg || '',
         likes: d.like_count || 0,
         shares: d.share_count || 0,
         collects: d.collect_count || 0,
@@ -215,8 +216,8 @@
     }
 
     grid.innerHTML = list.map(function(d, idx){
-      // 卡片封面用 png 透明底版本 (沒有就退 jpg)
-      var coverImg = d.imagePng || d.imageJpg;
+      // 卡片封面優先 SVG (向量銳利) → PNG (透明底) → JPG (fallback)
+      var coverImg = d.imageSvg || d.imagePng || d.imageJpg;
       return (
         '<div class="design-card" data-id="' + escapeAttr(d.id) + '" data-tier="' + tier + '">' +
           '<div class="design-cover">' +
@@ -306,7 +307,7 @@
     var tier = d.tier || 'creator';
 
     // 左側大圖:用 png (透明底) 比較像雷雕預覽,沒有就退 jpg
-    var imgUrl = d.imagePng || d.imageJpg;
+    var imgUrl = d.imageSvg || d.imagePng || d.imageJpg;
     var stage = document.getElementById('slide-design');
     if(stage){
       stage.style.background = '#F4F1EC';

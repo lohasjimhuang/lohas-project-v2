@@ -30,16 +30,21 @@
     MAX_SIZE_MB:      5,
     ACCEPT:           'image/png,image/jpeg,image/jpg,image/svg+xml',
     CROP_ASPECT:      1,                   // 1:1
+    // 透明轉換設定
+    WHITE_THRESHOLD:  220,                 // 亮度 > 此值 → alpha=0
+    INK_COLOR:        '#2F2A24',           // 雷雕用深棕黑色
   };
 
   // ===== State =====
   var state = {
-    file: null,           // Blob (裁切後或原始)
-    previewUrl: null,     // 預覽 URL
-    editId: null,         // 若是編輯模式
-    selectedCategory: '', // 主類 (對齊 gallery workCategory)
-    selectedTags: [],     // 細部標籤多選
-    submitting: false,
+    file:           null,    // 原始 (裁切後) Blob - JPG/PNG 原檔
+    previewUrl:     null,    // 預覽 URL (透明 PNG)
+    transparentBlob: null,   // 轉換後的透明 PNG blob
+    svgString:      null,    // 追蹤後的 SVG XML
+    editId:         null,    // 若是編輯模式
+    selectedCategory: '',
+    selectedTags:   [],
+    submitting:     false,
   };
 
   // ===== DOM refs (在 init 時抓) =====
@@ -167,6 +172,16 @@
           '<div class="dum-error" id="dumError" hidden></div>',
 
         '</div>',
+
+        // Loading overlay (透明轉換用)
+        '<div class="dum-loading" aria-hidden="true">',
+          '<div class="dum-loading-box">',
+            '<div class="dum-loading-spinner"></div>',
+            '<div class="dum-loading-text">正在轉換為雷雕格式...</div>',
+            '<div class="dum-loading-hint">大圖片可能要 3-8 秒,請稍候</div>',
+          '</div>',
+        '</div>',
+
       '</div>',
     ].join('');
   }
@@ -319,15 +334,150 @@
     }
 
     try {
-      var blob = await window.LohasCropper.crop(file, {
+      var cropped = await window.LohasCropper.crop(file, {
         aspectRatio: CONFIG.CROP_ASPECT,
         title: '裁切刻圖設計 (1:1)',
       });
-      // 使用者按取消 → blob 為 null,不收檔
-      if(blob) setFile(blob);
+      // 使用者按取消 → 不收檔
+      if(!cropped) return;
+
+      // 進入透明轉換流程
+      showLoading(true, '正在轉換為雷雕格式...');
+      try {
+        var result = await transformToTransparent(cropped);
+        // 設置兩種產物
+        state.file            = cropped;             // 原始裁切檔(備援)
+        state.transparentBlob = result.pngBlob;      // 透明 PNG (預覽 + 上傳)
+        state.svgString       = result.svgString;    // SVG XML (上傳)
+        setFile(result.pngBlob);
+      } catch(transformErr){
+        console.error('[upload-design] 透明轉換失敗:', transformErr);
+        showError('透明轉換失敗,改用原圖預覽');
+        // fallback - 用原圖
+        state.file = cropped;
+        state.transparentBlob = null;
+        state.svgString = null;
+        setFile(cropped);
+      } finally {
+        showLoading(false);
+      }
     } catch(e){
       console.error('[upload-design] Cropper 錯誤:', e);
       showError('裁切失敗:' + (e.message || '請再試一次'));
+    }
+  }
+
+
+  /**
+   * 白底圖片轉透明 + 追蹤成 SVG
+   * 流程: Canvas 載入 → 二值化(閾值 220)→ 輸出 透明PNG + SVG
+   * @param {Blob} blob 裁切後的原始檔
+   * @returns {Promise<{pngBlob: Blob, svgString: string}>}
+   */
+  async function transformToTransparent(blob){
+    // 1. 載入圖片到 Canvas
+    var imgUrl = URL.createObjectURL(blob);
+    var img = await loadImage(imgUrl);
+
+    var canvas = document.createElement('canvas');
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    var ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(imgUrl);
+
+    // 2. 像素掃描:亮度 > 閾值 → alpha=0 / 否則保留為深色
+    var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    var data = imgData.data;
+    var threshold = CONFIG.WHITE_THRESHOLD;
+    var inkRgb = hexToRgb(CONFIG.INK_COLOR); // {r,g,b}
+
+    for(var i = 0; i < data.length; i += 4){
+      var r = data[i], g = data[i+1], b = data[i+2];
+      // 亮度公式 (Rec. 709)
+      var lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      if(lum > threshold){
+        // 白底 → 透明
+        data[i+3] = 0;
+      } else {
+        // 保留深色,改成統一墨色
+        data[i]   = inkRgb.r;
+        data[i+1] = inkRgb.g;
+        data[i+2] = inkRgb.b;
+        data[i+3] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    // 3. Canvas → 透明 PNG Blob
+    var pngBlob = await new Promise(function(resolve, reject){
+      canvas.toBlob(function(b){
+        if(b) resolve(b);
+        else reject(new Error('Canvas 轉 PNG 失敗'));
+      }, 'image/png');
+    });
+
+    // 4. imagetracerjs 追蹤路徑 → SVG XML
+    var svgString = '';
+    if(window.ImageTracer){
+      try {
+        // 用 imagedata 直接追蹤 (跳過再次讀檔)
+        svgString = window.ImageTracer.imagedataToSVG(imgData, {
+          // 雙色設定 (黑+透明)
+          numberofcolors: 2,
+          colorquantcycles: 1,
+          ltres:    1,        // 直線閾值
+          qtres:    1,        // 曲線閾值
+          pathomit: 8,        // 忽略小於 8 px 的雜訊路徑
+          rightangleenhance: false,
+          strokewidth: 0,
+          linefilter: false,
+          scale:    1,
+          roundcoords: 1,     // 座標小數點 (0=整數最小, 5=精確最大)
+          viewbox: true,
+          desc: false,
+          lcpr: 0,
+          qcpr: 0,
+        });
+      } catch(e){
+        console.warn('[upload-design] SVG 追蹤失敗,只回傳 PNG:', e);
+      }
+    } else {
+      console.warn('[upload-design] ImageTracer 沒載入,只回傳 PNG');
+    }
+
+    return { pngBlob: pngBlob, svgString: svgString };
+  }
+
+
+  function loadImage(src){
+    return new Promise(function(resolve, reject){
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload  = function(){ resolve(img); };
+      img.onerror = function(){ reject(new Error('圖片載入失敗')); };
+      img.src = src;
+    });
+  }
+
+
+  function hexToRgb(hex){
+    var h = hex.replace('#','');
+    if(h.length === 3){ h = h.split('').map(function(c){ return c+c; }).join(''); }
+    var n = parseInt(h, 16);
+    return { r: (n>>16)&255, g: (n>>8)&255, b: n&255 };
+  }
+
+
+  function showLoading(show, text){
+    var overlay = modal && modal.querySelector('.dum-loading');
+    if(!overlay) return;
+    if(show){
+      var t = overlay.querySelector('.dum-loading-text');
+      if(t && text) t.textContent = text;
+      overlay.classList.add('on');
+    } else {
+      overlay.classList.remove('on');
     }
   }
 
@@ -350,6 +500,8 @@
     if(state.previewUrl){ URL.revokeObjectURL(state.previewUrl); }
     state.file = null;
     state.previewUrl = null;
+    state.transparentBlob = null;
+    state.svgString = null;
     els.previewImg.src = '';
     els.preview.hidden = true;
     els.uploader.querySelector('.dum-uploader-empty').hidden = false;
@@ -394,22 +546,38 @@
     setSubmitting(true);
 
     try {
-      var imageUrl = null;
+      var pngUrl = null;
+      var svgUrl = null;
 
-      // 1. 上傳檔案到 Storage (有 state.file 才上傳)
-      if(state.file){
-        var ext = guessExt(state.file);
-        var path = 'designs/' + member.erpid + '/' + Date.now() + '-' + randStr(6) + '.' + ext;
-        var { error: upErr } = await sb.storage
+      // 1. 上傳透明 PNG (預覽 + 雷雕用)
+      var pngBlob = state.transparentBlob || state.file;
+      if(pngBlob){
+        var pngPath = 'designs/' + member.erpid + '/' + Date.now() + '-' + randStr(6) + '.png';
+        var { error: pngErr } = await sb.storage
           .from(CONFIG.STORAGE_BUCKET)
-          .upload(path, state.file, { contentType: state.file.type || guessMime(ext), upsert: false });
-        if(upErr) throw new Error('檔案上傳失敗:' + upErr.message);
+          .upload(pngPath, pngBlob, { contentType: 'image/png', upsert: false });
+        if(pngErr) throw new Error('PNG 上傳失敗:' + pngErr.message);
 
-        var { data: pub } = sb.storage.from(CONFIG.STORAGE_BUCKET).getPublicUrl(path);
-        imageUrl = pub?.publicUrl;
+        var { data: pngPub } = sb.storage.from(CONFIG.STORAGE_BUCKET).getPublicUrl(pngPath);
+        pngUrl = pngPub?.publicUrl;
       }
 
-      // 2. 寫進 engraving_designs
+      // 2. 上傳 SVG (真向量,雷雕機台用)
+      if(state.svgString){
+        var svgBlob = new Blob([state.svgString], { type: 'image/svg+xml' });
+        var svgPath = 'designs/' + member.erpid + '/' + Date.now() + '-' + randStr(6) + '.svg';
+        var { error: svgErr } = await sb.storage
+          .from(CONFIG.STORAGE_BUCKET)
+          .upload(svgPath, svgBlob, { contentType: 'image/svg+xml', upsert: false });
+        if(svgErr){
+          console.warn('[upload-design] SVG 上傳失敗,只記錄 PNG:', svgErr);
+        } else {
+          var { data: svgPub } = sb.storage.from(CONFIG.STORAGE_BUCKET).getPublicUrl(svgPath);
+          svgUrl = svgPub?.publicUrl;
+        }
+      }
+
+      // 3. 寫進 engraving_designs
       var payload = {
         name:           name,
         slogan:         slogan,
@@ -420,9 +588,12 @@
         status:         'pending',
         type:           'member',
       };
-      if(imageUrl){
-        payload.image_url     = imageUrl;
-        payload.image_url_png = imageUrl;   // 同一張先當預覽,後台審核後會替換
+      if(pngUrl){
+        payload.image_url     = pngUrl;
+        payload.image_url_png = pngUrl;
+      }
+      if(svgUrl){
+        payload.image_url_svg = svgUrl;
       }
 
       var resp;
@@ -529,6 +700,8 @@
   function resetForm(){
     state.file = null;
     if(state.previewUrl){ URL.revokeObjectURL(state.previewUrl); state.previewUrl = null; }
+    state.transparentBlob = null;
+    state.svgString = null;
     state.editId = null;
     state.selectedCategory = '';
     state.selectedTags = [];
