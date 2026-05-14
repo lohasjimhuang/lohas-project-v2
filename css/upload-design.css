@@ -118,10 +118,17 @@
   padding:0;
   border-style:solid;
 }
+/* 上傳後強制隱藏「點擊或拖曳上傳」文字塊 */
+.dum-uploader.has-file .dum-uploader-empty{
+  display:none !important;
+}
 .dum-uploader-empty{
   display:flex;
   flex-direction:column;
   align-items:center;
+}
+.dum-uploader-empty[hidden]{
+  display:none !important;
 }
 .dum-uploader-icon{
   width:56px;
@@ -149,11 +156,15 @@
   line-height:1.7;
 }
 
-/* 預覽 */
+/* 預覽 - 絕對定位覆蓋整個 uploader */
 .dum-uploader-preview{
-  position:relative;
+  position:absolute;
+  inset:0;
   width:100%;
   height:100%;
+}
+.dum-uploader-preview[hidden]{
+  display:none !important;
 }
 .dum-uploader-preview img{
   width:100%;
@@ -162,6 +173,7 @@
   background:#fff;
   padding:16px;
   box-sizing:border-box;
+  display:block;
 }
 .dum-preview-actions{
   position:absolute;
