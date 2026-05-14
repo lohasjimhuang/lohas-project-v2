@@ -2979,3 +2979,39 @@
   .ad .md-card-actions{ opacity:1 }      /* 手機沒 hover,永遠顯示 */
   .ad .md-card:hover .md-card-type{ opacity:1 }
 }
+
+
+/* === 本月精選 creator 視覺 === */
+.ad .creator-card.is-featured{
+  border-color:#D4B068;
+  background:linear-gradient(180deg, #FFFCF5 0%, #fff 100%);
+  box-shadow:0 4px 14px rgba(212, 176, 104, 0.18);
+}
+.ad .creator-card-tag.featured{
+  background:linear-gradient(135deg, #D4B068 0%, #B8923E 100%);
+  color:#fff;
+  font-weight:600;
+  letter-spacing:0.5px;
+}
+.ad .creator-card-tag.featured i{
+  margin-right:4px;
+  font-size:10px;
+}
+
+/* 本月精選按鈕狀態 */
+.ad .btn.featured-on{
+  background:linear-gradient(135deg, #D4B068 0%, #B8923E 100%);
+  color:#fff;
+  border-color:#B8923E;
+}
+.ad .btn.featured-on:hover{
+  background:linear-gradient(135deg, #B8923E 0%, #9D7A2F 100%);
+}
+.ad .btn.featured-off{
+  border-style:dashed;
+  color:#B8923E;
+}
+.ad .btn.featured-off:hover{
+  background:#FFFCF5;
+  border-style:solid;
+}
