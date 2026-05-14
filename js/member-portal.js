@@ -711,13 +711,21 @@
       .eq('id', postId)
       .select('id');
 
-    if (error || !data || data.length === 0) {
-      window.alert('刪除失敗,請確認權限');
+    if (error) {
+      console.error('[deletePhoto] 刪除失敗:', error);
+      window.alert('刪除失敗:' + (error.message || '請確認權限'));
+      return;
+    }
+    if (!data || data.length === 0) {
+      console.warn('[deletePhoto] 沒有資料被刪除,可能是 RLS 阻擋或 ID 不存在', postId);
+      window.alert('刪除失敗:沒有資料被刪除(RLS 權限不足或資料不存在)');
       return;
     }
 
     closeModal();
-    loadPhotos();
+    // 重新載入 my-shares 列表 (而不是 legacy 的 loadPhotos)
+    if (typeof loadShares === 'function') loadShares();
+    else if (typeof loadPhotos === 'function') loadPhotos();
   }
 
 
