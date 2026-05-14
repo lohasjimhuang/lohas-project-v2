@@ -72,25 +72,40 @@
 
         // ===== 左欄:上傳區 =====
         '<div class="dum-left">',
-          '<div class="dum-eyebrow">DESIGN · UPLOAD</div>',
+          '<div class="dum-eyebrow" id="dumEyebrow">DESIGN · UPLOAD</div>',
 
+          // 狀態 A:未上傳 - 點擊/拖曳大方框
           '<div class="dum-uploader" id="dumUploader" tabindex="0" role="button" aria-label="點擊或拖曳上傳設計圖">',
             '<div class="dum-uploader-empty">',
               '<div class="dum-uploader-icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>',
               '<div class="dum-uploader-h">點擊或拖曳上傳</div>',
               '<div class="dum-uploader-p">PNG (透明底) / JPG / SVG<br>建議 1:1 比例 · 最大 ' + CONFIG.MAX_SIZE_MB + 'MB</div>',
             '</div>',
-            '<div class="dum-uploader-preview" id="dumPreview" hidden>',
-              '<img alt="預覽" id="dumPreviewImg">',
-              '<div class="dum-preview-actions">',
-                '<button type="button" class="dum-preview-btn" data-action="re-crop"><i class="fa-solid fa-crop"></i> 重新裁切</button>',
-                '<button type="button" class="dum-preview-btn danger" data-action="remove"><i class="fa-solid fa-xmark"></i> 移除</button>',
-              '</div>',
-            '</div>',
             '<input type="file" id="dumFileInput" accept="' + CONFIG.ACCEPT + '" hidden>',
           '</div>',
 
-          '<div class="dum-tip">',
+          // 狀態 B:已上傳 - v1 風上下分層預覽
+          '<div class="dum-preview-pane" id="dumPreviewPane" hidden>',
+            // 上半:刻圖原檔
+            '<div class="dum-preview-design">',
+              '<span class="dum-preview-tag">01 · DESIGN</span>',
+              '<div class="dum-preview-actions">',
+                '<button type="button" class="dum-preview-btn" data-action="re-crop" title="重新裁切"><i class="fa-solid fa-crop"></i></button>',
+                '<button type="button" class="dum-preview-btn" data-action="re-upload" title="重新上傳"><i class="fa-solid fa-arrow-rotate-right"></i></button>',
+                '<button type="button" class="dum-preview-btn danger" data-action="remove" title="移除"><i class="fa-solid fa-xmark"></i></button>',
+              '</div>',
+              '<img alt="刻圖原檔" id="dumPreviewImg">',
+            '</div>',
+            // 下半:眼鏡模擬
+            '<div class="dum-preview-mock">',
+              '<span class="dum-preview-tag">02 · ON LENS</span>',
+              '<div class="dum-mock-engrave" id="dumMockEngrave">',
+                '<img alt="刻圖模擬" id="dumMockImg">',
+              '</div>',
+            '</div>',
+          '</div>',
+
+          '<div class="dum-tip" id="dumTip">',
             '<b>小提示:</b> 上傳後可裁切,通過審核後會自動轉換成雷雕用透明底版本',
           '</div>',
 
@@ -165,10 +180,13 @@
   function cacheEls(){
     els.bg          = modal.querySelector('.dum-bg');
     els.closeBtn    = modal.querySelector('.dum-close');
-    els.uploader    = modal.querySelector('#dumUploader');
+    els.eyebrow     = modal.querySelector('#dumEyebrow');
+    els.uploader    = modal.querySelector('#dumUploader');     // 狀態 A
     els.fileInput   = modal.querySelector('#dumFileInput');
-    els.preview     = modal.querySelector('#dumPreview');
-    els.previewImg  = modal.querySelector('#dumPreviewImg');
+    els.previewPane = modal.querySelector('#dumPreviewPane');  // 狀態 B 整個容器
+    els.previewImg  = modal.querySelector('#dumPreviewImg');   // 上半原檔
+    els.mockImg     = modal.querySelector('#dumMockImg');      // 下半模擬刻圖
+    els.tip         = modal.querySelector('#dumTip');
     els.title       = modal.querySelector('#dumTitle');
     els.name        = modal.querySelector('#dumName');
     els.slogan      = modal.querySelector('#dumSlogan');
@@ -241,10 +259,8 @@
     els.cancel.addEventListener('click', closeModal);
     document.addEventListener('keydown', onKeydown);
 
-    // 點上傳區 → 開啟檔案選取器
-    els.uploader.addEventListener('click', function(e){
-      // 點到「重新裁切/移除」按鈕不要觸發
-      if(e.target.closest('.dum-preview-btn')) return;
+    // 點上傳區 (狀態 A) → 開啟檔案選取器
+    els.uploader.addEventListener('click', function(){
       els.fileInput.click();
     });
     els.uploader.addEventListener('keydown', function(e){
@@ -273,8 +289,9 @@
     // 預覽區按鈕(重裁/移除)
     modal.addEventListener('click', function(e){
       var act = e.target.closest('[data-action]')?.dataset?.action;
-      if(act === 're-crop')  reCropCurrent();
-      if(act === 'remove')   removeFile();
+      if(act === 're-crop')   reCropCurrent();
+      if(act === 're-upload') triggerReUpload();
+      if(act === 'remove')    removeFile();
     });
 
     els.submit.addEventListener('click', submit);
@@ -322,10 +339,13 @@
     if(state.previewUrl){ URL.revokeObjectURL(state.previewUrl); }
     state.file = file;
     state.previewUrl = URL.createObjectURL(file);
+
+    // 上半:原檔 / 下半:模擬刻圖 (用同一張)
     els.previewImg.src = state.previewUrl;
-    els.preview.hidden = false;
-    els.uploader.querySelector('.dum-uploader-empty').hidden = true;
-    els.uploader.classList.add('has-file');
+    els.mockImg.src    = state.previewUrl;
+
+    // 切到「狀態 B」
+    showPreviewState(true);
   }
 
 
@@ -334,9 +354,37 @@
     state.file = null;
     state.previewUrl = null;
     els.previewImg.src = '';
-    els.preview.hidden = true;
-    els.uploader.querySelector('.dum-uploader-empty').hidden = false;
-    els.uploader.classList.remove('has-file');
+    els.mockImg.src    = '';
+    showPreviewState(false);
+  }
+
+
+  /**
+   * 切換 A / B 狀態
+   * isPreview: true 顯示預覽 (B) / false 顯示上傳大方框 (A)
+   */
+  function showPreviewState(isPreview){
+    if(isPreview){
+      els.uploader.hidden    = true;
+      els.previewPane.hidden = false;
+      els.eyebrow.textContent = 'DESIGN · PREVIEW';
+      if(els.tip){
+        els.tip.innerHTML = '<b>已生成預覽 ·</b> 通過審核後自動轉成雷雕用透明底版本';
+      }
+    } else {
+      els.uploader.hidden    = false;
+      els.previewPane.hidden = true;
+      els.eyebrow.textContent = 'DESIGN · UPLOAD';
+      if(els.tip){
+        els.tip.innerHTML = '<b>小提示:</b> 上傳後可裁切,通過審核後會自動轉換成雷雕用透明底版本';
+      }
+    }
+  }
+
+
+  // 重新上傳:打開檔案選取器
+  function triggerReUpload(){
+    els.fileInput.click();
   }
 
 
@@ -483,9 +531,8 @@
     // 編輯時若有舊圖,顯示預覽 (但不視為新上傳的 file,送出時不重傳)
     if(design.image_url){
       els.previewImg.src = design.image_url;
-      els.preview.hidden = false;
-      els.uploader.querySelector('.dum-uploader-empty').hidden = true;
-      els.uploader.classList.add('has-file');
+      els.mockImg.src    = design.image_url;
+      showPreviewState(true);
     }
 
     modal.classList.add('is-open');
@@ -514,11 +561,8 @@
     if(els.name)   els.name.value = '';
     if(els.slogan) els.slogan.value = '';
     if(els.previewImg) els.previewImg.src = '';
-    if(els.preview) els.preview.hidden = true;
-    if(els.uploader){
-      els.uploader.classList.remove('has-file');
-      els.uploader.querySelector('.dum-uploader-empty').hidden = false;
-    }
+    if(els.mockImg)    els.mockImg.src = '';
+    showPreviewState(false);
     if(els.subcatWrap) els.subcatWrap.hidden = true;
     clearError();
   }
