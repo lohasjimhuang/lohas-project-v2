@@ -493,7 +493,26 @@
     // 顯示眼鏡模擬框
     els.mockImg.src = state.previewUrl;
     els.mockFrame.hidden = false;
+    syncMockStageSquare();
   }
+
+
+  // 強制 .dum-mock-stage 變方形(不靠 CSS 算)
+  function syncMockStageSquare(){
+    if(!modal) return;
+    var stage = modal.querySelector('.dum-mock-stage');
+    if(!stage) return;
+    var w = stage.offsetWidth;
+    if(w > 0) stage.style.height = w + 'px';
+  }
+
+
+  // window resize 也要重算
+  window.addEventListener('resize', function(){
+    if(modal && modal.classList.contains('is-open')){
+      syncMockStageSquare();
+    }
+  });
 
 
   function removeFile(){
@@ -680,6 +699,7 @@
       // 編輯模式也要顯示眼鏡模擬
       els.mockImg.src = design.image_url;
       els.mockFrame.hidden = false;
+      syncMockStageSquare();
     }
 
     modal.classList.add('is-open');
