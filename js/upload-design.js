@@ -94,6 +94,16 @@
             '<b>小提示:</b> 上傳後可裁切,通過審核後會自動轉換成雷雕用透明底版本',
           '</div>',
 
+          // 眼鏡模擬框 (上傳後才顯示)
+          '<div class="dum-mock-frame" id="dumMockFrame" hidden>',
+            '<div class="dum-mock-label">刻 在 眼 鏡 上 的 樣 子</div>',
+            '<div class="dum-mock-stage">',
+              '<div class="dum-mock-engrave" id="dumMockEngrave">',
+                '<img alt="刻圖模擬" id="dumMockImg">',
+              '</div>',
+            '</div>',
+          '</div>',
+
           '<div class="dum-flow-info">',
             '<div class="dum-flow-label">審 核 流 程</div>',
             '<div class="dum-flow-desc">上傳後預設為 <b class="pending">待審核</b> 狀態,通過後自動上架創作者市集</div>',
@@ -169,6 +179,8 @@
     els.fileInput   = modal.querySelector('#dumFileInput');
     els.preview     = modal.querySelector('#dumPreview');
     els.previewImg  = modal.querySelector('#dumPreviewImg');
+    els.mockFrame   = modal.querySelector('#dumMockFrame');
+    els.mockImg     = modal.querySelector('#dumMockImg');
     els.title       = modal.querySelector('#dumTitle');
     els.name        = modal.querySelector('#dumName');
     els.slogan      = modal.querySelector('#dumSlogan');
@@ -328,6 +340,9 @@
     els.preview.hidden = false;
     els.uploader.querySelector('.dum-uploader-empty').hidden = true;
     els.uploader.classList.add('has-file');
+    // 顯示眼鏡模擬框
+    els.mockImg.src = state.previewUrl;
+    els.mockFrame.hidden = false;
   }
 
 
@@ -339,6 +354,9 @@
     els.preview.hidden = true;
     els.uploader.querySelector('.dum-uploader-empty').hidden = false;
     els.uploader.classList.remove('has-file');
+    // 隱藏眼鏡模擬框
+    els.mockImg.src = '';
+    els.mockFrame.hidden = true;
   }
 
 
@@ -488,6 +506,9 @@
       els.preview.hidden = false;
       els.uploader.querySelector('.dum-uploader-empty').hidden = true;
       els.uploader.classList.add('has-file');
+      // 編輯模式也要顯示眼鏡模擬
+      els.mockImg.src = design.image_url;
+      els.mockFrame.hidden = false;
     }
 
     modal.classList.add('is-open');
@@ -521,6 +542,8 @@
       els.uploader.classList.remove('has-file');
       els.uploader.querySelector('.dum-uploader-empty').hidden = false;
     }
+    if(els.mockImg)   els.mockImg.src = '';
+    if(els.mockFrame) els.mockFrame.hidden = true;
     if(els.subcatWrap) els.subcatWrap.hidden = true;
     clearError();
   }
