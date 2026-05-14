@@ -778,7 +778,7 @@
       return `
         <div class="inspo-card">
           <div class="inspo-img ${grad}" ${img ? `style="background-image:url('${img}');background-size:cover;background-position:center"` : ''}>
-            <button class="inspo-bookmark"><i class="fa-solid fa-bookmark"></i></button>
+            <button class="inspo-bookmark"><i class="fa-solid fa-heart"></i></button>
           </div>
           <div class="inspo-info">
             <div class="inspo-by">${escapeHtml(author)}</div>
@@ -845,7 +845,7 @@
       return `
         <div class="inspo-card" data-design-id="${d.id}">
           <div class="inspo-img" ${coverImg ? `style="background-image:url('${coverImg}');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#fff"` : 'style="background:#FAF7F2"'}>
-            <button class="inspo-bookmark wish-remove" data-design-id="${d.id}" title="從最愛移除"><i class="fa-solid fa-bookmark"></i></button>
+            <button class="inspo-bookmark wish-remove" data-design-id="${d.id}" title="從最愛移除"><i class="fa-solid fa-heart"></i></button>
           </div>
           <div class="inspo-info">
             <div class="inspo-by">by ${escapeHtml(author)}</div>
