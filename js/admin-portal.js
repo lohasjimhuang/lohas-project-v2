@@ -1056,7 +1056,7 @@
   }
 
   async function approveDesign(id) {
-    if (!confirm('確定通過這個設計?\n通過後會自動上架到創作者市集,作者也會自動升級為 Creator (如果還不是)')) return;
+    if (!confirm('確定通過這個設計?')) return;
 
     const sb = getSb();
     if (!sb) return;
@@ -1067,7 +1067,7 @@
 
     if (error) return alert('通過失敗: ' + error.message);
 
-    alert('已通過 (Creator 自動升級已由 trigger 處理)');
+    alert('已通過');
     loadDesignReview();
     loadDashboard(); refreshReviewCounts?.();
   }
