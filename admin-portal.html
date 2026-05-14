@@ -88,6 +88,9 @@
     <button class="nav-link" data-page="admin-upload">
       <i class="fa-solid fa-camera-retro"></i><span>樂活官方上傳</span>
     </button>
+    <button class="nav-link" data-page="manage-designs">
+      <i class="fa-solid fa-pen-ruler"></i><span>刻圖管理</span>
+    </button>
   </div>
 
   <div class="nav-section">
@@ -602,6 +605,123 @@
         <h3 class="panel-h"><span><i class="fa-solid fa-clock-rotate-left"></i>最近 5 筆官方上傳</span></h3>
         <div id="adminUploadHistory">
           <p class="empty-text">載入中...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============= #5 刻圖管理 ============= -->
+    <div class="content-page" data-page="manage-designs">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">刻圖管理</h1>
+          <div class="page-sub">編輯 / 刪除所有刻圖設計(含 legacy + 會員上傳)</div>
+        </div>
+      </div>
+
+      <!-- 工具列 -->
+      <div class="md-toolbar">
+        <div class="md-filters">
+          <select class="md-select" id="mdFilterStatus">
+            <option value="">全部狀態</option>
+            <option value="approved">已通過</option>
+            <option value="pending">待審核</option>
+            <option value="rejected">已駁回</option>
+          </select>
+          <select class="md-select" id="mdFilterType">
+            <option value="">全部來源</option>
+            <option value="legacy">Legacy(官方圖庫)</option>
+            <option value="member">會員上傳</option>
+          </select>
+          <input class="md-search" id="mdSearch" type="text" placeholder="搜尋名稱 / 創作者 / 一句話故事...">
+        </div>
+        <div class="md-meta" id="mdCount">載入中...</div>
+      </div>
+
+      <!-- 表格 + 預覽側面板 -->
+      <div class="md-layout">
+
+        <!-- 左側表格 -->
+        <div class="md-table-wrap">
+          <table class="md-table">
+            <thead>
+              <tr>
+                <th class="th-img"></th>
+                <th>名稱</th>
+                <th>創作者</th>
+                <th>分類</th>
+                <th>狀態</th>
+                <th>類型</th>
+                <th>互動</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="mdTbody">
+              <tr><td colspan="8" class="md-empty">載入中...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 右側預覽側面板 -->
+        <aside class="md-side" id="mdSide">
+          <div class="md-side-empty" id="mdSideEmpty">
+            <i class="fa-regular fa-image"></i>
+            <p>點擊左側設計查看詳情</p>
+          </div>
+          <div class="md-side-content" id="mdSideContent" hidden>
+            <div class="md-side-img" id="mdSideImg"></div>
+            <h3 class="md-side-name" id="mdSideName"></h3>
+            <p class="md-side-slogan" id="mdSideSlogan"></p>
+            <div class="md-side-meta">
+              <div class="md-side-row"><span>創作者</span><b id="mdSideDesigner">--</b></div>
+              <div class="md-side-row"><span>分類</span><b id="mdSideCategory">--</b></div>
+              <div class="md-side-row"><span>標籤</span><b id="mdSideKeywords">--</b></div>
+              <div class="md-side-row"><span>狀態</span><b id="mdSideStatus">--</b></div>
+              <div class="md-side-row"><span>類型</span><b id="mdSideType">--</b></div>
+              <div class="md-side-row"><span>建立</span><b id="mdSideCreated">--</b></div>
+            </div>
+            <div class="md-side-actions">
+              <button class="md-btn md-btn-edit"  id="mdSideEdit"><i class="fa-solid fa-pen"></i> 編輯</button>
+              <button class="md-btn md-btn-del"   id="mdSideDel"><i class="fa-solid fa-trash"></i> 刪除</button>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+
+
+    <!-- ============= 刻圖編輯 Modal ============= -->
+    <div class="md-modal-overlay" id="mdModalOverlay" hidden>
+      <div class="md-modal">
+        <div class="md-modal-head">
+          <h2>編輯刻圖設計</h2>
+          <button class="md-modal-close" id="mdModalClose" type="button"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="md-modal-body">
+          <div class="md-form-row">
+            <label>名稱 <span class="req">*</span></label>
+            <input type="text" id="mdEditName" maxlength="20">
+          </div>
+          <div class="md-form-row">
+            <label>一句話故事</label>
+            <input type="text" id="mdEditSlogan" maxlength="40">
+          </div>
+          <div class="md-form-row">
+            <label>分類</label>
+            <input type="text" id="mdEditCategory" placeholder="例如:寵物回憶 / 愛情紀念">
+          </div>
+          <div class="md-form-row">
+            <label>標籤(逗號分隔)</label>
+            <input type="text" id="mdEditKeywords" placeholder="例如:寵物名字,寵物線稿">
+          </div>
+          <div class="md-form-row">
+            <label>創作者姓名</label>
+            <input type="text" id="mdEditDesigner">
+          </div>
+        </div>
+        <div class="md-modal-foot">
+          <button class="md-btn md-btn-cancel" id="mdEditCancel">取消</button>
+          <button class="md-btn md-btn-save"   id="mdEditSave">儲存</button>
         </div>
       </div>
     </div>
