@@ -217,17 +217,24 @@
 
     grid.innerHTML = list.map(function(d, idx){
       // 卡片封面優先 SVG (向量銳利) → PNG (透明底) → JPG (fallback)
-      var coverImg = d.imageSvg || d.imagePng || d.imageJpg;
+      // 過濾掉空字串、'null'、'undefined' 字串
+      var imgs = [d.imageSvg, d.imagePng, d.imageJpg].filter(function(u){
+        return u && typeof u === 'string' && u.trim() !== '' && u !== 'null' && u !== 'undefined' && /^https?:\/\//.test(u);
+      });
+      var coverImg = imgs[0] || '';
+
       return (
         '<div class="design-card" data-id="' + escapeAttr(d.id) + '" data-tier="' + tier + '">' +
           '<div class="design-cover">' +
             '<span class="design-card-pill">' +
               '<span class="pill ' + tier + '">' + tierIcon[tier] + tierName[tier] + '</span>' +
             '</span>' +
+            // 永遠放 cover-text 當底層,圖片載成功時蓋上去
+            '<span class="cover-text">' + escapeHtml(d.name || '(未命名)') + '</span>' +
             (coverImg
               ? '<img src="' + escapeAttr(coverImg) + '" alt="' + escapeAttr(d.name) + '" loading="lazy"' +
                 ' onerror="this.style.display=\'none\';this.parentNode.classList.add(\'no-img\')">'
-              : '<span class="cover-text">' + escapeHtml(d.name) + '</span>'
+              : ''
             ) +
           '</div>' +
           '<div class="design-info">' +
@@ -307,7 +314,11 @@
     var tier = d.tier || 'creator';
 
     // 左側大圖:用 png (透明底) 比較像雷雕預覽,沒有就退 jpg
-    var imgUrl = d.imageSvg || d.imagePng || d.imageJpg;
+    // 過濾掉空字串/壞 URL
+    var imgUrlCandidates = [d.imageSvg, d.imagePng, d.imageJpg].filter(function(u){
+      return u && typeof u === 'string' && u.trim() !== '' && u !== 'null' && u !== 'undefined' && /^https?:\/\//.test(u);
+    });
+    var imgUrl = imgUrlCandidates[0] || '';
     var stage = document.getElementById('slide-design');
     if(stage){
       stage.style.background = '#F4F1EC';

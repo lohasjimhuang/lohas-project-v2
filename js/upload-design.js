@@ -500,15 +500,20 @@
   }
 
 
-  // 強制 .dum-mock-stage / .dum-uploader 都變方形(不靠 CSS 算)
+  // 強制 .dum-mock-stage / .dum-uploader 都變方形
   function syncSquareBoxes(){
     if(!modal) return;
-    [modal.querySelector('.dum-mock-stage'),
-     modal.querySelector('.dum-uploader')].forEach(function(el){
-      if(!el) return;
-      var w = el.offsetWidth;
-      if(w > 0) el.style.height = w + 'px';
-    });
+    var stage = modal.querySelector('.dum-mock-stage');
+    if(stage){
+      var w1 = stage.offsetWidth;
+      if(w1 > 0) stage.style.height = w1 + 'px';
+    }
+    // uploader 也撐方,但只在 has-file 狀態(有預覽要顯示)
+    var uploader = modal.querySelector('.dum-uploader.has-file');
+    if(uploader){
+      var w2 = uploader.offsetWidth;
+      if(w2 > 0) uploader.style.height = w2 + 'px';
+    }
   }
 
 
@@ -530,6 +535,7 @@
     els.preview.hidden = true;
     els.uploader.querySelector('.dum-uploader-empty').hidden = false;
     els.uploader.classList.remove('has-file');
+    els.uploader.style.height = '';        // 清掉 inline height
     // 隱藏眼鏡模擬框
     els.mockImg.src = '';
     els.mockFrame.hidden = true;
@@ -742,10 +748,14 @@
     if(els.preview) els.preview.hidden = true;
     if(els.uploader){
       els.uploader.classList.remove('has-file');
+      els.uploader.style.height = '';      // 清 inline height
       els.uploader.querySelector('.dum-uploader-empty').hidden = false;
     }
     if(els.mockImg)   els.mockImg.src = '';
     if(els.mockFrame) els.mockFrame.hidden = true;
+    // 清 mock-stage inline height
+    var stage = modal && modal.querySelector('.dum-mock-stage');
+    if(stage) stage.style.height = '';
     if(els.subcatWrap) els.subcatWrap.hidden = true;
     clearError();
   }
