@@ -481,16 +481,32 @@
 
 /* 錯誤訊息 */
 .dum-error{
+  display:flex;
+  align-items:center;
+  gap:10px;
   background:#FBEAEA;
   color:#A33B33;
-  font-size:12px;
-  padding:10px 14px;
-  border-radius:10px;
-  margin-top:10px;
-  letter-spacing:0.3px;
-  text-align:center;
+  font-size:13px;
+  font-weight:600;
+  padding:14px 18px;
+  border-radius:12px;
+  margin-bottom:16px;        /* 放在表單上面 */
+  letter-spacing:0.5px;
   border:1px solid #F0D2D2;
-  animation:dumShake .35s;
+  box-shadow:0 4px 12px rgba(168, 90, 74, 0.12);
+}
+.dum-error[hidden]{ display:none !important }
+.dum-error i{
+  font-size:18px;
+  flex-shrink:0;
+  color:#C2493D;
+}
+.dum-error-text{
+  flex:1;
+  line-height:1.5;
+}
+.dum-error.shake{
+  animation:dumShake .4s;
 }
 @keyframes dumShake{
   0%, 100%{ transform:translateX(0) }
