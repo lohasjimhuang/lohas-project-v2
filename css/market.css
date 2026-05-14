@@ -518,13 +518,16 @@
 }
 .cm .step-num{
   position:absolute;
-  top:24px;
-  right:24px;
+  top:20px;
+  right:22px;
   font-size:48px;
-  font-weight:600;
-  color:rgba(80,66,45,0.08);
+  font-weight:700;
   line-height:1;
   letter-spacing:1px;
+  /* 鏤空字:透明填充 + 深棕描邊 */
+  color:transparent;
+  -webkit-text-stroke:1.5px var(--lohas-brand, #50422D);
+  text-stroke:1.5px var(--lohas-brand, #50422D);
 }
 .cm .step-icon{
   width:44px;
