@@ -806,7 +806,7 @@
       .select(`
         design_id, created_at,
         engraving_designs (
-          id, name, image_url, type, creator_id, status
+          id, name, image_url, image_url_png, image_url_svg, type, creator_id, designer_name, status
         )
       `)
       .eq('member_id', State.member.erpid)
@@ -829,27 +829,27 @@
       return;
     }
 
-    const grads = ['', 'g2', 'g3', 'g4'];
-    list.innerHTML = designs.map((d, i) => {
-      const grad = grads[i % grads.length];
-      const typeClass = d.type === 'collab' ? 'i' : d.type === 'creator' ? 'c' : '';
-      const typeLabel = d.type === 'collab'
-        ? '<i class="fa-solid fa-crown"></i>Collab'
-        : d.type === 'creator'
-        ? '<i class="fa-solid fa-star"></i>Creator'
-        : 'Member';
+    list.innerHTML = designs.map(d => {
+      // 三層 fallback: PNG (透明) → image_url (原始) → SVG
+      let coverImg = '';
+      const candidates = [d.image_url_png, d.image_url, d.image_url_svg];
+      for (const u of candidates) {
+        if (u && typeof u === 'string' && u.trim() !== '' && /^https?:\/\//.test(u)) {
+          coverImg = u;
+          break;
+        }
+      }
+
+      const author = d.designer_name || (d.creator_id ? '創作者 ' + String(d.creator_id).slice(-3) : '匿名');
 
       return `
-        <div class="wish-card">
-          <div class="wish-img ${grad}" ${d.image_url ? `style="background-image:url('${d.image_url}');background-size:cover;background-position:center"` : ''}>
-            <span class="type-pill ${typeClass}">${typeLabel}</span>
-            <button class="wish-remove" data-design-id="${d.id}"><i class="fa-solid fa-xmark"></i></button>
-            ${escapeHtml(d.name || '')}
+        <div class="inspo-card" data-design-id="${d.id}">
+          <div class="inspo-img" ${coverImg ? `style="background-image:url('${coverImg}');background-size:contain;background-position:center;background-repeat:no-repeat;background-color:#fff"` : 'style="background:#FAF7F2"'}>
+            <button class="inspo-bookmark wish-remove" data-design-id="${d.id}" title="從最愛移除"><i class="fa-solid fa-bookmark"></i></button>
           </div>
-          <div class="wish-info">
-            <div class="wish-name">${escapeHtml(d.name || '')}</div>
-            <div class="wish-by">by ${escapeHtml(d.creator_id || '-')}</div>
-            <button class="wish-cta"><i class="fa-solid fa-pencil"></i>預 約 雷 刻</button>
+          <div class="inspo-info">
+            <div class="inspo-by">by ${escapeHtml(author)}</div>
+            <div class="inspo-quote">${escapeHtml(d.name || '(未命名)')}</div>
           </div>
         </div>`;
     }).join('');
@@ -2316,13 +2316,6 @@
 
     // 預載入首頁需要的東西
     if (State.isCreator) loadAnalytics(); // 首頁累計數據
-
-    // 監聽 market 加入/移除最愛 → 重新整理「我的最愛刻圖」分頁
-    window.addEventListener('lohas:wishlist-changed', () => {
-      // 只在「我的最愛刻圖」分頁開著時才 reload (省 query)
-      const active = document.querySelector('.content-page.active')?.dataset?.page;
-      if (active === 'wishlist') loadWishlist();
-    });
   }
 
   document.addEventListener('DOMContentLoaded', init);

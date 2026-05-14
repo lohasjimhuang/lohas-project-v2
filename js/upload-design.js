@@ -152,7 +152,7 @@
             // 細部標籤 (主類選了才顯示)
             '<div class="dum-field dum-subcat-wrap" id="dumSubcatWrap" hidden>',
               '<div class="dum-subcat-head">',
-                '<label>細部標籤 <span class="dum-subcat-meta" id="dumSubcatMeta">可複選</span></label>',
+                '<label>子標籤 <span class="dum-subcat-meta" id="dumSubcatMeta">可複選</span></label>',
                 '<span class="dum-subcat-count" id="dumSubcatCount">已選 0</span>',
               '</div>',
               '<div class="dum-chip-row dum-subcat-row" id="dumSubcatRow"></div>',
