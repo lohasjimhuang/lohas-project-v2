@@ -153,6 +153,7 @@
     'cm-news': '最新消息',
     'admin-upload': '樂活官方上傳',
     'manage-designs': '刻圖管理',
+    'manage-shares': '分享牆管理',
     'users': '會員列表',
     'creators': '創作者管理',
     'ip': 'IP 合作'
@@ -190,6 +191,7 @@
     if (page === 'admin-upload') { initAdminUpload(); loadAdminUploadHistory(); }
     if (page === 'creators') loadCreatorsList();
     if (page === 'manage-designs') loadManageDesigns();
+    if (page === 'manage-shares') loadManageShares();
 
     root.querySelector('.main').scrollTop = 0;
   }
@@ -3025,7 +3027,6 @@
   var mdState = {
     designs:        [],
     filtered:       [],
-    selectedId:     null,
     editId:         null,
   };
 
@@ -3071,14 +3072,6 @@
     document.getElementById('mdEditSave')?.addEventListener('click', mdSaveEdit);
     document.getElementById('mdModalOverlay')?.addEventListener('click', e => {
       if (e.target.id === 'mdModalOverlay') mdCloseEditModal();
-    });
-
-    // 側面板按鈕
-    document.getElementById('mdSideEdit')?.addEventListener('click', () => {
-      if (mdState.selectedId) mdOpenEditModal(mdState.selectedId);
-    });
-    document.getElementById('mdSideDel')?.addEventListener('click', () => {
-      if (mdState.selectedId) mdDeleteDesign(mdState.selectedId);
     });
   }
 
@@ -3154,9 +3147,8 @@
         const id  = card.dataset.id;
         if (act === 'edit')   { mdOpenEditModal(id); return; }
         if (act === 'delete') { mdDeleteDesign(id); return; }
-        container.querySelectorAll('.md-card.on').forEach(t => t.classList.remove('on'));
-        card.classList.add('on');
-        mdShowSide(id);
+        // 點卡片其他地方 → 直接開編輯 Modal
+        mdOpenEditModal(id);
       });
     });
   }
@@ -3164,27 +3156,6 @@
   function mdValidUrl(u) {
     return (u && typeof u === 'string' && u.trim() !== '' && /^https?:\/\//.test(u)) ? u : '';
   }
-
-  function mdShowSide(id) {
-    const d = mdState.designs.find(x => String(x.id) === String(id));
-    if (!d) return;
-    mdState.selectedId = id;
-
-    document.getElementById('mdSideEmpty').hidden = true;
-    document.getElementById('mdSideContent').hidden = false;
-
-    const imgUrl = mdValidUrl(d.image_url_svg) || mdValidUrl(d.image_url_png) || mdValidUrl(d.image_url) || '';
-    document.getElementById('mdSideImg').style.backgroundImage = imgUrl ? "url('" + imgUrl + "')" : '';
-    document.getElementById('mdSideName').textContent     = d.name || '(未命名)';
-    document.getElementById('mdSideSlogan').textContent   = d.slogan || '';
-    document.getElementById('mdSideDesigner').textContent = d.designer_name || '--';
-    document.getElementById('mdSideCategory').textContent = d.category || '--';
-    document.getElementById('mdSideKeywords').textContent = d.keywords || '--';
-    document.getElementById('mdSideStatus').textContent   = { approved:'已通過', pending:'待審核', rejected:'已駁回' }[d.status] || '--';
-    document.getElementById('mdSideType').textContent     = { legacy:'官方圖庫', member:'會員上傳' }[d.type] || '--';
-    document.getElementById('mdSideCreated').textContent  = d.created_at ? new Date(d.created_at).toLocaleDateString('zh-TW') : '--';
-  }
-
   function mdOpenEditModal(id) {
     const d = mdState.designs.find(x => String(x.id) === String(id));
     if (!d) return;
@@ -3243,7 +3214,6 @@
       alert('已儲存');
       mdCloseEditModal();
       mdApplyFilters();
-      if (mdState.selectedId === mdState.editId) mdShowSide(mdState.selectedId);
 
     } catch (err) {
       console.error('[manage-designs] 儲存失敗:', err);
@@ -3289,11 +3259,6 @@
 
       // 3. 同步本地狀態
       mdState.designs = mdState.designs.filter(x => String(x.id) !== String(id));
-      if (mdState.selectedId === id) {
-        mdState.selectedId = null;
-        document.getElementById('mdSideEmpty').hidden = false;
-        document.getElementById('mdSideContent').hidden = true;
-      }
       mdApplyFilters();
       alert('已刪除');
 
@@ -3309,6 +3274,239 @@
   function mdExtractStoragePath(url) {
     if (!url || typeof url !== 'string') return null;
     const m = url.match(/\/engraving-uploads\/(.+)$/);
+    return m ? m[1] : null;
+  }
+
+
+  /* =============================================================
+     分享牆管理 (manage-shares)
+     - 抓 gallery_posts (photo + story)
+     - 編輯標題/故事/主題/承載物
+     - 硬刪除 (Storage 圖檔也刪)
+     ============================================================= */
+
+  var msState = {
+    posts:    [],
+    filtered: [],
+    editId:   null,
+  };
+
+  async function loadManageShares() {
+    const sb = getSb();
+    if (!sb) return;
+
+    const grid = document.getElementById('msGrid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="md-empty">載入中...</div>';
+
+    try {
+      const { data, error } = await sb.from('gallery_posts')
+        .select('id, title, topic, carrier, story, type, image_urls, main_image_url, status, customer_name, member_id, reject_reason, created_at')
+        .order('created_at', { ascending: false })
+        .limit(2000);
+
+      if (error) throw error;
+
+      msState.posts = data || [];
+      msBindToolbar();
+      msApplyFilters();
+
+    } catch (err) {
+      console.error('[manage-shares] 載入失敗:', err);
+      grid.innerHTML = '<div class="md-empty">載入失敗:' + err.message + '</div>';
+    }
+  }
+
+  let msToolbarBound = false;
+  function msBindToolbar() {
+    if (msToolbarBound) return;
+    msToolbarBound = true;
+
+    document.getElementById('msFilterStatus')?.addEventListener('change', msApplyFilters);
+    document.getElementById('msFilterType')?.addEventListener('change', msApplyFilters);
+    document.getElementById('msSearch')?.addEventListener('input', debounce(msApplyFilters, 200));
+
+    document.getElementById('msModalClose')?.addEventListener('click', msCloseEditModal);
+    document.getElementById('msEditCancel')?.addEventListener('click', msCloseEditModal);
+    document.getElementById('msEditSave')?.addEventListener('click', msSaveEdit);
+    document.getElementById('msModalOverlay')?.addEventListener('click', e => {
+      if (e.target.id === 'msModalOverlay') msCloseEditModal();
+    });
+  }
+
+  function msApplyFilters() {
+    const status = document.getElementById('msFilterStatus')?.value || '';
+    const type   = document.getElementById('msFilterType')?.value || '';
+    const q      = (document.getElementById('msSearch')?.value || '').toLowerCase().trim();
+
+    msState.filtered = msState.posts.filter(p => {
+      if (status && p.status !== status) return false;
+      if (type && p.type !== type) return false;
+      if (q) {
+        const hay = [p.title, p.customer_name, p.story, p.topic]
+          .map(s => (s || '').toString().toLowerCase())
+          .join(' ');
+        if (hay.indexOf(q) < 0) return false;
+      }
+      return true;
+    });
+
+    msRenderGrid();
+    document.getElementById('msCount').textContent =
+      `共 ${msState.filtered.length} / ${msState.posts.length} 則`;
+  }
+
+  function msRenderGrid() {
+    const container = document.getElementById('msGrid');
+    if (!container) return;
+
+    if (!msState.filtered.length) {
+      container.innerHTML = '<div class="md-empty">沒有符合條件的分享</div>';
+      return;
+    }
+
+    container.innerHTML = msState.filtered.map(p => {
+      const imgUrl = mdValidUrl(p.main_image_url) || mdValidUrl((p.image_urls || [])[0]) || '';
+      const statusLabel = { approved:'已通過', pending:'待審核', rejected:'已駁回' }[p.status] || p.status || '--';
+      const typeLabel = { photo:'照片', story:'故事' }[p.type] || p.type || '--';
+      const name = p.customer_name || '匿名';
+      const excerpt = (p.story || '').replace(/\s+/g, ' ').trim().slice(0, 50);
+      return (
+        '<div class="md-card" data-id="' + escapeHtml(p.id) + '">' +
+          '<div class="md-card-cover" ' + (imgUrl ? 'style="background-image:url(\'' + escapeHtml(imgUrl) + '\');background-size:cover"' : '') + '>' +
+            '<span class="md-card-status md-pill s-' + (p.status || 'pending') + '">' + statusLabel + '</span>' +
+            '<span class="md-card-type md-pill t-' + (p.type || 'photo') + '">' + typeLabel + '</span>' +
+          '</div>' +
+          '<div class="md-card-body">' +
+            '<div class="md-card-name">' + escapeHtml(p.title || '(未命名)') + '</div>' +
+            (excerpt ? '<div class="md-card-slogan">' + escapeHtml(excerpt) + '</div>' : '') +
+            '<div class="md-card-by">by ' + escapeHtml(name) + (p.topic ? ' · ' + escapeHtml(p.topic) : '') + '</div>' +
+          '</div>' +
+          '<div class="md-card-actions">' +
+            '<button class="md-icon-btn" data-act="edit" title="編輯"><i class="fa-solid fa-pen"></i></button>' +
+            '<button class="md-icon-btn danger" data-act="delete" title="刪除"><i class="fa-solid fa-trash"></i></button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+
+    container.querySelectorAll('.md-card').forEach(card => {
+      card.addEventListener('click', e => {
+        const act = e.target.closest('[data-act]')?.dataset?.act;
+        const id  = card.dataset.id;
+        if (act === 'edit')   { msOpenEditModal(id); return; }
+        if (act === 'delete') { msDeletePost(id); return; }
+        msOpenEditModal(id);
+      });
+    });
+  }
+
+  function msOpenEditModal(id) {
+    const p = msState.posts.find(x => String(x.id) === String(id));
+    if (!p) return;
+    msState.editId = id;
+
+    document.getElementById('msEditTitle').value   = p.title || '';
+    document.getElementById('msEditStory').value   = p.story || '';
+    document.getElementById('msEditTopic').value   = p.topic || '';
+    document.getElementById('msEditCarrier').value = p.carrier || '';
+
+    document.getElementById('msModalOverlay').hidden = false;
+    setTimeout(() => document.getElementById('msEditTitle').focus(), 50);
+  }
+
+  function msCloseEditModal() {
+    document.getElementById('msModalOverlay').hidden = true;
+    msState.editId = null;
+  }
+
+  async function msSaveEdit() {
+    if (!msState.editId) return;
+    const sb = getSb();
+    if (!sb) return;
+
+    const saveBtn = document.getElementById('msEditSave');
+    saveBtn.disabled = true;
+    saveBtn.textContent = '儲存中...';
+
+    try {
+      const payload = {
+        title:   document.getElementById('msEditTitle').value.trim(),
+        story:   document.getElementById('msEditStory').value.trim(),
+        topic:   document.getElementById('msEditTopic').value.trim(),
+        carrier: document.getElementById('msEditCarrier').value.trim(),
+      };
+
+      if (!payload.title) { alert('標題不可為空'); return; }
+
+      const { error } = await sb.from('gallery_posts')
+        .update(payload)
+        .eq('id', msState.editId);
+
+      if (error) throw error;
+
+      const idx = msState.posts.findIndex(x => String(x.id) === String(msState.editId));
+      if (idx >= 0) Object.assign(msState.posts[idx], payload);
+
+      alert('已儲存');
+      msCloseEditModal();
+      msApplyFilters();
+
+    } catch (err) {
+      console.error('[manage-shares] 儲存失敗:', err);
+      alert('儲存失敗:' + err.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '儲存';
+    }
+  }
+
+  async function msDeletePost(id) {
+    const p = msState.posts.find(x => String(x.id) === String(id));
+    if (!p) return;
+
+    if (!confirm(`確定刪除「${p.title || '(未命名)'}」?\n\n⚠️ 這個動作會永久刪除:\n· 資料庫紀錄\n· Storage 內所有圖檔\n\n無法復原`)) return;
+
+    const sb = getSb();
+    if (!sb) return;
+
+    try {
+      // 1. 刪 Storage 檔案 (image_urls 是 array)
+      const allImages = [p.main_image_url, ...(p.image_urls || [])].filter(Boolean);
+      const filesToDelete = allImages
+        .map(url => msExtractStoragePath(url))
+        .filter(Boolean);
+
+      if (filesToDelete.length) {
+        // gallery_posts 用的 bucket 名稱(可能是 gallery-uploads,猜測)
+        const { error: storageErr } = await sb.storage
+          .from('gallery-uploads')
+          .remove(filesToDelete);
+        if (storageErr) {
+          console.warn('[manage-shares] Storage 刪除部分失敗(資料庫照刪):', storageErr);
+        }
+      }
+
+      // 2. 刪資料庫紀錄
+      const { error } = await sb.from('gallery_posts')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      msState.posts = msState.posts.filter(x => String(x.id) !== String(id));
+      msApplyFilters();
+      alert('已刪除');
+
+    } catch (err) {
+      console.error('[manage-shares] 刪除失敗:', err);
+      alert('刪除失敗:' + err.message);
+    }
+  }
+
+  function msExtractStoragePath(url) {
+    if (!url || typeof url !== 'string') return null;
+    const m = url.match(/\/gallery-uploads\/(.+)$/);
     return m ? m[1] : null;
   }
 
