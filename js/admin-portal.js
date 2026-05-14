@@ -148,7 +148,7 @@
   const pageTitles = {
     'dashboard': '首頁',
     'review-designs': '刻圖審核',
-    'review-uploads': '上傳審核',
+    'review-uploads': '上傳照片審核',
     'cm-banner': '首頁與分頁 Banner',
     'cm-news': '最新消息',
     'admin-upload': '樂活官方上傳',
@@ -376,30 +376,6 @@
 
       const uploadsSub = root.querySelector('#reviewUploadsSub');
       if (uploadsSub) uploadsSub.textContent = `${pCount + sCount} 件待審核 · 通過後將出現在靈感牆`;
-
-      // 刻圖審核 review-tabs (按 type 分類)
-      const designsByType = (designs.data || []).reduce((acc, d) => {
-        const t = d.type || 'member';
-        acc[t] = (acc[t] || 0) + 1;
-        return acc;
-      }, {});
-
-      const tabsEl = root.querySelector('#designReviewTabs');
-      if (tabsEl) {
-        const allCount = dCount;
-        const creatorCount = designsByType.creator || 0;
-        const collabCount = designsByType.collab || 0;
-        const memberCount = designsByType.member || 0;
-
-        const setCount = (filter, n) => {
-          const tab = tabsEl.querySelector(`.rtab[data-filter="${filter}"] .count`);
-          if (tab) tab.textContent = n;
-        };
-        setCount('all', allCount);
-        setCount('creator', creatorCount);
-        setCount('collab', collabCount);
-        setCount('member', memberCount);
-      }
 
     } catch (err) {
       console.error('[計數刷新失敗]', err);
@@ -1099,14 +1075,12 @@
     const subEl = document.getElementById('reviewUploadsSub');
     const statusSelect = document.getElementById('reviewUploadsStatus');
     const typeSelect = document.getElementById('reviewUploadsType');
-    const refreshBtn = document.getElementById('reviewUploadsRefresh');
 
     // 第一次綁事件
     if (!page.dataset.bound) {
       page.dataset.bound = '1';
       statusSelect?.addEventListener('change', () => loadReviewUploads());
       typeSelect?.addEventListener('change', () => loadReviewUploads());
-      refreshBtn?.addEventListener('click', () => loadReviewUploads());
     }
 
     const status = (opts && opts.status) || statusSelect?.value || 'pending';
