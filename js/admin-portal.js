@@ -2960,9 +2960,9 @@
     const sb = getSb();
     if (!sb) return;
 
-    const tbody = document.getElementById('mdTbody');
-    if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="8" class="md-empty">載入中...</td></tr>';
+    const grid = document.getElementById('mdGrid');
+    if (!grid) return;
+    grid.innerHTML = '<div class="md-empty">載入中...</div>';
 
     try {
       const { data, error } = await sb.from('engraving_designs')
@@ -2978,7 +2978,7 @@
 
     } catch (err) {
       console.error('[manage-designs] 載入失敗:', err);
-      tbody.innerHTML = '<tr><td colspan="8" class="md-empty">載入失敗:' + err.message + '</td></tr>';
+      grid.innerHTML = '<div class="md-empty">載入失敗:' + err.message + '</div>';
     }
   }
 
@@ -3037,8 +3037,7 @@
   }
 
   function mdRenderTable() {
-    // 用 grid container 取代 tbody
-    const container = document.getElementById('mdGrid') || document.getElementById('mdTbody');
+    const container = document.getElementById('mdGrid');
     if (!container) return;
 
     if (!mdState.filtered.length) {
