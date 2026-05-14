@@ -2503,6 +2503,72 @@
     }
 
     CreatorsState.items = data || [];
+
+    // 載入本月精選
+    await loadFeaturedCreator();
+
+    applyCreatorsFilter();
+  }
+
+
+  // 本月精選 creator_id (放 state)
+  let featuredCreatorId = null;
+
+  async function loadFeaturedCreator() {
+    const sb = getSb();
+    if (!sb) return;
+    const month = currentMonth();
+    const { data } = await sb.from('featured_creators')
+      .select('creator_id')
+      .eq('featured_month', month)
+      .maybeSingle();
+    featuredCreatorId = data?.creator_id || null;
+  }
+
+  function currentMonth() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+
+
+  async function toggleFeaturedCreator(creatorId) {
+    const sb = getSb();
+    if (!sb) return;
+    const month = currentMonth();
+
+    // 如果已經是本月精選 → 取消
+    if (featuredCreatorId === creatorId) {
+      if (!confirm(`取消本月精選「${creatorId}」?`)) return;
+      const { error } = await sb.from('featured_creators')
+        .delete()
+        .eq('featured_month', month);
+      if (error) return alert('取消失敗:' + error.message);
+      featuredCreatorId = null;
+      alert('已取消本月精選');
+      applyCreatorsFilter();
+      return;
+    }
+
+    // 否則:設成本月精選(若該月已有人,先刪掉)
+    if (!confirm(`設定為本月 (${month}) 精選創作者?\n\n本月只能選一位,如已有其他精選會被取代`)) return;
+
+    // 先刪除本月已有的(若存在)
+    await sb.from('featured_creators').delete().eq('featured_month', month);
+
+    // 取得當前管理員 id (簡化:從現有 admin session 拿,或寫死)
+    var adminMember = (window.LohasAuth?.getStoredMember?.()) || {};
+    var adminId = adminMember.erpid || 'admin';
+
+    const { error } = await sb.from('featured_creators').insert({
+      creator_id: creatorId,
+      featured_month: month,
+      featured_by: adminId,
+    });
+
+    if (error) return alert('設定失敗:' + error.message);
+
+    featuredCreatorId = creatorId;
+    alert('已設為本月精選,將出現在創作者市集首頁');
     applyCreatorsFilter();
   }
 
@@ -2548,15 +2614,17 @@
         ? `<div class="creator-card-avatar" style="background-image:url('${escapeHtml(c.avatar_url)}')"></div>`
         : `<div class="creator-card-avatar">${escapeHtml(initials)}</div>`;
       const isSuspended = c.status !== 'active';
+      const isFeatured = featuredCreatorId === c.member_id;
 
       const publicUrl = `${window.location.origin}${window.location.pathname.replace('admin-portal.html', 'creator-public.html')}?id=${c.member_id}`;
 
       return `
-        <div class="creator-card" data-id="${escapeHtml(c.member_id)}">
+        <div class="creator-card ${isFeatured ? 'is-featured' : ''}" data-id="${escapeHtml(c.member_id)}">
           ${avatarHtml}
           <div class="creator-card-body">
             <div class="creator-card-name-row">
               <span class="creator-card-name">${escapeHtml(c.display_name || '未命名')}</span>
+              ${isFeatured ? '<span class="creator-card-tag featured"><i class="fa-solid fa-star"></i>本月精選</span>' : ''}
               ${isVirt ? '<span class="creator-card-tag virt">樂活官方</span>' : '<span class="creator-card-tag">會員</span>'}
               ${isSuspended ? '<span class="creator-card-tag suspended">已隱藏</span>' : ''}
             </div>
@@ -2570,6 +2638,9 @@
             <a class="btn" href="${publicUrl}" target="_blank" rel="noopener" title="開啟個人頁">
               <i class="fa-solid fa-arrow-up-right-from-square"></i>查看
             </a>
+            <button class="btn ${isFeatured ? 'featured-on' : 'featured-off'}" data-act="toggle-featured" data-id="${escapeHtml(c.member_id)}" title="${isFeatured ? '本月精選 (點擊取消)' : '設為本月精選'}">
+              <i class="fa-solid fa-star"></i>${isFeatured ? '取消精選' : '本月精選'}
+            </button>
             <button class="btn" data-act="edit" data-id="${escapeHtml(c.member_id)}">
               <i class="fa-regular fa-pen-to-square"></i>編輯
             </button>
@@ -2592,6 +2663,9 @@
     });
     list.querySelectorAll('[data-act="toggle-status"]').forEach(b => {
       b.addEventListener('click', () => toggleCreatorStatus(b.dataset.id, b.dataset.current));
+    });
+    list.querySelectorAll('[data-act="toggle-featured"]').forEach(b => {
+      b.addEventListener('click', () => toggleFeaturedCreator(b.dataset.id));
     });
   }
 

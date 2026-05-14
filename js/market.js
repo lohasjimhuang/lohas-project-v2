@@ -10,7 +10,7 @@
        legacy_id, detail_url, type
    - 全部歸類為 Creator (Member/Collab 之後再加)
    - 卡片顯示:name 主標 + slogan 子標
-   - Modal 詳情、願望清單、Toast 維持
+   - Modal 詳情、我的最愛刻圖、Toast 維持
    ============================================================= */
 
 (function(){
@@ -375,9 +375,9 @@
     setText('modalCat', (d.category ? '#' + d.category + ' · ' : '') + (d.keywords || '客製作品'));
     setText('modalQuote', d.slogan || '每一張設計,都是被認真活過的故事。');
 
-    setSlide('mock');
+    setSlide('design');
 
-    // 願望清單狀態
+    // 我的最愛刻圖狀態
     var inWish = State.wishlistIds.has(String(d.id));
     setWishlistState(inWish);
 
@@ -389,7 +389,7 @@
       };
     }
 
-    // 願望清單 toggle
+    // 我的最愛刻圖 toggle
     document.getElementById('wishBtn').onclick = function(){
       toggleWishlist(d.id);
     };
@@ -430,13 +430,13 @@
         .eq('member_id', String(State.member.erpid));
       State.wishlistIds = new Set((data || []).map(function(r){ return String(r.design_id); }));
     } catch(e){
-      console.warn('[market] 願望清單載入失敗:', e);
+      console.warn('[market] 我的最愛刻圖載入失敗:', e);
     }
   }
 
   async function toggleWishlist(designId){
     if(!State.member){
-      showToast('請先登入才能加入願望清單');
+      showToast('請先登入才能加入我的最愛刻圖');
       setTimeout(function(){ window.location.href = 'login.html'; }, 1200);
       return;
     }
@@ -448,7 +448,7 @@
     if(State.wishlistIds.has(idStr)){
       State.wishlistIds.delete(idStr);
       setWishlistState(false);
-      showToast('已從願望清單移除');
+      showToast('已從我的最愛刻圖移除');
       if(sb){
         await sb.from('wishlist_designs').delete()
           .eq('member_id', memberId).eq('design_id', idStr);
@@ -456,7 +456,7 @@
     } else {
       State.wishlistIds.add(idStr);
       setWishlistState(true);
-      showToast('已加入願望清單');
+      showToast('已加入我的最愛刻圖');
       if(sb){
         await sb.from('wishlist_designs').insert({
           member_id: memberId,
@@ -474,11 +474,11 @@
     if(!btn || !txt || !icon) return;
     if(inWish){
       btn.classList.add('added');
-      txt.textContent = '已 在 願 望 清 單';
+      txt.textContent = '已 加 入 最 愛';
       icon.className = 'fa-solid fa-heart';
     } else {
       btn.classList.remove('added');
-      txt.textContent = '加 入 願 望 清 單';
+      txt.textContent = '加 入 我 的 最 愛';
       icon.className = 'fa-regular fa-heart';
     }
   }

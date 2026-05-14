@@ -137,10 +137,10 @@
               '<div class="dum-field-hint">建議 2-10 字,作品在市集卡片上的主標題</div>',
             '</div>',
 
-            // 一句話故事
+            // 一句話說明你的作品
             '<div class="dum-field">',
-              '<label for="dumSlogan">一句話故事 <span class="req">*</span></label>',
-              '<input type="text" id="dumSlogan" maxlength="40" placeholder="這個設計背後的小故事,作品的子標題" autocomplete="off">',
+              '<label for="dumSlogan">一句話說明你的作品 <span class="req">*</span></label>',
+              '<input type="text" id="dumSlogan" maxlength="40" placeholder="這個作品的核心 idea,作品的子標題" autocomplete="off">',
             '</div>',
 
             // 主類別
@@ -599,7 +599,7 @@
     var name   = (els.name.value || '').trim();
     var slogan = (els.slogan.value || '').trim();
     if(!name)                       return showError('請填寫設計名稱');
-    if(!slogan)                     return showError('請填寫一句話故事');
+    if(!slogan)                     return showError('請填寫一句話說明你的作品');
     if(!state.selectedCategory)     return showError('請選擇靈感主題');
 
     var sb = window.LohasSupabase?.getClient?.();
@@ -640,13 +640,17 @@
       }
 
       // 3. 寫進 engraving_designs
+      var displayName = member.erpname || member.erpName || member.name || '';
+      if(!displayName){
+        console.warn('[upload-design] 會員物件沒有 name 欄位:', member);
+      }
       var payload = {
         name:           name,
         slogan:         slogan,
         category:       state.selectedCategory,
         keywords:       state.selectedTags.join(','),
         creator_id:     String(member.erpid),
-        designer_name:  member.erpname || '',
+        designer_name:  displayName,
         status:         'pending',
         type:           'member',
       };

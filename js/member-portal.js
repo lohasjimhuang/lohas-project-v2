@@ -782,7 +782,7 @@
 
 
   /* =============================================================
-     Wishlist · 想刻清單 (engraving_wishlist + engraving_designs)
+     Wishlist · 我的最愛刻圖 (engraving_wishlist + engraving_designs)
      ============================================================= */
 
   async function loadWishlist() {
@@ -805,7 +805,7 @@
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('[讀取想刻清單失敗]', error);
+      console.error('[讀取我的最愛刻圖失敗]', error);
       list.innerHTML = '<p class="empty-text">讀取失敗</p>';
       return;
     }
@@ -817,7 +817,7 @@
     if (countEl) countEl.textContent = designs.length ? designs.length + ' 件' : '';
 
     if (designs.length === 0) {
-      list.innerHTML = '<p class="empty-text">尚未加入任何想刻設計</p>';
+      list.innerHTML = '<p class="empty-text">尚未加入任何最愛設計</p>';
       return;
     }
 
@@ -851,7 +851,7 @@
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
         const did = btn.dataset.designId;
-        if (!window.confirm('從想刻清單中移除?')) return;
+        if (!window.confirm('從我的最愛刻圖中移除?')) return;
         const { error } = await sb
           .from('engraving_wishlist')
           .delete()
@@ -1051,7 +1051,7 @@
       return;
     }
 
-    // 抓每個 design 被加入想刻清單的次數
+    // 抓每個 design 被加入我的最愛刻圖的次數
     const wishCounts = {};
     for (const d of designs) {
       const { count } = await sb
@@ -1099,7 +1099,7 @@
           </div>
           <div class="photo-info">
             <div class="photo-name">${escapeHtml(d.name || '')}</div>
-            <div class="photo-date">${isApproved ? `<i class="fa-solid fa-pencil"></i>被加入想刻清單 ${wishCount} 次` : (isPending ? '審核通過後開放收藏' : '未通過審核')}</div>
+            <div class="photo-date">${isApproved ? `<i class="fa-solid fa-pencil"></i>被加入我的最愛刻圖 ${wishCount} 次` : (isPending ? '審核通過後開放收藏' : '未通過審核')}</div>
           </div>
         </div>`;
     }).join('') + `
@@ -1158,11 +1158,11 @@
       modalStatus.innerHTML = `<i class="fa-solid fa-${statusIcon}"></i>${statusLabel}`;
     }
 
-    // 想刻清單統計 (只在已上架顯示)
+    // 我的最愛刻圖統計 (只在已上架顯示)
     if (modalFav) {
       if (status === 'approved') {
         modalFav.style.display = 'inline-flex';
-        modalFav.innerHTML = `<i class="fa-solid fa-pencil"></i>被加入想刻清單 <b>${wish}</b> 次`;
+        modalFav.innerHTML = `<i class="fa-solid fa-pencil"></i>被加入我的最愛刻圖 <b>${wish}</b> 次`;
       } else {
         modalFav.style.display = 'none';
       }
@@ -1579,7 +1579,7 @@
               <div class="perf-thumb ${thumbs[i % thumbs.length]}"></div>
               <div class="perf-info">
                 <div class="perf-name">${escapeHtml(d.name)}</div>
-                <div class="perf-meta">已上架 ${days} 天 · 被加入想刻清單 ${wishCounts[d.id]} 次</div>
+                <div class="perf-meta">已上架 ${days} 天 · 被加入我的最愛刻圖 ${wishCounts[d.id]} 次</div>
               </div>
               <div class="perf-stats">
                 <div><div class="perf-stat-num purple">${stats.used}</div><div class="perf-stat-lbl">被 使 用</div></div>
@@ -2281,7 +2281,7 @@
   const pageTitles = {
     'home': '首頁',
     'inspo': '我的靈感',
-    'wishlist': '想刻清單',
+    'wishlist': '我的最愛刻圖',
     'shares': '我的分享',
     'my-designs': '我的刻圖設計',
     'creator-page': '創作者個人頁',
