@@ -225,6 +225,7 @@
   border:1px solid var(--lohas-bd, #E8DED1);
   border-radius:14px;
   overflow:hidden;
+  flex-shrink:0;            /* 防 flex column 把整個框壓扁 */
   animation:dumIn .25s ease-out;
 }
 .dum-mock-label{
@@ -237,10 +238,10 @@
   border-bottom:1px solid #F0EBE2;
 }
 .dum-mock-stage{
+  display:block;
   position:relative;
   width:100%;
-  height:0;
-  padding-top:100%;         /* 強制 1:1 - 老招但 100% 跨瀏覽器有效 */
+  aspect-ratio:1;
   flex-shrink:0;
   background-color:#fff;
   background-image:url('../images/glasses-mockup.jpg');
@@ -249,25 +250,21 @@
   background-repeat:no-repeat;
 }
 .dum-mock-engrave{
-  /* 鏡片右上 - 縮小版,絕對定位在 padding 撐出的方形內 */
+  /* 鏡片右上 - 縮小版 */
   position:absolute;
   left:80%;
   top:22%;
   width:15%;
-  /* height 用 padding-top 換成 aspect-ratio 替代 (width:15% padding-top:15% = 1:1) */
-  padding-top:15%;
-  height:0;
+  height:15%;
   transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 .dum-mock-engrave img{
-  /* 圖片絕對定位填滿方形內 */
-  position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  max-width:100%;
+  max-height:100%;
   object-fit:contain;
-  /* 已是透明 PNG,輕微降低不透明度模擬刻在鏡片上 */
   opacity:0.88;
 }
 
