@@ -180,7 +180,7 @@
         '<div class="dum-loading" aria-hidden="true">',
           '<div class="dum-loading-box">',
             '<div class="dum-loading-spinner"></div>',
-            '<div class="dum-loading-text">正在轉換為雷雕格式...</div>',
+            '<div class="dum-loading-text">樂活 AI 技術轉換中...</div>',
             '<div class="dum-loading-hint">大圖片可能要 3-8 秒,請稍候</div>',
           '</div>',
         '</div>',
@@ -345,7 +345,7 @@
       if(!cropped) return;
 
       // 進入透明轉換流程
-      showLoading(true, '正在轉換為雷雕格式...');
+      showLoading(true, '樂活 AI 技術轉換中...');
       try {
         var result = await transformToTransparent(cropped);
         // 設置兩種產物
