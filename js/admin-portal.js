@@ -986,7 +986,7 @@
     try {
       const { data, error } = await sb
         .from('engraving_designs')
-        .select('id, name, description, image_url, type, creator_id, created_at')
+        .select('id, name, slogan, description, category, image_url, image_url_png, image_url_svg, type, creator_id, designer_name, created_at')
         .eq('status', 'pending')
         .order('created_at', { ascending: true });
 
