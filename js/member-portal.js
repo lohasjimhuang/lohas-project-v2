@@ -998,7 +998,7 @@
 
     const { data, error } = await sb
       .from('engraving_designs')
-      .select('id, name, image_url, image_url_png, image_url_svg, status, reject_reason, created_at')
+      .select('id, name, slogan, category, keywords, image_url, image_url_png, image_url_svg, status, reject_reason, created_at')
       .eq('creator_id', State.member.erpid)
       .order('created_at', { ascending: false });
 
@@ -1051,6 +1051,8 @@
                data-id="${d.id}"
                data-name="${escapeHtml(d.name || '')}"
                data-slogan="${escapeHtml(d.slogan || '')}"
+               data-category="${escapeHtml(d.category || '')}"
+               data-keywords="${escapeHtml(d.keywords || '')}"
                data-status="${d.status}"
                data-wish="${wishCount}"
                data-cover-img="${escapeHtml(coverImg || '')}"
@@ -1163,11 +1165,27 @@
     const reBtn = modalActions?.querySelector('[data-action="re-upload-design"]');
     if (reBtn) {
       reBtn.addEventListener('click', () => {
-        const design = { id, name, slogan, image_url: coverImg, status, reject_reason: reason };
+        const design = {
+          id,
+          name,
+          slogan,
+          category: cover.dataset.category || '',
+          keywords: cover.dataset.keywords || '',
+          image_url: coverImg,
+          status,
+          reject_reason: reason,
+        };
         modalBg.classList.remove('on');
-        if (window.LohasUploadDesign?.openModalForEdit) {
+
+        if (!window.LohasUploadDesign) {
+          alert('上傳模組未載入,請重新整理頁面再試');
+          console.error('[my-designs] LohasUploadDesign 未載入。確認 member-portal.html 是否引用 js/upload-design.js');
+          return;
+        }
+
+        if (window.LohasUploadDesign.openModalForEdit) {
           window.LohasUploadDesign.openModalForEdit(design);
-        } else if (window.LohasUploadDesign?.openModal) {
+        } else if (window.LohasUploadDesign.openModal) {
           window.LohasUploadDesign.openModal();
         }
       });
