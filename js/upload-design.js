@@ -152,7 +152,7 @@
             // 細部標籤 (主類選了才顯示)
             '<div class="dum-field dum-subcat-wrap" id="dumSubcatWrap" hidden>',
               '<div class="dum-subcat-head">',
-                '<label>子標籤 <span class="dum-subcat-meta" id="dumSubcatMeta">可複選</span></label>',
+                '<label>細部標籤 <span class="dum-subcat-meta" id="dumSubcatMeta">可複選</span></label>',
                 '<span class="dum-subcat-count" id="dumSubcatCount">已選 0</span>',
               '</div>',
               '<div class="dum-chip-row dum-subcat-row" id="dumSubcatRow"></div>',
@@ -180,7 +180,7 @@
         '<div class="dum-loading" aria-hidden="true">',
           '<div class="dum-loading-box">',
             '<div class="dum-loading-spinner"></div>',
-            '<div class="dum-loading-text">樂活 AI 技術轉換中...</div>',
+            '<div class="dum-loading-text">正在轉換為雷雕格式...</div>',
             '<div class="dum-loading-hint">大圖片可能要 3-8 秒,請稍候</div>',
           '</div>',
         '</div>',
@@ -345,7 +345,7 @@
       if(!cropped) return;
 
       // 進入透明轉換流程
-      showLoading(true, '樂活 AI 技術轉換中...');
+      showLoading(true, '正在轉換為雷雕格式...');
       try {
         var result = await transformToTransparent(cropped);
         // 設置兩種產物
@@ -441,10 +441,32 @@
       }, 'image/png');
     });
 
-    // 4. imagetracerjs 追蹤路徑 → SVG XML
+    // 4. SVG 追蹤路徑:優先用 Potrace (品質接近 Illustrator),失敗 fallback imagetracerjs
     //    用白底版的 imgDataForSvg (透明像素會混淆 tracer)
     var svgString = '';
-    if(window.ImageTracer){
+
+    // Potrace WASM (品質優先)
+    if(window.LohasPotrace?.ready && window.LohasPotrace?.trace){
+      try {
+        svgString = await window.LohasPotrace.trace(imgDataForSvg, {
+          turdsize: 2,            // 忽略小於 2px 的雜訊
+          turnpolicy: 4,          // majority
+          alphamax: 1,            // 角點閾值 (1 = 較圓滑)
+          opticurve: 1,           // 啟用曲線優化
+          opttolerance: 0.2,      // 曲線優化容差
+          pathonly: false,        // 完整 SVG (不只 path)
+          extractcolors: false,   // 不抽多色 (我們已二值化)
+          posterizelevel: 2,      // 2 階 (黑白)
+          posterizationalgorithm: 0,
+        });
+      } catch(e){
+        console.warn('[upload-design] Potrace 失敗,fallback imagetracerjs:', e);
+        svgString = '';
+      }
+    }
+
+    // Fallback: imagetracerjs (品質較低,但保證 work)
+    if(!svgString && window.ImageTracer){
       try {
         svgString = window.ImageTracer.imagedataToSVG(imgDataForSvg, {
           // 強制兩色:墨色 + 白色 (palette,跳過量化避免錯誤)
@@ -452,9 +474,9 @@
             { r: inkRgb.r, g: inkRgb.g, b: inkRgb.b, a: 255 },
             { r: 255,      g: 255,      b: 255,      a: 255 },
           ],
-          ltres:    1,        // 直線閾值
-          qtres:    1,        // 曲線閾值
-          pathomit: 8,        // 忽略小於 8 px 的雜訊路徑
+          ltres:    1,
+          qtres:    1,
+          pathomit: 8,
           rightangleenhance: false,
           strokewidth: 0,
           linefilter: false,
@@ -465,23 +487,24 @@
           lcpr: 0,
           qcpr: 0,
         });
-
-        // 移除 SVG 內白色路徑 (只保留墨色),這樣 SVG 顯示時白底自動透明
-        if(svgString){
-          // 拿掉 fill 是白色 (255,255,255) 的 path
-          svgString = svgString.replace(
-            /<path[^>]+fill="rgb\(255,255,255\)"[^>]*\/>/g, ''
-          );
-          // 拿掉 svg 的背景矩形 (有些版本會加)
-          svgString = svgString.replace(
-            /<rect[^>]+fill="rgb\(255,255,255\)"[^>]*\/>/g, ''
-          );
-        }
       } catch(e){
-        console.warn('[upload-design] SVG 追蹤失敗,只回傳 PNG:', e);
+        console.warn('[upload-design] imagetracerjs 也失敗,只回傳 PNG:', e);
       }
-    } else {
-      console.warn('[upload-design] ImageTracer 沒載入,只回傳 PNG');
+    }
+
+    // 移除 SVG 內白色路徑 (只保留墨色),讓 SVG 白底自動透明
+    if(svgString){
+      svgString = svgString.replace(
+        /<path[^>]+fill="rgb\(255,255,255\)"[^>]*\/>/g, ''
+      );
+      svgString = svgString.replace(
+        /<rect[^>]+fill="rgb\(255,255,255\)"[^>]*\/>/g, ''
+      );
+      // Potrace 預設 fill="#000000",也是好的,不用換
+    }
+
+    if(!svgString){
+      console.warn('[upload-design] 兩個 tracer 都沒用,SVG 為空');
     }
 
     return { pngBlob: pngBlob, svgString: svgString };
