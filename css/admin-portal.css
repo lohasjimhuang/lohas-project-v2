@@ -2733,8 +2733,6 @@
 .ad .md-pill.s-rejected{ background:var(--status-rejected-bg); color:var(--status-rejected) }
 .ad .md-pill.t-legacy  { background:#F0EBE2; color:#765F4A }
 .ad .md-pill.t-member  { background:var(--c-bg); color:var(--c-text) }
-.ad .md-pill.t-photo   { background:#EAF2F0; color:#3F7E6F }
-.ad .md-pill.t-story   { background:#F2EAEF; color:#7E3F66 }
 
 
 .ad .md-icon-btn{
@@ -2926,3 +2924,51 @@
   background:#FFFCF5;
   border-style:solid;
 }
+
+/* === 審核 modal 唯讀欄位樣式 === */
+.ad .md-form-readonly{
+  padding:10px 12px;
+  background:#FAF7F2;
+  border:1px solid var(--lohas-line);
+  border-radius:8px;
+  color:var(--lohas-sub);
+  font-size:13px;
+  font-family:'Courier New', monospace;
+  letter-spacing:0.5px;
+}
+
+/* === 刻圖管理 卡片內 上架/下架 toggle === */
+.ad .md-show-toggle{
+  position:absolute;
+  bottom:8px;
+  left:8px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:5px 10px;
+  border:0;
+  border-radius:999px;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  cursor:pointer;
+  transition:all .15s;
+  z-index:2;
+  backdrop-filter:blur(4px);
+}
+.ad .md-show-toggle.on{
+  background:rgba(63, 126, 111, 0.95);   /* 綠 */
+  color:#fff;
+}
+.ad .md-show-toggle.on:hover{
+  background:rgba(50, 102, 90, 1);
+}
+.ad .md-show-toggle.off{
+  background:rgba(120, 120, 120, 0.85);  /* 灰 */
+  color:#fff;
+}
+.ad .md-show-toggle.off:hover{
+  background:rgba(63, 126, 111, 0.95);   /* hover 變回綠色預示「點擊上架」 */
+}
+.ad .md-show-toggle i{ font-size:10px }
