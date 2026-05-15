@@ -148,7 +148,7 @@
   const pageTitles = {
     'dashboard': '首頁',
     'review-designs': '刻圖審核',
-    'review-uploads': '上傳照片審核',
+    'review-uploads': '上傳審核',
     'cm-banner': '首頁與分頁 Banner',
     'cm-news': '最新消息',
     'admin-upload': '樂活官方上傳',
@@ -376,6 +376,30 @@
 
       const uploadsSub = root.querySelector('#reviewUploadsSub');
       if (uploadsSub) uploadsSub.textContent = `${pCount + sCount} 件待審核 · 通過後將出現在靈感牆`;
+
+      // 刻圖審核 review-tabs (按 type 分類)
+      const designsByType = (designs.data || []).reduce((acc, d) => {
+        const t = d.type || 'member';
+        acc[t] = (acc[t] || 0) + 1;
+        return acc;
+      }, {});
+
+      const tabsEl = root.querySelector('#designReviewTabs');
+      if (tabsEl) {
+        const allCount = dCount;
+        const creatorCount = designsByType.creator || 0;
+        const collabCount = designsByType.collab || 0;
+        const memberCount = designsByType.member || 0;
+
+        const setCount = (filter, n) => {
+          const tab = tabsEl.querySelector(`.rtab[data-filter="${filter}"] .count`);
+          if (tab) tab.textContent = n;
+        };
+        setCount('all', allCount);
+        setCount('creator', creatorCount);
+        setCount('collab', collabCount);
+        setCount('member', memberCount);
+      }
 
     } catch (err) {
       console.error('[計數刷新失敗]', err);
@@ -1013,16 +1037,27 @@
               ${d.description ? `<div class="rcard-quote">${escapeHtml(d.description)}</div>` : ''}
               <div class="rcard-meta"><i class="fa-regular fa-clock"></i>送審 ${formatTime(d.created_at)}</div>
               <div class="rcard-actions">
-                <button class="approve" data-act="approve" data-id="${d.id}"><i class="fa-solid fa-check"></i>通 過</button>
+                <button class="approve" data-act="approve"
+                        data-id="${d.id}"
+                        data-name="${escapeHtml(d.name)}"
+                        data-category="${escapeHtml(d.category || '')}"
+                        data-creator-id="${escapeHtml(d.creator_id || '')}">
+                  <i class="fa-solid fa-pen-to-square"></i>開 始 審 核
+                </button>
                 <button class="reject" data-act="reject" data-id="${d.id}" data-name="${escapeHtml(d.name)}" data-by="${escapeHtml(d.creator_id)}"><i class="fa-solid fa-xmark"></i>駁 回</button>
               </div>
             </div>
           </div>`;
       }).join('');
 
-      // 綁定通過/駁回
+      // 綁定 開始審核 / 駁回
       grid.querySelectorAll('[data-act="approve"]').forEach(b => {
-        b.addEventListener('click', () => approveDesign(b.dataset.id));
+        b.addEventListener('click', () => openApproveModal({
+          id:        b.dataset.id,
+          name:      b.dataset.name,
+          category:  b.dataset.category,
+          creatorId: b.dataset.creatorId,
+        }));
       });
       grid.querySelectorAll('[data-act="reject"]').forEach(b => {
         b.addEventListener('click', () => openRejectModal('design', b.dataset.id, { name: b.dataset.name, by: b.dataset.by }));
@@ -1033,22 +1068,98 @@
     }
   }
 
-  async function approveDesign(id) {
-    if (!confirm('確定通過這個設計?')) return;
+  /* =============================================================
+     刻圖審核 Modal - 填 erp_number + price + 編輯分類/名稱
+     ============================================================= */
+  function openApproveModal({ id, name, category, creatorId }) {
+    const modal = document.getElementById('approveDesignModal');
+    if (!modal) {
+      alert('審核 Modal 未載入');
+      return;
+    }
+
+    document.getElementById('apDesignId').value     = id || '';
+    document.getElementById('apName').value         = name || '';
+    document.getElementById('apCategory').value     = category || '';
+    document.getElementById('apErpNumber').value    = '';
+    document.getElementById('apPrice').value        = '';
+    document.getElementById('apCreatorIdLabel').textContent = creatorId || '匿名';
+
+    modal.hidden = false;
+    setTimeout(() => document.getElementById('apErpNumber').focus(), 50);
+  }
+
+  function closeApproveModal() {
+    const modal = document.getElementById('approveDesignModal');
+    if (modal) modal.hidden = true;
+  }
+
+  async function submitApproval() {
+    const id         = document.getElementById('apDesignId').value;
+    const name       = document.getElementById('apName').value.trim();
+    const category   = document.getElementById('apCategory').value.trim();
+    const erpNumber  = document.getElementById('apErpNumber').value.trim();
+    const priceRaw   = document.getElementById('apPrice').value.trim();
+
+    if (!id) return alert('找不到設計 ID');
+    if (!name) return alert('名稱不可為空');
+    if (!erpNumber) return alert('請填寫 ErpNumber');
+    if (!priceRaw) return alert('請填寫 Price');
+
+    const price = parseFloat(priceRaw);
+    if (isNaN(price) || price < 0) return alert('Price 必須是 >= 0 的數字');
+
+    const submitBtn = document.getElementById('apSubmit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '送出中...';
 
     const sb = getSb();
-    if (!sb) return;
+    if (!sb) { submitBtn.disabled = false; submitBtn.textContent = '完成審核'; return; }
 
-    const { error } = await sb.from('engraving_designs')
-      .update({ status: 'approved', reviewed_at: new Date().toISOString() })
-      .eq('id', id);
+    try {
+      const { error } = await sb.from('engraving_designs')
+        .update({
+          name:        name,
+          category:    category || null,
+          erp_number:  erpNumber,
+          price:       price,
+          is_show:     '上架',
+          status:      'approved',
+          reviewed_at: new Date().toISOString(),
+        })
+        .eq('id', id);
 
-    if (error) return alert('通過失敗: ' + error.message);
+      if (error) throw error;
 
-    alert('已通過');
-    loadDesignReview();
-    loadDashboard(); refreshReviewCounts?.();
+      alert('已通過審核');
+      closeApproveModal();
+      loadDesignReview();
+      loadDashboard();
+      refreshReviewCounts?.();
+
+    } catch (err) {
+      console.error('[審核失敗]', err);
+      alert('審核失敗: ' + err.message);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '完成審核';
+    }
   }
+
+  // 綁 modal 內按鈕 (只綁一次)
+  (function bindApproveModalOnce(){
+    if (window.__approveModalBound) return;
+    window.__approveModalBound = true;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('apSubmit')?.addEventListener('click', submitApproval);
+      document.getElementById('apCancel')?.addEventListener('click', closeApproveModal);
+      document.getElementById('apClose')?.addEventListener('click', closeApproveModal);
+      document.getElementById('approveDesignModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'approveDesignModal') closeApproveModal();
+      });
+    });
+  })();
 
 
   /* =============================================================
@@ -1075,12 +1186,14 @@
     const subEl = document.getElementById('reviewUploadsSub');
     const statusSelect = document.getElementById('reviewUploadsStatus');
     const typeSelect = document.getElementById('reviewUploadsType');
+    const refreshBtn = document.getElementById('reviewUploadsRefresh');
 
     // 第一次綁事件
     if (!page.dataset.bound) {
       page.dataset.bound = '1';
       statusSelect?.addEventListener('change', () => loadReviewUploads());
       typeSelect?.addEventListener('change', () => loadReviewUploads());
+      refreshBtn?.addEventListener('click', () => loadReviewUploads());
     }
 
     const status = (opts && opts.status) || statusSelect?.value || 'pending';
@@ -3014,7 +3127,7 @@
 
     try {
       const { data, error } = await sb.from('engraving_designs')
-        .select('id, legacy_id, name, slogan, keywords, designer_name, category, image_url, image_url_png, image_url_svg, status, type, creator_id, like_count, share_count, collect_count, created_at')
+        .select('id, icons_id, legacy_id, name, slogan, keywords, designer_name, category, image_url, image_url_png, image_url_svg, status, type, creator_id, erp_number, price, is_show, like_count, share_count, collect_count, created_at')
         .order('created_at', { ascending: false })
         .limit(2000);
 
@@ -3090,11 +3203,21 @@
       const statusLabel = { approved:'已通過', pending:'待審核', rejected:'已駁回' }[d.status] || d.status || '--';
       const typeLabel = { legacy:'官方', member:'會員' }[d.type] || d.type || '--';
       const designer = d.designer_name || '匿名';
+      const isShow = d.is_show || '上架';
+      const showOn = isShow === '上架';
+      // 只有「已通過」的圖才能切上下架
+      const showToggle = d.status === 'approved'
+        ? '<button class="md-show-toggle ' + (showOn ? 'on' : 'off') + '" data-act="toggle-show" title="' + (showOn ? '點擊下架' : '點擊上架') + '">' +
+            '<i class="fa-solid ' + (showOn ? 'fa-eye' : 'fa-eye-slash') + '"></i>' +
+            (showOn ? '上架中' : '已下架') +
+          '</button>'
+        : '';
       return (
         '<div class="md-card" data-id="' + escapeHtml(d.id) + '">' +
           '<div class="md-card-cover" ' + (imgUrl ? 'style="background-image:url(\'' + escapeHtml(imgUrl) + '\')"' : '') + '>' +
             '<span class="md-card-status md-pill s-' + (d.status || 'pending') + '">' + statusLabel + '</span>' +
             '<span class="md-card-type md-pill t-' + (d.type || 'member') + '">' + typeLabel + '</span>' +
+            showToggle +
           '</div>' +
           '<div class="md-card-body">' +
             '<div class="md-card-name">' + escapeHtml(d.name || '(未命名)') + '</div>' +
@@ -3119,12 +3242,39 @@
       card.addEventListener('click', e => {
         const act = e.target.closest('[data-act]')?.dataset?.act;
         const id  = card.dataset.id;
-        if (act === 'edit')   { mdOpenEditModal(id); return; }
-        if (act === 'delete') { mdDeleteDesign(id); return; }
+        if (act === 'edit')         { mdOpenEditModal(id); return; }
+        if (act === 'delete')       { mdDeleteDesign(id); return; }
+        if (act === 'toggle-show')  { mdToggleShow(id); return; }
         // 點卡片其他地方 → 直接開編輯 Modal
         mdOpenEditModal(id);
       });
     });
+  }
+
+
+  async function mdToggleShow(id) {
+    const d = mdState.designs.find(x => String(x.id) === String(id));
+    if (!d) return;
+
+    const currentShow = d.is_show || '上架';
+    const newShow = currentShow === '上架' ? '下架' : '上架';
+
+    const sb = getSb();
+    if (!sb) return;
+
+    try {
+      const { error } = await sb.from('engraving_designs')
+        .update({ is_show: newShow })
+        .eq('id', id);
+      if (error) throw error;
+
+      d.is_show = newShow;
+      mdApplyFilters();
+
+    } catch (err) {
+      console.error('[manage-designs] 切換上架失敗:', err);
+      alert('切換失敗:' + err.message);
+    }
   }
 
   function mdValidUrl(u) {
