@@ -56,7 +56,7 @@
 
     .mega-menu {
         position: absolute;
-        top: 70px;
+        top: 100%;
         left: 0;
         width: 100%;
         background-color: #fff;
@@ -64,15 +64,17 @@
         border-bottom: 1px solid #eee;
         opacity: 0;
         visibility: hidden;
-        transform: translateY(10px);
-        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-        z-index: -1;
+        transition: opacity 0.25s ease, visibility 0s linear 0.25s;
+        z-index: 9998;
+        pointer-events: none;
     }
 
-    .mega-menu-parent:hover .mega-menu {
+    /* 用 .open class 顯示 (純 hover 容易抖動,改 JS 控制) */
+    .mega-menu-parent.open .mega-menu {
         opacity: 1;
         visibility: visible;
-        transform: translateY(0);
+        pointer-events: auto;
+        transition: opacity 0.25s ease, visibility 0s linear 0s;
     }
 
     .mega-menu-container {
@@ -138,6 +140,9 @@
     .mega-column ul li a:hover {
         color: var(--lohas-light);
     }
+
+
+
 }
 
 /* --- 手機版 Mega Menu --- */
@@ -256,9 +261,11 @@
 
 @media (min-width: 769px) {
     .nav-links > li > a {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         position: relative;
-        padding-bottom: 6px;
+        height: 70px;
+        padding-bottom: 0;
     }
 
     .nav-links > li:hover > a {
@@ -268,7 +275,7 @@
     .nav-links > li > a::after {
         content: '';
         position: absolute;
-        bottom: 0;
+        bottom: 12px;
         left: 0;
         width: 0;
         height: 1px;
@@ -457,10 +464,6 @@ body.no-scroll {
     letter-spacing: 0.5px;
 }
 
-.footer-column {
-    margin-top: 45px;
-}
-
 .footer-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -469,9 +472,16 @@ body.no-scroll {
 
 .footer-links {
     display: flex;
+    flex-wrap: wrap;
     justify-content: flex-start;
-    gap: 100px;
+    gap: 40px 50px;
     margin-bottom: 60px;
+}
+
+.footer-column {
+    margin-top: 45px;
+    flex: 0 0 auto;
+    min-width: 130px;
 }
 
 .footer-column h3 {
@@ -510,6 +520,7 @@ body.no-scroll {
     min-width: 150px;
     margin-right: 40px;
     margin-top: 45px;
+    flex-shrink: 0;
 }
 
 .social-link {
@@ -567,11 +578,13 @@ body.no-scroll {
 
     .footer-links {
         flex-direction: column;
+        flex-wrap: nowrap;
         gap: 0;
     }
 
     .footer-column {
         margin-top: 0;
+        min-width: 0;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
